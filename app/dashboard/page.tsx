@@ -395,13 +395,34 @@ export default function DashboardHome(): React.ReactElement {
               <>
                 <div className="space-y-4">
                   {todaysMeds.map(med => {
-                    const IconComp = (med.icon && typeof med.icon === 'function') ? med.icon as React.ComponentType<any> : null;
+                    // compute a safe ReactNode for the icon (handles component types, elements, primitives)
+                    const renderIcon: React.ReactNode = (() => {
+                      // if icon is a component (function/class), render it
+                      if (med.icon && typeof med.icon === 'function') {
+                        const C = med.icon as React.ComponentType<any>;
+                        return <C />;
+                      }
+
+                      // if it's already a React element/node, use it
+                      if (React.isValidElement(med.icon)) {
+                        return med.icon as React.ReactNode;
+                      }
+
+                      // if it's a primitive like string/number, wrap in span
+                      if (typeof med.icon === 'string' || typeof med.icon === 'number') {
+                        return <span>{med.icon}</span>;
+                      }
+
+                      // otherwise nothing
+                      return null;
+                    })();
+
                     return (
                       <div key={med.id} className={`rounded-xl p-4 bg-gradient-to-r ${med.color ?? ''} bg-opacity-10 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all`}>
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4 flex-1">
                             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color ?? 'from-indigo-100 to-indigo-200'} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}>
-                              {IconComp ? <IconComp /> : (med.icon ?? null)}
+                              {renderIcon}
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{med.name}</h3>
