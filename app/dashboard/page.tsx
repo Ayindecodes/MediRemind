@@ -38,7 +38,8 @@ type TherapySession = {
   unreadMessages?: number;
 };
 
-export default function DashboardHome(): JSX.Element {
+export default function DashboardHome(): React.ReactElement {
+
   // Loading states
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
