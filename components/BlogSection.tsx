@@ -35,7 +35,7 @@ const blogPosts = [
 ];
 
 export default function BlogSection() {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <section 
@@ -87,16 +87,12 @@ export default function BlogSection() {
               >
                 {/* Image Container */}
                 <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-700 dark:to-slate-600 overflow-hidden">
-{/* Placeholder - Replace with actual image */}
-                 
-                  
-                  {
+
                   <img 
                     src="/medd.png"
                     alt="Medication Practice"
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                   />
-                  }
 
                   {/* Category Badge */}
                   <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full text-xs font-medium text-indigo-600 dark:text-indigo-400">
@@ -128,7 +124,7 @@ export default function BlogSection() {
                     {post.excerpt}
                   </p>
 
-                  {/* Date & Read More Link */}
+                  {/* Date & Read More */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {post.date}
@@ -143,14 +139,14 @@ export default function BlogSection() {
                   </div>
                 </div>
 
-                {/* Hover Border Effect */}
+                {/* Hover Border */}
                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-indigo-600 dark:group-hover:border-indigo-400 rounded-2xl transition-all duration-300 pointer-events-none"></div>
               </article>
             );
           })}
         </div>
 
-        {/* View All Blog Button */}
+        {/* View All Blog */}
         <div className="text-center mt-12">
           <a
             href="/blog"
@@ -161,7 +157,7 @@ export default function BlogSection() {
           </a>
         </div>
 
-        {/* Newsletter Signup (Bonus) */}
+        {/* Newsletter */}
         <div className="mt-20 p-8 md:p-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl shadow-2xl text-white">
           <div className="max-w-3xl mx-auto text-center">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">

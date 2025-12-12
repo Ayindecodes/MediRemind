@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Bell, Users, TrendingUp, Calendar, Zap, Shield, Clock, Heart, Award, Smartphone, Cloud, FileText } from 'lucide-react';
 
 export default function FeaturesSection() {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const features = [
     {
@@ -120,7 +120,7 @@ export default function FeaturesSection() {
                   isHovered ? '-translate-y-2' : ''
                 }`}
               >
-                {/* Gradient Border Effect on Hover */}
+                {/* Gradient Border Effect */}
                 <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
 
                 {/* Icon */}
@@ -137,7 +137,7 @@ export default function FeaturesSection() {
                   {feature.description}
                 </p>
 
-                {/* Benefits List */}
+                {/* Benefits */}
                 <ul className="space-y-2">
                   {feature.benefits.map((benefit, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -178,7 +178,7 @@ export default function FeaturesSection() {
           </div>
         </div>
 
-        {/* Stats Section */}
+        {/* Stats */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
             { value: "10,000+", label: "Active Users", icon: Users },
