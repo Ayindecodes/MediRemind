@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { tempUsers } from '@/lib/tempUsers';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,13 +28,70 @@ export async function POST(request: NextRequest) {
 
     tempUsers.set(emailKey, {
       fullName,
-      email, // store original casing for display
-      password, // In production: hash this
+      email,
+      password, // TODO: Hash this with bcrypt before production
       verificationCode,
       verified: false,
       expiresAt: Date.now() + 15 * 60 * 1000 // 15 min
     });
 
+    // Send verification email
+    try {
+      await resend.emails.send({
+        from: 'MediRemind <onboarding@resend.dev>', // Change to your domain later
+        to: email,
+        subject: 'Verify Your MediRemind Account',
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { text-align: center; padding: 30px 0; }
+                .logo { font-size: 32px; }
+                .brand { font-size: 24px; font-weight: bold; background: linear-gradient(to right, #4F46E5, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+                .code-box { background: #F3F4F6; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0; }
+                .code { font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #4F46E5; }
+                .footer { text-align: center; color: #6B7280; font-size: 14px; margin-top: 40px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <div class="logo">💊</div>
+                  <div class="brand">MediRemind</div>
+                </div>
+                
+                <h2>Hi ${fullName}!</h2>
+                <p>Thanks for signing up with MediRemind. To complete your registration, please verify your email address.</p>
+                
+                <div class="code-box">
+                  <p style="margin: 0 0 10px 0; color: #6B7280; font-size: 14px;">Your verification code is:</p>
+                  <div class="code">${verificationCode}</div>
+                  <p style="margin: 20px 0 0 0; color: #6B7280; font-size: 14px;">This code will expire in 15 minutes</p>
+                </div>
+                
+                <p>If you didn't request this code, you can safely ignore this email.</p>
+                
+                <div class="footer">
+                  <p>© 2025 MediRemind. All rights reserved.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+      });
+
+      console.log(`✅ Verification email sent to ${email}`);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still return success but log the error
+      // In production, you might want to handle this differently
+    }
+
+    // Still log to console for development
     console.log('========================================');
     console.log(`📧 Verification Code for ${email}`);
     console.log(`Code: ${verificationCode}`);
@@ -40,7 +100,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: `Verification code sent to ${email}`,
-      debug_code: verificationCode // Only for testing
+      // Remove debug_code in production
+      ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
     }, { status: 201 });
 
   } catch (error) {

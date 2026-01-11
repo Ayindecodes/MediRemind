@@ -13,31 +13,43 @@ export async function POST(request: NextRequest) {
     }
 
     const emailKey = email.toLowerCase();
-    const user = tempUsers.get(emailKey);
+    const userData = tempUsers.get(emailKey);
 
-    if (!user) {
+    if (!userData) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'No pending verification found' },
         { status: 404 }
       );
     }
 
-    if (Date.now() > user.expiresAt) {
-      return NextResponse.json(
-        { success: false, message: 'Verification code expired. Please request a new one.' },
-        { status: 400 }
-      );
-    }
-
-    if (user.verificationCode !== code) {
+    if (userData.verificationCode !== code) {
       return NextResponse.json(
         { success: false, message: 'Invalid verification code' },
         { status: 400 }
       );
     }
 
-    user.verified = true;
-    tempUsers.set(emailKey, user);
+    if (Date.now() > userData.expiresAt) {
+      return NextResponse.json(
+        { success: false, message: 'Verification code has expired. Please request a new one.' },
+        { status: 400 }
+      );
+    }
+
+    if (userData.verified) {
+      return NextResponse.json(
+        { success: false, message: 'This account is already verified' },
+        { status: 400 }
+      );
+    }
+
+    // Mark as verified
+    tempUsers.set(emailKey, {
+      ...userData,
+      verified: true
+    });
+
+    console.log(`✅ User verified: ${email}`);
 
     return NextResponse.json({
       success: true,
