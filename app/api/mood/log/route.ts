@@ -1,79 +1,29 @@
-export const runtime = "nodejs"; // Needed for Buffer + stable execution
+import { NextRequest, NextResponse } from 'next/server';
+import { logMood, getUserByEmail } from '@/lib/userStorage';
+import jwt from 'jsonwebtoken';
 
-import { NextRequest, NextResponse } from "next/server";
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Persistent Map (survives hot reload in dev)
-const moodsDB: Map<string, any[]> =
-  (globalThis as any).moodsDB || new Map();
-(globalThis as any).moodsDB = moodsDB;
-
-// -------------------------
-// GET Today’s Mood
-// -------------------------
-export async function GET(request: NextRequest) {
-  try {
-    const token = request.headers.get("Authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const email = Buffer.from(token, "base64").toString().split(":")[0];
-    const today = new Date().toDateString();
-
-    const userMoods = moodsDB.get(email) || [];
-    const todayMood = userMoods.find(
-      (m) => new Date(m.date).toDateString() === today
-    );
-
-    return NextResponse.json({
-      mood: todayMood?.mood || null,
-      note: todayMood?.note || null,
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-// -------------------------
-// POST – Log Mood
-// -------------------------
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get("Authorization")?.replace("Bearer ", "");
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const email = Buffer.from(token, "base64").toString().split(":")[0];
+    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+    const user = getUserByEmail(decoded.email);
 
-    const { mood, date, note } = await request.json();
-    const userMoods = moodsDB.get(email) || [];
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-    const normalizedDate = new Date(date).toDateString();
+    const { mood, note } = await request.json();
+    const moodEntry = logMood(user.id, mood, note);
 
-    // Remove existing entry for same day → prevents duplicates
-    const cleaned = userMoods.filter(
-      (m) => new Date(m.date).toDateString() !== normalizedDate
-    );
-
-    cleaned.push({
-      mood,
-      date: normalizedDate,
-      note: note || "",
-    });
-
-    moodsDB.set(email, cleaned);
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, mood: moodEntry });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error('Log mood error:', error);
+    return NextResponse.json({ error: 'Failed to log mood' }, { status: 500 });
   }
 }

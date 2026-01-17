@@ -1,6 +1,7 @@
+// app/api/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { tempUsers } from '@/lib/tempUsers';
+import { createUser, createVerificationSession, getUserByEmail } from '@/lib/userStorage';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,30 +16,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const emailKey = email.toLowerCase();
-
-    if (tempUsers.has(emailKey)) {
+    // Check if user already exists
+    const existingUser = getUserByEmail(email);
+    if (existingUser) {
       return NextResponse.json(
-        { success: false, message: 'Email already registered' },
+        { success: false, message: 'Email already registered. Please login instead.' },
         { status: 409 }
       );
     }
 
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    // Create user (unverified)
+    const user = createUser(fullName, email, password);
 
-    tempUsers.set(emailKey, {
-      fullName,
-      email,
-      password, // TODO: Hash this with bcrypt before production
-      verificationCode,
-      verified: false,
-      expiresAt: Date.now() + 15 * 60 * 1000 // 15 min
-    });
+    // Generate verification code
+    const verificationCode = createVerificationSession(email, 'signup');
 
     // Send verification email
     try {
       await resend.emails.send({
-        from: 'MediRemind <onboarding@resend.dev>', // Change to your domain later
+        from: 'MediRemind <onboarding@resend.dev>',
         to: email,
         subject: 'Verify Your MediRemind Account',
         html: `
@@ -87,27 +83,23 @@ export async function POST(request: NextRequest) {
       console.log(`✅ Verification email sent to ${email}`);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
-      // Still return success but log the error
-      // In production, you might want to handle this differently
     }
 
-    // Still log to console for development
     console.log('========================================');
-    console.log(`📧 Verification Code for ${email}`);
+    console.log(`📧 Signup - Verification Code for ${email}`);
     console.log(`Code: ${verificationCode}`);
     console.log('========================================');
 
     return NextResponse.json({
       success: true,
       message: `Verification code sent to ${email}`,
-      // Remove debug_code in production
       ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
     }, { status: 201 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Signup error:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

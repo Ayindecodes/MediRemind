@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodayMood, getUserByEmail } from '@/lib/userStorage';
+import { getUserNotifications, getUserByEmail } from '@/lib/userStorage';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const mood = getTodayMood(user.id);
+    const notifications = getUserNotifications(user.id, 10);
 
-    return NextResponse.json({ mood: mood?.mood || null });
+    return NextResponse.json({ notifications });
   } catch (error) {
-    console.error('Mood error:', error);
-    return NextResponse.json({ error: 'Failed to get mood' }, { status: 500 });
+    console.error('Notifications error:', error);
+    return NextResponse.json({ error: 'Failed to get notifications' }, { status: 500 });
   }
 }

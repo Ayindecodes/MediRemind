@@ -1,6 +1,9 @@
-// app/api/verify/route.ts
+// app/api/login/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCode, verifyUser } from '@/lib/userStorage';
+import { verifyCode, getUserByEmail } from '@/lib/userStorage';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,32 +16,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = verifyCode(email, code);
+    const isValid = verifyCode(email, code);
 
-    if (!result.valid) {
+    if (!isValid) {
       return NextResponse.json(
-        { success: false, message: result.error || 'Invalid verification code' },
+        { success: false, message: 'Invalid or expired verification code' },
         { status: 400 }
       );
     }
 
-    // Mark user as verified
-    const verified = verifyUser(email);
-    
-    if (!verified) {
+    const user = getUserByEmail(email);
+    if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
       );
     }
 
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     return NextResponse.json({
       success: true,
-      message: 'Account verified successfully!'
-    }, { status: 200 });
+      token,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email
+      }
+    });
 
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error('Login verification error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

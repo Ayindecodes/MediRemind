@@ -139,7 +139,11 @@ export default function SignUpPage() {
     setIsSubmitting(true);
     setApiResponse(null);
     try {
-      const response = await fetch('/api/resend-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: formData.email }) });
+      const response = await fetch('/api/resend-code', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ email: formData.email, type: 'signup' }) 
+      });
       const data = await response.json();
       if (response.ok) {
         setApiResponse({ type: 'success', message: 'New verification code sent! Check your email.' });

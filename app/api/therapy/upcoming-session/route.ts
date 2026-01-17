@@ -1,36 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getUpcomingSession, getUserByEmail } from '@/lib/userStorage';
+import jwt from 'jsonwebtoken';
 
-// In-memory database for therapy sessions
-const therapySessionsDB: Map<
-  string,
-  Array<{
-    therapist: string;
-    scheduledAt: string;
-    type: string;
-    unreadMessages?: number;
-  }>
-> = new Map();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// GET next upcoming therapy session
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const email = Buffer.from(token, 'base64').toString().split(':')[0];
+    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+    const user = getUserByEmail(decoded.email);
 
-    const sessions = therapySessionsDB.get(email) || [];
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-    // Sort by scheduledAt ascending and find the first upcoming session
-    const upcomingSession = sessions
-      .filter((s) => new Date(s.scheduledAt) > new Date())
-      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] || null;
+    const session = getUpcomingSession(user.id);
 
-    return NextResponse.json({ session: upcomingSession });
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ session });
+  } catch (error) {
+    console.error('Therapy session error:', error);
+    return NextResponse.json({ error: 'Failed to get session' }, { status: 500 });
   }
 }
