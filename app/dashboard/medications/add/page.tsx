@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Plus, X, Clock, Calendar, Pill, Bell, 
-  Camera, Trash2, Save, AlertCircle, CheckCircle, Info
+  Camera, Trash2, Save, AlertCircle, CheckCircle, Info, Crown, Lock
 } from 'lucide-react';
 
+interface User {
+  plan: 'free' | 'individual' | 'family';
+  fullName: string;
+  email: string;
+}
+
 export default function AddMedicationPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [medicationCount, setMedicationCount] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     dosage: '',
@@ -18,19 +26,46 @@ export default function AddMedicationPage() {
     color: 'from-blue-500 to-cyan-500',
     icon: '💊',
     notes: '',
-    refillQuantity: '',
-    refillReminder: 7,
+    refillReminder: '',
     enableSound: true,
     enableEmail: true,
     soundType: 'default'
   });
 
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Predefined options
+  useEffect(() => {
+    // Load user and check medication count
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      fetchMedicationCount();
+    } else {
+      window.location.href = '/login';
+    }
+  }, []);
+
+  const fetchMedicationCount = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/medications/list', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMedicationCount(data.medications?.length || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch medication count:', error);
+    }
+  };
+
   const medicationForms = [
     { value: 'tablet', label: 'Tablet' },
     { value: 'capsule', label: 'Capsule' },
@@ -71,10 +106,7 @@ export default function AddMedicationPage() {
     { value: 'melody', label: 'Soft Melody' }
   ];
 
-  /**
-   * Update frequency and adjust times accordingly
-   */
-  const handleFrequencyChange = (freq) => {
+  const handleFrequencyChange = (freq: string) => {
     setFormData(prev => {
       let newTimes = ['08:00'];
       
@@ -99,9 +131,6 @@ export default function AddMedicationPage() {
     });
   };
 
-  /**
-   * Add new time slot
-   */
   const handleAddTime = () => {
     setFormData(prev => ({
       ...prev,
@@ -109,45 +138,39 @@ export default function AddMedicationPage() {
     }));
   };
 
-  /**
-   * Remove time slot
-   */
-  const handleRemoveTime = (index) => {
+  const handleRemoveTime = (index: number) => {
     setFormData(prev => ({
       ...prev,
       times: prev.times.filter((_, i) => i !== index)
     }));
   };
 
-  /**
-   * Update specific time
-   */
-  const handleTimeChange = (index, value) => {
+  const handleTimeChange = (index: number, value: string) => {
     setFormData(prev => ({
       ...prev,
       times: prev.times.map((time, i) => i === index ? value : time)
     }));
   };
 
-  /**
-   * Handle photo upload
-   */
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Check if user is on free plan
+    if (user?.plan === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result);
+        setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  /**
-   * Validate form
-   */
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Medication name is required';
@@ -165,14 +188,17 @@ export default function AddMedicationPage() {
       newErrors.startDate = 'Start date is required';
     }
 
+    // Check plan limits
+    if (user?.plan === 'free' && medicationCount >= 3) {
+      newErrors.plan = 'Free plan is limited to 3 medications. Please upgrade to add more.';
+      setShowUpgradeModal(true);
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Handle form submission
-   */
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -184,7 +210,7 @@ export default function AddMedicationPage() {
     try {
       const token = localStorage.getItem('auth_token');
       
-      const response = await fetch('/api/medications/create', {
+      const response = await fetch('/api/medications/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,38 +222,128 @@ export default function AddMedicationPage() {
         })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to add medication');
+        if (data.upgradeRequired) {
+          setShowUpgradeModal(true);
+        }
+        throw new Error(data.error || 'Failed to add medication');
       }
 
       setShowSuccess(true);
 
       // Redirect after 2 seconds
       setTimeout(() => {
-        window.location.href = '/dashboard/medications';
+        window.location.href = '/dashboard';
       }, 2000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding medication:', error);
-      setErrors({ submit: 'Failed to add medication. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to add medication. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    window.location.href = '/dashboard';
+  };
+
+  // Show loading while checking user
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Upgrade to Premium
+              </h2>
+              
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {user.plan === 'free' && medicationCount >= 3
+                  ? 'Free plan is limited to 3 medications. Upgrade to add unlimited medications.'
+                  : 'Photo uploads are only available on Premium and Family plans.'}
+              </p>
+
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Premium Features:</h3>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 text-left">
+                  <li>✓ Unlimited medications</li>
+                  <li>✓ Photo uploads for pills</li>
+                  <li>✓ Therapy sessions</li>
+                  <li>✓ Advanced analytics</li>
+                  <li>✓ PDF export for doctors</li>
+                </ul>
+              </div>
+
+              <button
+                onClick={() => window.location.href = '/dashboard/upgrade'}
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all mb-2"
+              >
+                View Pricing Plans
+              </button>
+              
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-full py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => window.location.href = '/dashboard/medications'}
+          onClick={handleCancel}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Medications
+          Back to Dashboard
         </button>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Medication</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Fill in the details below to add a new medication to your schedule</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Medication</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Fill in the details below to add a new medication to your schedule</p>
+          </div>
+          {user.plan === 'free' && (
+            <div className="text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">{medicationCount}/3</span> medications used
+              </p>
+              <button
+                onClick={() => window.location.href = '/dashboard/upgrade'}
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
+              >
+                Upgrade for unlimited
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Success Message */}
@@ -237,7 +353,35 @@ export default function AddMedicationPage() {
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-300">Medication added successfully!</p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">Redirecting to your medications...</p>
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                {formData.enableEmail ? 'A confirmation email has been sent. ' : ''}
+                Redirecting to dashboard...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plan Warning for Free Users */}
+      {user.plan === 'free' && medicationCount >= 2 && (
+        <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                {medicationCount === 2 ? 'One medication slot remaining' : 'Medication limit reached'}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                {medicationCount === 2 
+                  ? 'This is your last medication on the free plan. Upgrade for unlimited medications.' 
+                  : 'You\'ve reached the 3 medication limit for free accounts.'}
+              </p>
+              <button
+                onClick={() => window.location.href = '/dashboard/upgrade'}
+                className="text-xs text-amber-700 dark:text-amber-300 underline hover:no-underline mt-2"
+              >
+                Upgrade to Premium →
+              </button>
             </div>
           </div>
         </div>
@@ -246,6 +390,9 @@ export default function AddMedicationPage() {
       {/* Form */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* ... (Keep all the existing form fields - Basic Information, Schedule, Duration, Notification Settings) ... */}
+          {/* I'll keep the form sections the same as your original, just update the photo upload section: */}
+
           {/* Basic Information */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -254,7 +401,6 @@ export default function AddMedicationPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Medication Name */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Medication Name *
@@ -274,7 +420,6 @@ export default function AddMedicationPage() {
                 )}
               </div>
 
-              {/* Dosage */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Dosage *
@@ -294,7 +439,6 @@ export default function AddMedicationPage() {
                 )}
               </div>
 
-              {/* Medication Form */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Form Type
@@ -312,14 +456,13 @@ export default function AddMedicationPage() {
             </div>
           </div>
 
-          {/* Schedule */}
+          {/* Schedule - Keep your existing code */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Clock className="w-5 h-5 text-indigo-600" />
               Reminder Schedule
             </h2>
 
-            {/* Frequency */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 How often do you take this?
@@ -335,7 +478,6 @@ export default function AddMedicationPage() {
               </select>
             </div>
 
-            {/* Reminder Times */}
             {formData.frequency !== 'as_needed' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -380,7 +522,7 @@ export default function AddMedicationPage() {
             )}
           </div>
 
-          {/* Duration */}
+          {/* Duration - Keep your existing code */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-indigo-600" />
@@ -409,14 +551,13 @@ export default function AddMedicationPage() {
                   value={formData.endDate}
                   onChange={(e) => setFormData({...formData, endDate: e.target.value})}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Leave empty for ongoing"
                 />
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty for ongoing medication</p>
               </div>
             </div>
           </div>
 
-          {/* Notification Settings */}
+          {/* Notification Settings - Keep your existing code */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Bell className="w-5 h-5 text-indigo-600" />
@@ -424,7 +565,6 @@ export default function AddMedicationPage() {
             </h2>
 
             <div className="space-y-4">
-              {/* Sound Notification */}
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -455,7 +595,6 @@ export default function AddMedicationPage() {
                 </div>
               </div>
 
-              {/* Email Notification */}
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -469,21 +608,20 @@ export default function AddMedicationPage() {
                     Email Notifications
                   </label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Receive email reminders before each dose
+                    Receive email reminders before each dose to {user.email}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Customization */}
+          {/* Customization - UPDATED PHOTO UPLOAD SECTION */}
           <div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Customization
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Color */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Color Theme
@@ -500,7 +638,6 @@ export default function AddMedicationPage() {
                 </div>
               </div>
 
-              {/* Icon */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Icon
@@ -519,10 +656,16 @@ export default function AddMedicationPage() {
                 </div>
               </div>
 
-              {/* Photo Upload */}
+              {/* Photo Upload - UPDATED WITH PLAN CHECK */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                   Photo (Optional)
+                  {user.plan === 'free' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                      <Lock className="w-3 h-3" />
+                      Premium
+                    </span>
+                  )}
                 </label>
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
@@ -537,11 +680,35 @@ export default function AddMedicationPage() {
                       </button>
                     </div>
                   ) : (
-                    <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                    <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg transition-colors ${
+                      user.plan === 'free' 
+                        ? 'border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-50' 
+                        : 'border-gray-300 dark:border-gray-600 cursor-pointer hover:border-indigo-500'
+                    }`}>
                       <Camera className="w-5 h-5 text-gray-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Upload Photo</span>
-                      <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.plan === 'free' ? 'Premium Feature' : 'Upload Photo'}
+                      </span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handlePhotoUpload} 
+                        className="hidden" 
+                        disabled={user.plan === 'free'}
+                      />
                     </label>
+                  )}
+                  {user.plan === 'free' && !photoPreview && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Photo uploads are available on Premium and Family plans.{' '}
+                      <button
+                        type="button"
+                        onClick={() => window.location.href = '/dashboard/upgrade'}
+                        className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                      >
+                        Upgrade now
+                      </button>
+                    </p>
                   )}
                 </div>
               </div>
@@ -576,8 +743,8 @@ export default function AddMedicationPage() {
           <div className="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex-1 md:flex-initial md:px-8 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
+              disabled={isSubmitting || (user.plan === 'free' && medicationCount >= 3)}
+              className="flex-1 md:flex-initial md:px-8 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -593,7 +760,7 @@ export default function AddMedicationPage() {
             </button>
             <button
               type="button"
-              onClick={() => window.location.href = '/dashboard/medications'}
+              onClick={handleCancel}
               className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel

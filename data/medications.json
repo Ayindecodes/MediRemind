@@ -1,0 +1,56 @@
+{
+  "7d957a9d-12a2-43bb-9638-9971cf1f9ac3": {
+    "id": "7d957a9d-12a2-43bb-9638-9971cf1f9ac3",
+    "userId": "user_1768639814093_8mkevami4",
+    "createdAt": 1768672252746,
+    "name": "aspirin",
+    "dosage": "1 tablet",
+    "frequency": "daily",
+    "times": [
+      "08:00"
+    ],
+    "startDate": "2026-01-17",
+    "endDate": "2026-01-18",
+    "color": "from-blue-500 to-cyan-500",
+    "icon": "💊",
+    "reminders": true,
+    "photoUrl": null,
+    "form": "tablet",
+    "notes": "k",
+    "enableSound": true,
+    "enableEmail": true,
+    "soundType": "default",
+    "todayDoses": [
+      {
+        "id": "user_1768639814093_8mkevami4_7d957a9d-12a2-43bb-9638-9971cf1f9ac3_2026-01-18_08:00",
+        "medicationId": "7d957a9d-12a2-43bb-9638-9971cf1f9ac3",
+        "time": "08:00",
+        "status": "upcoming",
+        "takenAt": null
+      }
+    ]
+  },
+  "med_1768674063036_7nsjn2q": {
+    "id": "med_1768674063036_7nsjn2q",
+    "userId": "user_1768639814093_8mkevami4",
+    "name": "REF",
+    "dosage": "4ml",
+    "frequency": "three_times",
+    "times": [
+      "08:00",
+      "14:00",
+      "20:00"
+    ],
+    "startDate": "2026-01-17",
+    "endDate": "",
+    "color": "from-blue-500 to-cyan-500",
+    "icon": "🩹",
+    "reminders": true,
+    "photoUrl": null,
+    "form": "tablet",
+    "notes": "",
+    "enableSound": true,
+    "enableEmail": true,
+    "soundType": "default"
+  }
+}

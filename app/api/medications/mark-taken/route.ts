@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     const result = markMedicationAsTaken(user.id, actualMedId, scheduledTime);
 
     return NextResponse.json({
-      success: true,
-      streak: result.streak
-    });
+  success: true
+});
+
   } catch (error) {
     console.error('Mark taken error:', error);
     return NextResponse.json({ error: 'Failed to mark medication' }, { status: 500 });

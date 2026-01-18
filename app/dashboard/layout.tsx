@@ -91,13 +91,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
     { id: 'medications', label: 'Medications', icon: Pill, href: '/dashboard/medications' },
-    { id: 'history', label: 'History', icon: Calendar, href: '/dashboard/history' },
     { 
       id: 'therapy', 
       label: 'Health Coach', 
       icon: MessageCircle, 
       href: '/dashboard/therapy', 
-      badge: user.plan !== 'free' ? 'NEW' : 'PREMIUM',
+      badge: user.plan !== 'free' ? undefined : 'PREMIUM',
       locked: user.plan === 'free'
     },
     { id: 'reports', label: 'Reports', icon: FileText, href: '/dashboard/reports' },
@@ -156,20 +155,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
               {/* Upgrade Card for Free Plan */}
               {user.plan === 'free' && (
-                <li className="mt-4">
-                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                <li className="mt-6">
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4 shadow-lg">
                     <div className="flex items-center gap-2 mb-2">
-                      <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                        <Crown className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                      Unlock therapy sessions, family mode, and advanced analytics
+                    <p className="text-xs text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
+                      Unlock unlimited medications, health coach sessions, and advanced features
                     </p>
                     <button
                       onClick={handleUpgrade}
-                      className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all"
+                      className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-bold hover:shadow-xl hover:scale-105 transition-all"
                     >
-                      View Plans
+                      View Plans →
                     </button>
                   </div>
                 </li>
@@ -263,20 +264,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     })}
 
                     {user.plan === 'free' && (
-                      <li className="mt-4">
-                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                      <li className="mt-6">
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-4 shadow-lg">
                           <div className="flex items-center gap-2 mb-2">
-                            <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                            <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                              <Crown className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                            Unlock therapy sessions, family mode, and advanced analytics
+                          <p className="text-xs text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
+                            Unlock unlimited medications, health coach sessions, and advanced features
                           </p>
                           <button
                             onClick={handleUpgrade}
-                            className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all"
+                            className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-bold hover:shadow-xl hover:scale-105 transition-all"
                           >
-                            View Plans
+                            View Plans →
                           </button>
                         </div>
                       </li>

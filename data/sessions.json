@@ -1,1 +1,9 @@
-{}
+{
+  "talyamariette@gmail.com": {
+    "email": "talyamariette@gmail.com",
+    "code": "181355",
+    "expiresAt": 1768651375929,
+    "attempts": 0,
+    "type": "login"
+  }
+}
