@@ -1,12 +1,14 @@
 // app/api/login/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCode, getUserByEmail } from '@/lib/userStorage';
+import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export async function POST(request: NextRequest) {
   try {
+    // Read the secret first so a misconfigured server doesn't burn the user's code
+    const jwtSecret = getJwtSecret();
+
     const { email, code } = await request.json();
 
     if (!email || !code) {
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         email: user.email
       },
-      JWT_SECRET,
+      jwtSecret,
       { expiresIn: '7d' }
     );
 

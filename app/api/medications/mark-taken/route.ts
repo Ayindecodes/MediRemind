@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { markMedicationAsTaken, getUserByEmail } from '@/lib/userStorage';
+import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
     const user = getUserByEmail(decoded.email);
 
     if (!user) {

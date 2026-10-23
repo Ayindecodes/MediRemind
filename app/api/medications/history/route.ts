@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail } from '@/lib/userStorage';
+import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const LOGS_FILE = path.join(process.cwd(), 'data', 'medication_logs.json');
 const MEDICATIONS_FILE = path.join(process.cwd(), 'data', 'medications.json');
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
     const user = getUserByEmail(decoded.email);
 
     if (!user) {

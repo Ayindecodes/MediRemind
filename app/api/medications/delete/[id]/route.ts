@@ -2,8 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getUserByEmail } from '@/lib/userStorage';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+import { getJwtSecret } from '@/lib/env';
 
 export async function DELETE(
   request: NextRequest,
@@ -17,7 +16,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
     const user = getUserByEmail(decoded.email);
 
     if (!user) {
