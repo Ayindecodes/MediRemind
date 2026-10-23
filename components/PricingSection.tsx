@@ -222,7 +222,7 @@ export default function PricingSection() {
                   {/* Features List */}
                   <div className="space-y-3 mb-6">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                      What's included:
+                      What&apos;s included:
                     </p>
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-start gap-3">

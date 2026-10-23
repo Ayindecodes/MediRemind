@@ -158,7 +158,7 @@ export default function HeroSection() {
                 <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-xl">
                   {/* Dashboard Header */}
                   <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-                    <h3 className="text-xl font-bold mb-2">Today's Medications</h3>
+                    <h3 className="text-xl font-bold mb-2">Today&apos;s Medications</h3>
                     <p className="text-indigo-100 text-sm">{new Date().toLocaleDateString()}</p>
                   </div>
 
