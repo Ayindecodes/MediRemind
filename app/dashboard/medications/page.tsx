@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Plus,
   Search,
@@ -71,6 +72,7 @@ interface MedicationLog {
 }
 
 export default function MedicationsPage() {
+  const router = useRouter();
   const [medications, setMedications] = useState<MedicationWithDoses[]>([]);
   const [medicationHistory, setMedicationHistory] = useState<MedicationLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -327,7 +329,7 @@ export default function MedicationsPage() {
           </p>
         </div>
         <button
-          onClick={() => (window.location.href = '/dashboard/medications/add')}
+          onClick={() => router.push('/dashboard/medications/add')}
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
         >
           <Plus className="w-5 h-5" />
@@ -514,7 +516,7 @@ export default function MedicationsPage() {
             </p>
             {!searchQuery && (
               <button
-                onClick={() => (window.location.href = '/dashboard/medications/add')}
+                onClick={() => router.push('/dashboard/medications/add')}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
               >
                 <Plus className="w-5 h-5" />
