@@ -31,3 +31,16 @@ export function getJwtSecret(): string {
 export function getCronSecret(): string {
   return read(requiredSecret('CRON_SECRET'), process.env.CRON_SECRET);
 }
+
+const appUrl = z.preprocess(
+  emptyAsUnset,
+  z
+    .url({ error: 'NEXT_PUBLIC_APP_URL must be a full URL, e.g. https://mediremind.ng' })
+    .transform((url) => url.replace(/\/+$/, ''))
+    .optional(),
+);
+
+// The app's public address, for links in emails (no trailing slash). Defaults to the local dev server.
+export function getAppUrl(): string {
+  return read(appUrl, process.env.NEXT_PUBLIC_APP_URL) ?? 'http://localhost:3000';
+}
