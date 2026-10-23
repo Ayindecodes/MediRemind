@@ -1,7 +1,7 @@
 // app/api/medications/add/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { addMedication, getUserByEmail, getUserMedications } from '@/lib/userStorage';
-import { getJwtSecret } from '@/lib/env';
+import { getAppUrl, getJwtSecret } from '@/lib/env';
 import { escapeHtml, sendEmail } from '@/lib/email';
 import jwt from 'jsonwebtoken';
 
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
                   <p>We'll send you reminders ${medData.enableSound ? 'with sound notifications ' : ''}to help you stay on track!</p>
                   
                   <div style="text-align: center; margin: 30px 0;">
-                    <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard" 
+                    <a href="${getAppUrl()}/dashboard" 
                        style="display: inline-block; background: linear-gradient(to right, #4F46E5, #7C3AED); color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
                       View in Dashboard
                     </a>
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
                   <div class="footer">
                     <p>© 2025 MediRemind. All rights reserved.</p>
                     <p style="font-size: 12px; margin-top: 8px;">
-                      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/settings" style="color: #4F46E5;">Manage notification preferences</a>
+                      <a href="${getAppUrl()}/dashboard/settings" style="color: #4F46E5;">Manage notification preferences</a>
                     </p>
                   </div>
                 </div>
