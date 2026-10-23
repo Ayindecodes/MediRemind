@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   CheckCircle,
   Clock,
@@ -54,6 +55,8 @@ type TherapySession = {
 };
 
 export default function DashboardHome(): React.ReactElement {
+  const router = useRouter();
+
   // Loading states
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -69,76 +72,95 @@ export default function DashboardHome(): React.ReactElement {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Bumped to load the dashboard again; the effect below does the loading (0 = the first load)
+  const [refreshCount, setRefreshCount] = useState(0);
+
   /**
-   * Fetch all dashboard data on component mount
+   * Fetch all dashboard data on mount and whenever refreshCount changes
    */
   useEffect(() => {
-    fetchDashboardData();
+    // Ignore responses that arrive after a newer reload has started
+    let ignore = false;
 
-    // Set up real-time sync every 30 seconds
+    const loadDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          router.replace('/login');
+          return;
+        }
+
+        // Fetch all data in parallel
+        const [userRes, medsRes, streakRes, therapyRes, moodRes] = await Promise.all([
+          fetch('/api/user/profile', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/medications/today', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/user/streak', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/therapy/upcoming-session', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/mood/today', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        // Only throw error if critical endpoints fail (not therapy/mood)
+        if (!userRes.ok || !medsRes.ok || !streakRes.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+
+        const [user, meds, streak, therapy, mood] = await Promise.all([
+          userRes.json(),
+          medsRes.json(),
+          streakRes.json(),
+          therapyRes.ok ? therapyRes.json() : { session: null },
+          moodRes.ok ? moodRes.json() : { mood: null },
+        ]);
+
+        if (ignore) return;
+
+        setUserData(user ?? null);
+        setTodaysMeds(Array.isArray(meds.medications) ? meds.medications : []);
+        setStreakData(streak ?? null);
+        setTherapySession(therapy && therapy.session ? therapy.session : null);
+        setSelectedMood(mood?.mood ?? null);
+
+        console.log('✅ Dashboard data loaded');
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+
+        // Only show an error when the first load fails
+        if (!ignore && refreshCount === 0) {
+          setError('Failed to load dashboard. Please refresh the page.');
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    loadDashboardData();
+    return () => {
+      ignore = true;
+    };
+  }, [refreshCount, router]);
+
+  // Sync silently every 30 seconds
+  useEffect(() => {
     const syncInterval = setInterval(() => {
-      fetchDashboardData(true);
+      setIsSyncing(true);
+      setError(null);
+      setRefreshCount((count) => count + 1);
     }, 30000);
 
     return () => clearInterval(syncInterval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
-   * Main function to fetch all dashboard data
+   * Load everything again, showing the loading skeleton (or only "Syncing..." when silent)
    */
-  const fetchDashboardData = async (silent = false) => {
-    if (!silent) setIsLoading(true);
+  const refreshDashboardData = (silent = false) => {
     if (silent) setIsSyncing(true);
+    else setIsLoading(true);
     setError(null);
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        window.location.href = '/login';
-        return;
-      }
-
-      // Fetch all data in parallel
-      const [userRes, medsRes, streakRes, therapyRes, moodRes] = await Promise.all([
-        fetch('/api/user/profile', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/medications/today', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/user/streak', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/therapy/upcoming-session', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/mood/today', { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
-
-      // Only throw error if critical endpoints fail (not therapy/mood)
-      if (!userRes.ok || !medsRes.ok || !streakRes.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-
-      const [user, meds, streak, therapy, mood] = await Promise.all([
-        userRes.json(),
-        medsRes.json(),
-        streakRes.json(),
-        therapyRes.ok ? therapyRes.json() : { session: null },
-        moodRes.ok ? moodRes.json() : { mood: null },
-      ]);
-
-      setUserData(user ?? null);
-      setTodaysMeds(Array.isArray(meds.medications) ? meds.medications : []);
-      setStreakData(streak ?? null);
-      setTherapySession(therapy && therapy.session ? therapy.session : null);
-      setSelectedMood(mood?.mood ?? null);
-
-      console.log('✅ Dashboard data loaded');
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err);
-
-      // Only show error if we're not in silent mode and it's the initial load
-      if (!silent && isLoading) {
-        setError('Failed to load dashboard. Please refresh the page.');
-      }
-    } finally {
-      setIsLoading(false);
-      setIsSyncing(false);
-    }
+    setRefreshCount((count) => count + 1);
   };
 
   /**
@@ -179,7 +201,7 @@ export default function DashboardHome(): React.ReactElement {
       console.error('Failed to mark medication:', err);
       // user-visible fallback
       alert('Failed to update medication. Please try again.');
-      fetchDashboardData(true);
+      refreshDashboardData(true);
     } finally {
       setIsUpdating(false);
     }
@@ -251,7 +273,7 @@ export default function DashboardHome(): React.ReactElement {
     window.location.href = '/dashboard/therapy?tab=resources';
   };
   const handleRefresh = () => {
-    fetchDashboardData();
+    refreshDashboardData();
   };
 
   const moods: { value: string; icon: LucideIcon; label: string; color: string }[] = [
