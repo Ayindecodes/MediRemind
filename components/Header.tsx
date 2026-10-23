@@ -1,20 +1,18 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon } from 'lucide-react';
+import { setLocalStorageItem, useLocalStorageItem } from '@/lib/useLocalStorage';
 
 export default function Header() {
-  const [darkMode, setDarkMode] = useState(false);
+  // The dark mode preference is persisted in localStorage
+  const darkMode = useLocalStorageItem('darkMode') === 'true';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Persist dark mode in localStorage
+  // Apply the saved preference to the page
   useEffect(() => {
-    const stored = localStorage.getItem('darkMode');
-    if (stored === 'true') {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,15 +24,7 @@ export default function Header() {
   }, []);
 
   const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      localStorage.setItem('darkMode', String(!prev));
-      if (!prev) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return !prev;
-    });
+    setLocalStorageItem('darkMode', String(!darkMode));
   };
 
   const navLinks = [
