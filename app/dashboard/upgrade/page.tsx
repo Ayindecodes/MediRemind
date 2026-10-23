@@ -1,9 +1,18 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
-  Check, X, Crown, Users, Zap, ArrowLeft, Star,
-  Shield, Sparkles, TrendingUp, Clock
+  Check,
+  X,
+  Crown,
+  Users,
+  Zap,
+  ArrowLeft,
+  Star,
+  Shield,
+  Sparkles,
+  TrendingUp,
+  Clock,
 } from 'lucide-react';
 
 interface User {
@@ -47,7 +56,7 @@ export default function UpgradePage() {
       ],
       cta: 'Current Plan',
       disabled: user.plan === 'free',
-      popular: false
+      popular: false,
     },
     {
       id: 'individual',
@@ -70,7 +79,7 @@ export default function UpgradePage() {
       // Paid plans stay disabled until payments are live
       cta: user.plan === 'individual' ? 'Current Plan' : 'Coming Soon',
       disabled: true,
-      popular: true
+      popular: true,
     },
     {
       id: 'family',
@@ -92,8 +101,8 @@ export default function UpgradePage() {
       ],
       cta: user.plan === 'family' ? 'Current Plan' : 'Coming Soon',
       disabled: true,
-      popular: false
-    }
+      popular: false,
+    },
   ];
 
   return (
@@ -101,7 +110,7 @@ export default function UpgradePage() {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => window.location.href = '/dashboard'}
+          onClick={() => (window.location.href = '/dashboard')}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -126,7 +135,8 @@ export default function UpgradePage() {
               Paid plans are coming soon
             </p>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-              We are setting up secure payments. Until then, everything on the Free plan is available to you.
+              We are setting up secure payments. Until then, everything on the Free plan is
+              available to you.
             </p>
           </div>
         </div>
@@ -164,7 +174,7 @@ export default function UpgradePage() {
         {plans.map((plan) => {
           const Icon = plan.icon;
           const price = billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly;
-          const isCurrentPlan = 
+          const isCurrentPlan =
             (plan.id === 'free' && user.plan === 'free') ||
             (plan.id === 'individual' && user.plan === 'individual') ||
             (plan.id === 'family' && user.plan === 'family');
@@ -193,26 +203,28 @@ export default function UpgradePage() {
               )}
 
               <div className="text-center mb-6">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4 ${
-                  plan.id === 'free' ? 'bg-gray-100 dark:bg-slate-700' :
-                  plan.id === 'individual' ? 'bg-gradient-to-br from-indigo-500 to-purple-600' :
-                  'bg-gradient-to-br from-amber-500 to-orange-600'
-                }`}>
-                  <Icon className={`w-8 h-8 ${plan.id === 'free' ? 'text-gray-600' : 'text-white'}`} />
+                <div
+                  className={`inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4 ${
+                    plan.id === 'free'
+                      ? 'bg-gray-100 dark:bg-slate-700'
+                      : plan.id === 'individual'
+                        ? 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                        : 'bg-gradient-to-br from-amber-500 to-orange-600'
+                  }`}
+                >
+                  <Icon
+                    className={`w-8 h-8 ${plan.id === 'free' ? 'text-gray-600' : 'text-white'}`}
+                  />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                   {plan.name}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {plan.tagline}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{plan.tagline}</p>
               </div>
 
               <div className="text-center mb-6">
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                    ${price}
-                  </span>
+                  <span className="text-4xl font-bold text-gray-900 dark:text-white">${price}</span>
                   <span className="text-gray-600 dark:text-gray-400">
                     /{billingCycle === 'monthly' ? 'month' : 'year'}
                   </span>
@@ -230,8 +242,8 @@ export default function UpgradePage() {
                   plan.disabled || isCurrentPlan
                     ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 cursor-not-allowed'
                     : plan.popular
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:scale-105'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:scale-105'
                 }`}
               >
                 {plan.cta}
@@ -245,11 +257,13 @@ export default function UpgradePage() {
                     ) : (
                       <X className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0 mt-0.5" />
                     )}
-                    <span className={`text-sm ${
-                      feature.included
-                        ? 'text-gray-900 dark:text-white'
-                        : 'text-gray-400 dark:text-gray-500'
-                    }`}>
+                    <span
+                      className={`text-sm ${
+                        feature.included
+                          ? 'text-gray-900 dark:text-white'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                    >
                       {feature.text}
                     </span>
                   </div>
@@ -265,7 +279,7 @@ export default function UpgradePage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
           Frequently Asked Questions
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
@@ -283,7 +297,8 @@ export default function UpgradePage() {
               Can I cancel anytime?
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Absolutely! You can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
+              Absolutely! You can cancel your subscription at any time. You'll continue to have
+              access until the end of your billing period.
             </p>
           </div>
 
@@ -293,7 +308,8 @@ export default function UpgradePage() {
               How many profiles in Family plan?
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Unlimited! Add as many family members as you need. Perfect for managing medications for children, elderly parents, or the entire household.
+              Unlimited! Add as many family members as you need. Perfect for managing medications
+              for children, elderly parents, or the entire household.
             </p>
           </div>
 

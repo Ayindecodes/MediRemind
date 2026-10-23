@@ -1,11 +1,29 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
-  Plus, Search, Filter, Edit, Trash2, Clock, Calendar,
-  ChevronDown, CheckCircle, AlertCircle, X, Save, Pill,
-  History, TrendingUp, Package, ArrowLeft, MoreVertical,
-  Eye, EyeOff, Circle, CheckCircle2
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Clock,
+  Calendar,
+  ChevronDown,
+  CheckCircle,
+  AlertCircle,
+  X,
+  Save,
+  Pill,
+  History,
+  TrendingUp,
+  Package,
+  ArrowLeft,
+  MoreVertical,
+  Eye,
+  EyeOff,
+  Circle,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface Medication {
@@ -73,22 +91,23 @@ export default function MedicationsPage() {
 
     // Filter by search query
     if (searchQuery) {
-      filtered = filtered.filter(med =>
-        med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        med.dosage.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (med) =>
+          med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          med.dosage.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
     // Filter by status
     if (filterStatus === 'active') {
-      filtered = filtered.filter(med => {
+      filtered = filtered.filter((med) => {
         if (med.endDate) {
           return new Date(med.endDate) >= new Date();
         }
         return true;
       });
     } else if (filterStatus === 'inactive') {
-      filtered = filtered.filter(med => {
+      filtered = filtered.filter((med) => {
         if (med.endDate) {
           return new Date(med.endDate) < new Date();
         }
@@ -105,17 +124,17 @@ export default function MedicationsPage() {
       const token = localStorage.getItem('auth_token');
       const [medsRes, todayRes] = await Promise.all([
         fetch('/api/medications/list', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }),
         fetch('/api/medications/today', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
       if (medsRes.ok) {
         const medsData = await medsRes.json();
         const todayData = todayRes.ok ? await todayRes.json() : { medications: [] };
-        
+
         // Merge today's doses with medications
         const medsWithDoses = (medsData.medications || []).map((med: Medication) => {
           const todayDoses = (todayData.medications || [])
@@ -125,12 +144,12 @@ export default function MedicationsPage() {
               medicationId: med.id,
               time: dose.time,
               status: dose.status,
-              takenAt: dose.takenAt
+              takenAt: dose.takenAt,
             }));
-          
+
           return { ...med, todayDoses };
         });
-        
+
         setMedications(medsWithDoses);
       }
     } catch (error) {
@@ -144,7 +163,7 @@ export default function MedicationsPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/medications/history', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -170,15 +189,13 @@ export default function MedicationsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(editingMed)
+        body: JSON.stringify(editingMed),
       });
 
       if (response.ok) {
-        setMedications(prev =>
-          prev.map(med => med.id === editingMed.id ? editingMed : med)
-        );
+        setMedications((prev) => prev.map((med) => (med.id === editingMed.id ? editingMed : med)));
         setEditingMed(null);
         alert('✅ Medication updated successfully!');
       } else {
@@ -199,11 +216,11 @@ export default function MedicationsPage() {
       const token = localStorage.getItem('auth_token');
       const response = await fetch(`/api/medications/delete/${med.id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
-        setMedications(prev => prev.filter(m => m.id !== med.id));
+        setMedications((prev) => prev.filter((m) => m.id !== med.id));
         setActiveDropdown(null);
         alert('✅ Medication deleted successfully!');
       } else {
@@ -223,31 +240,31 @@ export default function MedicationsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           medicationId: doseId,
-          takenAt: new Date().toISOString()
-        })
+          takenAt: new Date().toISOString(),
+        }),
       });
 
       if (response.ok) {
         // Update local state
-        setMedications(prev =>
-          prev.map(med =>
+        setMedications((prev) =>
+          prev.map((med) =>
             med.id === medId
               ? {
                   ...med,
-                  todayDoses: med.todayDoses?.map(dose =>
+                  todayDoses: med.todayDoses?.map((dose) =>
                     dose.id === doseId
                       ? { ...dose, status: 'taken' as const, takenAt: new Date().toISOString() }
-                      : dose
-                  )
+                      : dose,
+                  ),
                 }
-              : med
-          )
+              : med,
+          ),
         );
-        
+
         // Refresh history
         fetchHistory();
       } else {
@@ -262,19 +279,24 @@ export default function MedicationsPage() {
   };
 
   const getAdherenceRate = (medId: string): number => {
-    const logs = medicationHistory.filter(log => log.medicationId === medId);
+    const logs = medicationHistory.filter((log) => log.medicationId === medId);
     if (logs.length === 0) return 0;
-    const taken = logs.filter(log => log.status === 'taken').length;
+    const taken = logs.filter((log) => log.status === 'taken').length;
     return Math.round((taken / logs.length) * 100);
   };
 
   const stats = {
     total: medications.length,
-    active: medications.filter(m => !m.endDate || new Date(m.endDate) >= new Date()).length,
-    inactive: medications.filter(m => m.endDate && new Date(m.endDate) < new Date()).length,
-    adherenceRate: medicationHistory.length > 0
-      ? Math.round((medicationHistory.filter(l => l.status === 'taken').length / medicationHistory.length) * 100)
-      : 0
+    active: medications.filter((m) => !m.endDate || new Date(m.endDate) >= new Date()).length,
+    inactive: medications.filter((m) => m.endDate && new Date(m.endDate) < new Date()).length,
+    adherenceRate:
+      medicationHistory.length > 0
+        ? Math.round(
+            (medicationHistory.filter((l) => l.status === 'taken').length /
+              medicationHistory.length) *
+              100,
+          )
+        : 0,
   };
 
   if (isLoading) {
@@ -291,10 +313,12 @@ export default function MedicationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Medications</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all your medications in one place</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Manage all your medications in one place
+          </p>
         </div>
         <button
-          onClick={() => window.location.href = '/dashboard/medications/add'}
+          onClick={() => (window.location.href = '/dashboard/medications/add')}
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
         >
           <Plus className="w-5 h-5" />
@@ -318,7 +342,9 @@ export default function MedicationsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Active</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.active}</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                {stats.active}
+              </p>
             </div>
             <CheckCircle className="w-10 h-10 p-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" />
           </div>
@@ -328,7 +354,9 @@ export default function MedicationsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1">{stats.inactive}</p>
+              <p className="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1">
+                {stats.inactive}
+              </p>
             </div>
             <Package className="w-10 h-10 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400" />
           </div>
@@ -338,7 +366,9 @@ export default function MedicationsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Adherence Rate</p>
-              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{stats.adherenceRate}%</p>
+              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">
+                {stats.adherenceRate}%
+              </p>
             </div>
             <TrendingUp className="w-10 h-10 p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400" />
           </div>
@@ -436,17 +466,21 @@ export default function MedicationsPage() {
                       <AlertCircle className="w-5 h-5 text-red-500" />
                     )}
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{log.medicationName}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {log.medicationName}
+                      </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {new Date(log.date).toLocaleDateString()} at {log.scheduledTime}
                       </p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    log.status === 'taken'
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      log.status === 'taken'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    }`}
+                  >
                     {log.status}
                   </span>
                 </div>
@@ -465,11 +499,13 @@ export default function MedicationsPage() {
               {searchQuery ? 'No medications found' : 'No medications yet'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {searchQuery ? 'Try adjusting your search' : 'Get started by adding your first medication'}
+              {searchQuery
+                ? 'Try adjusting your search'
+                : 'Get started by adding your first medication'}
             </p>
             {!searchQuery && (
               <button
-                onClick={() => window.location.href = '/dashboard/medications/add'}
+                onClick={() => (window.location.href = '/dashboard/medications/add')}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
               >
                 <Plus className="w-5 h-5" />
@@ -492,7 +528,9 @@ export default function MedicationsPage() {
                     // Edit Mode
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Edit Medication</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                          Edit Medication
+                        </h3>
                         <button
                           onClick={() => setEditingMed(null)}
                           className="text-gray-400 hover:text-gray-600"
@@ -521,7 +559,9 @@ export default function MedicationsPage() {
                           <input
                             type="text"
                             value={editingMed.dosage}
-                            onChange={(e) => setEditingMed({ ...editingMed, dosage: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMed({ ...editingMed, dosage: e.target.value })
+                            }
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                           />
                         </div>
@@ -533,7 +573,9 @@ export default function MedicationsPage() {
                           <input
                             type="date"
                             value={editingMed.startDate}
-                            onChange={(e) => setEditingMed({ ...editingMed, startDate: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMed({ ...editingMed, startDate: e.target.value })
+                            }
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                           />
                         </div>
@@ -545,7 +587,9 @@ export default function MedicationsPage() {
                           <input
                             type="date"
                             value={editingMed.endDate || ''}
-                            onChange={(e) => setEditingMed({ ...editingMed, endDate: e.target.value })}
+                            onChange={(e) =>
+                              setEditingMed({ ...editingMed, endDate: e.target.value })
+                            }
                             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                           />
                         </div>
@@ -571,7 +615,9 @@ export default function MedicationsPage() {
                     // View Mode
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
-                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${med.color} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}>
+                        <div
+                          className={`w-14 h-14 rounded-xl bg-gradient-to-br ${med.color} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}
+                        >
                           {med.icon}
                         </div>
 
@@ -586,12 +632,16 @@ export default function MedicationsPage() {
                                   </span>
                                 )}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{med.dosage}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {med.dosage}
+                              </p>
                             </div>
 
                             <div className="relative">
                               <button
-                                onClick={() => setActiveDropdown(activeDropdown === med.id ? null : med.id)}
+                                onClick={() =>
+                                  setActiveDropdown(activeDropdown === med.id ? null : med.id)
+                                }
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
                               >
                                 <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -604,14 +654,18 @@ export default function MedicationsPage() {
                                     className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors"
                                   >
                                     <Edit className="w-4 h-4" />
-                                    <span className="text-sm text-gray-900 dark:text-white">Edit</span>
+                                    <span className="text-sm text-gray-900 dark:text-white">
+                                      Edit
+                                    </span>
                                   </button>
                                   <button
                                     onClick={() => handleDelete(med)}
                                     className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                   >
                                     <Trash2 className="w-4 h-4 text-red-600" />
-                                    <span className="text-sm text-red-600 dark:text-red-400">Delete</span>
+                                    <span className="text-sm text-red-600 dark:text-red-400">
+                                      Delete
+                                    </span>
                                   </button>
                                 </div>
                               )}
@@ -620,7 +674,9 @@ export default function MedicationsPage() {
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                             <div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Frequency</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                Frequency
+                              </p>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {med.frequency.replace(/_/g, ' ')}
                               </p>
@@ -634,14 +690,18 @@ export default function MedicationsPage() {
                             </div>
 
                             <div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Start Date</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                Start Date
+                              </p>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">
                                 {new Date(med.startDate).toLocaleDateString()}
                               </p>
                             </div>
 
                             <div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Adherence</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                Adherence
+                              </p>
                               <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
                                 {adherence}%
                               </p>
@@ -675,7 +735,11 @@ export default function MedicationsPage() {
                                         </p>
                                         {dose.takenAt && (
                                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            Taken at {new Date(dose.takenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            Taken at{' '}
+                                            {new Date(dose.takenAt).toLocaleTimeString([], {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                            })}
                                           </p>
                                         )}
                                       </div>
@@ -683,7 +747,9 @@ export default function MedicationsPage() {
 
                                     {dose.status !== 'taken' && (
                                       <button
-                                        onClick={() => handleMarkDoseAsTaken(med.id, dose.id, dose.time)}
+                                        onClick={() =>
+                                          handleMarkDoseAsTaken(med.id, dose.id, dose.time)
+                                        }
                                         disabled={isUpdatingDose}
                                         className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
                                       >
@@ -708,7 +774,9 @@ export default function MedicationsPage() {
 
                           {med.notes && (
                             <div className="mt-4 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                              <p className="text-sm text-gray-700 dark:text-gray-300">{med.notes}</p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                {med.notes}
+                              </p>
                             </div>
                           )}
                         </div>

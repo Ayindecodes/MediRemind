@@ -1,9 +1,22 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Home, Pill, Calendar, MessageCircle, FileText, Users, 
-  Settings, LogOut, Bell, Menu, X, ChevronDown, Sun, Moon, Crown
+import {
+  Home,
+  Pill,
+  Calendar,
+  MessageCircle,
+  FileText,
+  Users,
+  Settings,
+  LogOut,
+  Bell,
+  Menu,
+  X,
+  ChevronDown,
+  Sun,
+  Moon,
+  Crown,
 } from 'lucide-react';
 
 interface User {
@@ -53,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!token) return;
 
       const response = await fetch('/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -91,19 +104,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
     { id: 'medications', label: 'Medications', icon: Pill, href: '/dashboard/medications' },
-    { 
-      id: 'therapy', 
-      label: 'Health Coach', 
-      icon: MessageCircle, 
-      href: '/dashboard/therapy', 
+    {
+      id: 'therapy',
+      label: 'Health Coach',
+      icon: MessageCircle,
+      href: '/dashboard/therapy',
       badge: user.plan !== 'free' ? undefined : 'PREMIUM',
-      locked: user.plan === 'free'
+      locked: user.plan === 'free',
     },
     { id: 'reports', label: 'Reports', icon: FileText, href: '/dashboard/reports' },
-    ...(user.plan === 'family' ? [{ id: 'family', label: 'Family', icon: Users, href: '/dashboard/family' }] : []),
+    ...(user.plan === 'family'
+      ? [{ id: 'family', label: 'Family', icon: Users, href: '/dashboard/family' }]
+      : []),
   ];
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-200">
@@ -140,11 +155,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <Icon className="h-5 w-5 shrink-0" />
                       {item.label}
                       {item.badge && (
-                        <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          item.badge === 'PREMIUM'
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                            : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                        }`}>
+                        <span
+                          className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            item.badge === 'PREMIUM'
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                              : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                          }`}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -161,7 +178,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
                         <Crown className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="font-bold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
+                      <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                        Upgrade to Premium
+                      </h3>
                     </div>
                     <p className="text-xs text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
                       Unlock unlimited medications, health coach sessions, and advanced features
@@ -203,8 +222,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile sidebar */}
       {sidebarOpen && (
         <div className="relative z-50 lg:hidden">
-          <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)}></div>
-          
+          <div
+            className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+
           <div className="fixed inset-0 flex">
             <div className="relative mr-16 flex w-full max-w-xs flex-1">
               <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
@@ -250,11 +272,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <Icon className="h-5 w-5 shrink-0" />
                             {item.label}
                             {item.badge && (
-                              <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                item.badge === 'PREMIUM'
-                                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                              }`}>
+                              <span
+                                className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                  item.badge === 'PREMIUM'
+                                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                                }`}
+                              >
                                 {item.badge}
                               </span>
                             )}
@@ -270,10 +294,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
                               <Crown className="w-5 h-5 text-white" />
                             </div>
-                            <h3 className="font-bold text-gray-900 dark:text-white text-sm">Upgrade to Premium</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-sm">
+                              Upgrade to Premium
+                            </h3>
                           </div>
                           <p className="text-xs text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
-                            Unlock unlimited medications, health coach sessions, and advanced features
+                            Unlock unlimited medications, health coach sessions, and advanced
+                            features
                           </p>
                           <button
                             onClick={handleUpgrade}
@@ -286,13 +313,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     )}
 
                     <li className="mt-auto">
-                      <a href="/dashboard/settings" className="group flex gap-x-3 rounded-lg p-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200">
+                      <a
+                        href="/dashboard/settings"
+                        className="group flex gap-x-3 rounded-lg p-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all duration-200"
+                      >
                         <Settings className="h-5 w-5 shrink-0" />
                         Settings
                       </a>
                     </li>
                     <li>
-                      <button onClick={handleLogout} className="w-full group flex gap-x-3 rounded-lg p-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full group flex gap-x-3 rounded-lg p-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+                      >
                         <LogOut className="h-5 w-5 shrink-0" />
                         Logout
                       </button>
@@ -359,9 +392,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-lg bg-white dark:bg-slate-800 shadow-xl border border-gray-200 dark:border-gray-700 py-2">
                   <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      Notifications
+                    </h3>
                     {unreadCount > 0 && (
-                      <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">{unreadCount} new</span>
+                      <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+                        {unreadCount} new
+                      </span>
                     )}
                   </div>
                   <div className="max-h-96 overflow-y-auto">
@@ -370,7 +407,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         No notifications yet
                       </div>
                     ) : (
-                      notifications.map(notif => (
+                      notifications.map((notif) => (
                         <a
                           key={notif.id}
                           href={notif.actionUrl || '#'}
@@ -379,14 +416,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           }`}
                         >
                           <p className="text-sm text-gray-900 dark:text-white">{notif.message}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formatTimeAgo(notif.timestamp)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {formatTimeAgo(notif.timestamp)}
+                          </p>
                         </a>
                       ))
                     )}
                   </div>
                   <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
-                    <button 
-                      onClick={() => window.location.href = '/dashboard/notifications'}
+                    <button
+                      onClick={() => (window.location.href = '/dashboard/notifications')}
                       className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                     >
                       View all notifications
@@ -403,7 +442,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {user.fullName.charAt(0)}
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{user.fullName}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user.fullName}
+                  </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     {user.plan === 'free' && 'Free Plan'}
                     {user.plan === 'individual' && (
@@ -427,9 +468,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Page content */}
-        <main className="py-8 px-4 sm:px-6 lg:px-8">
-          {children}
-        </main>
+        <main className="py-8 px-4 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   );

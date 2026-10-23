@@ -1,9 +1,22 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, Plus, X, Clock, Calendar, Pill, Bell, 
-  Camera, Trash2, Save, AlertCircle, CheckCircle, Info, Crown, Lock
+import {
+  ArrowLeft,
+  Plus,
+  X,
+  Clock,
+  Calendar,
+  Pill,
+  Bell,
+  Camera,
+  Trash2,
+  Save,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  Crown,
+  Lock,
 } from 'lucide-react';
 
 interface User {
@@ -29,7 +42,7 @@ export default function AddMedicationPage() {
     refillReminder: '',
     enableSound: true,
     enableEmail: true,
-    soundType: 'default'
+    soundType: 'default',
   });
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -55,9 +68,9 @@ export default function AddMedicationPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/medications/list', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setMedicationCount(data.medications?.length || 0);
@@ -75,7 +88,7 @@ export default function AddMedicationPage() {
     { value: 'cream', label: 'Cream/Ointment' },
     { value: 'drops', label: 'Drops' },
     { value: 'inhaler', label: 'Inhaler' },
-    { value: 'patch', label: 'Patch' }
+    { value: 'patch', label: 'Patch' },
   ];
 
   const frequencies = [
@@ -86,16 +99,40 @@ export default function AddMedicationPage() {
     { value: 'four_times', label: 'Four Times Daily' },
     { value: 'every_other_day', label: 'Every Other Day' },
     { value: 'weekly', label: 'Once Weekly' },
-    { value: 'custom', label: 'Custom Schedule' }
+    { value: 'custom', label: 'Custom Schedule' },
   ];
 
   const colorOptions = [
-    { value: 'from-blue-500 to-cyan-500', label: 'Blue', color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
-    { value: 'from-purple-500 to-pink-500', label: 'Purple', color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-    { value: 'from-green-500 to-emerald-500', label: 'Green', color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
-    { value: 'from-amber-500 to-orange-500', label: 'Orange', color: 'bg-gradient-to-r from-amber-500 to-orange-500' },
-    { value: 'from-red-500 to-rose-500', label: 'Red', color: 'bg-gradient-to-r from-red-500 to-rose-500' },
-    { value: 'from-indigo-500 to-purple-500', label: 'Indigo', color: 'bg-gradient-to-r from-indigo-500 to-purple-500' }
+    {
+      value: 'from-blue-500 to-cyan-500',
+      label: 'Blue',
+      color: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+    },
+    {
+      value: 'from-purple-500 to-pink-500',
+      label: 'Purple',
+      color: 'bg-gradient-to-r from-purple-500 to-pink-500',
+    },
+    {
+      value: 'from-green-500 to-emerald-500',
+      label: 'Green',
+      color: 'bg-gradient-to-r from-green-500 to-emerald-500',
+    },
+    {
+      value: 'from-amber-500 to-orange-500',
+      label: 'Orange',
+      color: 'bg-gradient-to-r from-amber-500 to-orange-500',
+    },
+    {
+      value: 'from-red-500 to-rose-500',
+      label: 'Red',
+      color: 'bg-gradient-to-r from-red-500 to-rose-500',
+    },
+    {
+      value: 'from-indigo-500 to-purple-500',
+      label: 'Indigo',
+      color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
+    },
   ];
 
   const iconOptions = ['💊', '💉', '🩹', '🧪', '🧬', '⚕️', '🔬', '💙', '❤️', '💚'];
@@ -104,13 +141,13 @@ export default function AddMedicationPage() {
     { value: 'default', label: 'Default Chime' },
     { value: 'gentle', label: 'Gentle Bell' },
     { value: 'urgent', label: 'Urgent Alert' },
-    { value: 'melody', label: 'Soft Melody' }
+    { value: 'melody', label: 'Soft Melody' },
   ];
 
   const handleFrequencyChange = (freq: string) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       let newTimes = ['08:00'];
-      
+
       switch (freq) {
         case 'twice_daily':
           newTimes = ['08:00', '20:00'];
@@ -127,29 +164,29 @@ export default function AddMedicationPage() {
         default:
           newTimes = ['08:00'];
       }
-      
+
       return { ...prev, frequency: freq, times: newTimes };
     });
   };
 
   const handleAddTime = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      times: [...prev.times, '12:00']
+      times: [...prev.times, '12:00'],
     }));
   };
 
   const handleRemoveTime = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      times: prev.times.filter((_, i) => i !== index)
+      times: prev.times.filter((_, i) => i !== index),
     }));
   };
 
   const handleTimeChange = (index: number, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      times: prev.times.map((time, i) => i === index ? value : time)
+      times: prev.times.map((time, i) => (i === index ? value : time)),
     }));
   };
 
@@ -210,17 +247,17 @@ export default function AddMedicationPage() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      
+
       const response = await fetch('/api/medications/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           ...formData,
-          photoUrl: photoPreview
-        })
+          photoUrl: photoPreview,
+        }),
       });
 
       const data = await response.json();
@@ -239,7 +276,6 @@ export default function AddMedicationPage() {
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 2000);
-
     } catch (error: any) {
       console.error('Error adding medication:', error);
       setErrors({ submit: error.message || 'Failed to add medication. Please try again.' });
@@ -278,11 +314,11 @@ export default function AddMedicationPage() {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
                 <Crown className="w-8 h-8 text-white" />
               </div>
-              
+
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Upgrade to Premium
               </h2>
-              
+
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {user.plan === 'free' && medicationCount >= 3
                   ? 'Free plan is limited to 3 medications. Upgrade to add unlimited medications.'
@@ -290,7 +326,9 @@ export default function AddMedicationPage() {
               </p>
 
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Premium Features:</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  Premium Features:
+                </h3>
                 <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 text-left">
                   <li>✓ Unlimited medications</li>
                   <li>✓ Photo uploads for pills</li>
@@ -301,12 +339,12 @@ export default function AddMedicationPage() {
               </div>
 
               <button
-                onClick={() => window.location.href = '/dashboard/upgrade'}
+                onClick={() => (window.location.href = '/dashboard/upgrade')}
                 className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all mb-2"
               >
                 View Pricing Plans
               </button>
-              
+
               <button
                 onClick={() => setShowUpgradeModal(false)}
                 className="w-full py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
@@ -330,7 +368,9 @@ export default function AddMedicationPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Add New Medication</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">Fill in the details below to add a new medication to your schedule</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Fill in the details below to add a new medication to your schedule
+            </p>
           </div>
           {user.plan === 'free' && (
             <div className="text-right">
@@ -338,7 +378,7 @@ export default function AddMedicationPage() {
                 <span className="font-semibold">{medicationCount}/3</span> medications used
               </p>
               <button
-                onClick={() => window.location.href = '/dashboard/upgrade'}
+                onClick={() => (window.location.href = '/dashboard/upgrade')}
                 className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
               >
                 Upgrade for unlimited
@@ -354,11 +394,15 @@ export default function AddMedicationPage() {
           <div className="flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <div>
-              <p className="text-sm font-medium text-green-800 dark:text-green-300">Medication added successfully!</p>
+              <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                Medication added successfully!
+              </p>
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                 {confirmationEmailSent
                   ? 'A confirmation email has been sent. '
-                  : formData.enableEmail ? "We couldn't send the confirmation email. " : ''}
+                  : formData.enableEmail
+                    ? "We couldn't send the confirmation email. "
+                    : ''}
                 Redirecting to dashboard...
               </p>
             </div>
@@ -373,15 +417,17 @@ export default function AddMedicationPage() {
             <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                {medicationCount === 2 ? 'One medication slot remaining' : 'Medication limit reached'}
+                {medicationCount === 2
+                  ? 'One medication slot remaining'
+                  : 'Medication limit reached'}
               </p>
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                {medicationCount === 2 
-                  ? 'This is your last medication on the free plan. Upgrade for unlimited medications.' 
-                  : 'You\'ve reached the 3 medication limit for free accounts.'}
+                {medicationCount === 2
+                  ? 'This is your last medication on the free plan. Upgrade for unlimited medications.'
+                  : "You've reached the 3 medication limit for free accounts."}
               </p>
               <button
-                onClick={() => window.location.href = '/dashboard/upgrade'}
+                onClick={() => (window.location.href = '/dashboard/upgrade')}
                 className="text-xs text-amber-700 dark:text-amber-300 underline hover:no-underline mt-2"
               >
                 Upgrade to Premium →
@@ -412,7 +458,7 @@ export default function AddMedicationPage() {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
                   placeholder="e.g., Aspirin, Vitamin D, Lisinopril"
                 />
@@ -431,7 +477,7 @@ export default function AddMedicationPage() {
                 <input
                   type="text"
                   value={formData.dosage}
-                  onChange={(e) => setFormData({...formData, dosage: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
                   className={`w-full px-4 py-3 rounded-lg border ${errors.dosage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
                   placeholder="e.g., 500mg, 2 tablets, 5ml"
                 />
@@ -449,11 +495,13 @@ export default function AddMedicationPage() {
                 </label>
                 <select
                   value={formData.form}
-                  onChange={(e) => setFormData({...formData, form: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, form: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
-                  {medicationForms.map(form => (
-                    <option key={form.value} value={form.value}>{form.label}</option>
+                  {medicationForms.map((form) => (
+                    <option key={form.value} value={form.value}>
+                      {form.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -476,8 +524,10 @@ export default function AddMedicationPage() {
                 onChange={(e) => handleFrequencyChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                {frequencies.map(freq => (
-                  <option key={freq.value} value={freq.value}>{freq.label}</option>
+                {frequencies.map((freq) => (
+                  <option key={freq.value} value={freq.value}>
+                    {freq.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -541,7 +591,7 @@ export default function AddMedicationPage() {
                 <input
                   type="date"
                   value={formData.startDate}
-                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
@@ -553,10 +603,12 @@ export default function AddMedicationPage() {
                 <input
                   type="date"
                   value={formData.endDate}
-                  onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty for ongoing medication</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Leave empty for ongoing medication
+                </p>
               </div>
             </div>
           </div>
@@ -574,25 +626,30 @@ export default function AddMedicationPage() {
                   type="checkbox"
                   id="enableSound"
                   checked={formData.enableSound}
-                  onChange={(e) => setFormData({...formData, enableSound: e.target.checked})}
+                  onChange={(e) => setFormData({ ...formData, enableSound: e.target.checked })}
                   className="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div className="flex-1">
-                  <label htmlFor="enableSound" className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+                  <label
+                    htmlFor="enableSound"
+                    className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                  >
                     Sound Notifications
                   </label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Play a sound when it's time to take this medication
                   </p>
-                  
+
                   {formData.enableSound && (
                     <select
                       value={formData.soundType}
-                      onChange={(e) => setFormData({...formData, soundType: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, soundType: e.target.value })}
                       className="mt-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
                     >
-                      {soundOptions.map(sound => (
-                        <option key={sound.value} value={sound.value}>{sound.label}</option>
+                      {soundOptions.map((sound) => (
+                        <option key={sound.value} value={sound.value}>
+                          {sound.label}
+                        </option>
                       ))}
                     </select>
                   )}
@@ -604,11 +661,14 @@ export default function AddMedicationPage() {
                   type="checkbox"
                   id="enableEmail"
                   checked={formData.enableEmail}
-                  onChange={(e) => setFormData({...formData, enableEmail: e.target.checked})}
+                  onChange={(e) => setFormData({ ...formData, enableEmail: e.target.checked })}
                   className="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div>
-                  <label htmlFor="enableEmail" className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+                  <label
+                    htmlFor="enableEmail"
+                    className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer"
+                  >
                     Email Notifications
                   </label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -621,9 +681,7 @@ export default function AddMedicationPage() {
 
           {/* Customization - UPDATED PHOTO UPLOAD SECTION */}
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              Customization
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Customization</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -631,11 +689,11 @@ export default function AddMedicationPage() {
                   Color Theme
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {colorOptions.map(color => (
+                  {colorOptions.map((color) => (
                     <button
                       key={color.value}
                       type="button"
-                      onClick={() => setFormData({...formData, color: color.value})}
+                      onClick={() => setFormData({ ...formData, color: color.value })}
                       className={`h-12 rounded-lg ${color.color} ${formData.color === color.value ? 'ring-2 ring-offset-2 ring-indigo-600' : ''}`}
                     ></button>
                   ))}
@@ -647,11 +705,11 @@ export default function AddMedicationPage() {
                   Icon
                 </label>
                 <div className="grid grid-cols-5 gap-2">
-                  {iconOptions.map(icon => (
+                  {iconOptions.map((icon) => (
                     <button
                       key={icon}
                       type="button"
-                      onClick={() => setFormData({...formData, icon})}
+                      onClick={() => setFormData({ ...formData, icon })}
                       className={`h-12 rounded-lg flex items-center justify-center text-2xl ${formData.icon === icon ? 'bg-indigo-100 dark:bg-indigo-900/30 ring-2 ring-indigo-600' : 'bg-gray-100 dark:bg-slate-700'}`}
                     >
                       {icon}
@@ -674,7 +732,11 @@ export default function AddMedicationPage() {
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
                     <div className="relative">
-                      <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-lg object-cover" />
+                      <img
+                        src={photoPreview}
+                        alt="Preview"
+                        className="w-20 h-20 rounded-lg object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => setPhotoPreview(null)}
@@ -684,20 +746,22 @@ export default function AddMedicationPage() {
                       </button>
                     </div>
                   ) : (
-                    <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg transition-colors ${
-                      user.plan === 'free' 
-                        ? 'border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-50' 
-                        : 'border-gray-300 dark:border-gray-600 cursor-pointer hover:border-indigo-500'
-                    }`}>
+                    <label
+                      className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg transition-colors ${
+                        user.plan === 'free'
+                          ? 'border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-50'
+                          : 'border-gray-300 dark:border-gray-600 cursor-pointer hover:border-indigo-500'
+                      }`}
+                    >
                       <Camera className="w-5 h-5 text-gray-400" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         {user.plan === 'free' ? 'Premium Feature' : 'Upload Photo'}
                       </span>
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handlePhotoUpload} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
                         disabled={user.plan === 'free'}
                       />
                     </label>
@@ -707,7 +771,7 @@ export default function AddMedicationPage() {
                       Photo uploads are available on Premium and Family plans.{' '}
                       <button
                         type="button"
-                        onClick={() => window.location.href = '/dashboard/upgrade'}
+                        onClick={() => (window.location.href = '/dashboard/upgrade')}
                         className="text-indigo-600 dark:text-indigo-400 hover:underline"
                       >
                         Upgrade now
@@ -726,7 +790,7 @@ export default function AddMedicationPage() {
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={4}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Add any special instructions, side effects to watch for, or other notes..."
@@ -778,7 +842,9 @@ export default function AddMedicationPage() {
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">Reminder Tips</h3>
+            <h3 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Reminder Tips
+            </h3>
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
               <li>• Set reminders for times when you're usually at home</li>
               <li>• Enable both sound and email for important medications</li>

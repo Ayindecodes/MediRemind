@@ -1,10 +1,24 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
-  CheckCircle, Clock, AlertCircle, Plus, TrendingUp,
-  Calendar, MessageCircle, Video, Smile, Meh, Frown,
-  Zap, Award, Target, ChevronRight, RefreshCw, Pill
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Plus,
+  TrendingUp,
+  Calendar,
+  MessageCircle,
+  Video,
+  Smile,
+  Meh,
+  Frown,
+  Zap,
+  Award,
+  Target,
+  ChevronRight,
+  RefreshCw,
+  Pill,
 } from 'lucide-react';
 
 type User = {
@@ -39,7 +53,6 @@ type TherapySession = {
 };
 
 export default function DashboardHome(): React.ReactElement {
-
   // Loading states
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -91,7 +104,7 @@ export default function DashboardHome(): React.ReactElement {
         fetch('/api/medications/today', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/user/streak', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/therapy/upcoming-session', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/mood/today', { headers: { Authorization: `Bearer ${token}` } })
+        fetch('/api/mood/today', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       // Only throw error if critical endpoints fail (not therapy/mood)
@@ -104,17 +117,16 @@ export default function DashboardHome(): React.ReactElement {
         medsRes.json(),
         streakRes.json(),
         therapyRes.ok ? therapyRes.json() : { session: null },
-        moodRes.ok ? moodRes.json() : { mood: null }
+        moodRes.ok ? moodRes.json() : { mood: null },
       ]);
 
       setUserData(user ?? null);
       setTodaysMeds(Array.isArray(meds.medications) ? meds.medications : []);
       setStreakData(streak ?? null);
-      setTherapySession((therapy && therapy.session) ? therapy.session : null);
+      setTherapySession(therapy && therapy.session ? therapy.session : null);
       setSelectedMood(mood?.mood ?? null);
 
       console.log('✅ Dashboard data loaded');
-
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
 
@@ -140,12 +152,12 @@ export default function DashboardHome(): React.ReactElement {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           medicationId: medId,
-          takenAt: new Date().toISOString()
-        })
+          takenAt: new Date().toISOString(),
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to mark medication');
@@ -153,16 +165,15 @@ export default function DashboardHome(): React.ReactElement {
       const data = await response.json();
 
       // Optimistic update
-      setTodaysMeds(prev =>
-        prev.map(med =>
-          med.id === medId ? { ...med, status: 'taken', takenAt: new Date().toISOString() } : med
-        )
+      setTodaysMeds((prev) =>
+        prev.map((med) =>
+          med.id === medId ? { ...med, status: 'taken', takenAt: new Date().toISOString() } : med,
+        ),
       );
 
       if (data.streak) setStreakData(data.streak);
 
       console.log('✅ Medication marked as taken!');
-
     } catch (err) {
       console.error('Failed to mark medication:', err);
       // user-visible fallback
@@ -183,12 +194,12 @@ export default function DashboardHome(): React.ReactElement {
 
     // Show personalized mood message
     const messages: Record<string, string> = {
-      happy: "🎉 Wow! Keep being glad! Your positive energy is amazing!",
+      happy: '🎉 Wow! Keep being glad! Your positive energy is amazing!',
       neutral: "👍 That's okay! Every day has its ups and downs. You're doing great!",
-      sad: "💙 We're here for you. Remember, it's okay to not be okay. Consider talking to your health coach."
+      sad: "💙 We're here for you. Remember, it's okay to not be okay. Consider talking to your health coach.",
     };
 
-    setMoodMessage(messages[mood] || "Thanks for sharing how you feel!");
+    setMoodMessage(messages[mood] || 'Thanks for sharing how you feel!');
     setShowMoodFeedback(true);
 
     // Hide feedback after 5 seconds
@@ -202,17 +213,16 @@ export default function DashboardHome(): React.ReactElement {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           mood,
           date: new Date().toISOString(),
-          note: ''
-        })
+          note: '',
+        }),
       });
 
       console.log('✅ Mood logged');
-
     } catch (err) {
       console.error('Failed to log mood:', err);
       setSelectedMood(previousMood);
@@ -222,25 +232,57 @@ export default function DashboardHome(): React.ReactElement {
   /**
    * Navigation helpers
    */
-  const handleAddMedication = () => { window.location.href = '/dashboard/medications/add'; };
-  const handleBookSession = () => { window.location.href = '/dashboard/therapy'; };
-  const handleChatNow = () => { window.location.href = '/dashboard/therapy'; };
-  const handleViewAllMeds = () => { window.location.href = '/dashboard/medications'; };
-  const handleViewMoodHistory = () => { window.location.href = '/dashboard/history?tab=mood'; };
-  const handleReadMoreTips = () => { window.location.href = '/dashboard/therapy?tab=resources'; };
-  const handleRefresh = () => { fetchDashboardData(); };
+  const handleAddMedication = () => {
+    window.location.href = '/dashboard/medications/add';
+  };
+  const handleBookSession = () => {
+    window.location.href = '/dashboard/therapy';
+  };
+  const handleChatNow = () => {
+    window.location.href = '/dashboard/therapy';
+  };
+  const handleViewAllMeds = () => {
+    window.location.href = '/dashboard/medications';
+  };
+  const handleViewMoodHistory = () => {
+    window.location.href = '/dashboard/history?tab=mood';
+  };
+  const handleReadMoreTips = () => {
+    window.location.href = '/dashboard/therapy?tab=resources';
+  };
+  const handleRefresh = () => {
+    fetchDashboardData();
+  };
 
   const moods: { value: string; icon: React.ComponentType<any>; label: string; color: string }[] = [
     { value: 'happy', icon: Smile, label: 'Great', color: 'text-green-500' },
     { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
-    { value: 'sad', icon: Frown, label: 'Not good', color: 'text-red-500' }
+    { value: 'sad', icon: Frown, label: 'Not good', color: 'text-red-500' },
   ];
 
   // Small inline spinner used where Loader was previously used
   const InlineSpinner = ({ className }: { className?: string }) => (
-    <svg className={className ?? 'w-4 h-4 animate-spin'} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.25"></circle>
-      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round"></path>
+    <svg
+      className={className ?? 'w-4 h-4 animate-spin'}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeOpacity="0.25"
+      ></circle>
+      <path
+        d="M22 12a10 10 0 0 1-10 10"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+      ></path>
     </svg>
   );
 
@@ -253,9 +295,12 @@ export default function DashboardHome(): React.ReactElement {
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             // eslint-disable-next-line react/no-array-index-key
-            <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"></div>
+            <div
+              key={i}
+              className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"
+            ></div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -276,7 +321,12 @@ export default function DashboardHome(): React.ReactElement {
             <div className="flex-1">
               <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
             </div>
-            <button onClick={() => setError(null)} className="text-red-600 dark:text-red-400 hover:text-red-700">✕</button>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-600 dark:text-red-400 hover:text-red-700"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
@@ -295,12 +345,24 @@ export default function DashboardHome(): React.ReactElement {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {userData?.fullName?.split(' ')[0] || 'there'}! 👋
+            Good{' '}
+            {new Date().getHours() < 12
+              ? 'morning'
+              : new Date().getHours() < 18
+                ? 'afternoon'
+                : 'evening'}
+            , {userData?.fullName?.split(' ')[0] || 'there'}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Here's your medication overview for today</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Here's your medication overview for today
+          </p>
         </div>
 
-        <button onClick={handleRefresh} disabled={isSyncing} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50">
+        <button
+          onClick={handleRefresh}
+          disabled={isSyncing}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
+        >
           <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
           {isSyncing ? 'Syncing...' : 'Refresh'}
         </button>
@@ -312,7 +374,9 @@ export default function DashboardHome(): React.ReactElement {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Current Streak</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{streakData?.currentStreak || 0} days</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                {streakData?.currentStreak || 0} days
+              </p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
               <span className="text-2xl">🔥</span>
@@ -324,7 +388,9 @@ export default function DashboardHome(): React.ReactElement {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Weekly Adherence</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{streakData?.weeklyAdherence || 0}%</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+                {streakData?.weeklyAdherence || 0}%
+              </p>
             </div>
             <TrendingUp className="w-12 h-12 p-2 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" />
           </div>
@@ -334,7 +400,9 @@ export default function DashboardHome(): React.ReactElement {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Taken</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{streakData?.totalMedsTaken || 0}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                {streakData?.totalMedsTaken || 0}
+              </p>
             </div>
             <Award className="w-12 h-12 p-2 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400" />
           </div>
@@ -344,7 +412,9 @@ export default function DashboardHome(): React.ReactElement {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Longest Streak</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{streakData?.longestStreak || 0} days</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                {streakData?.longestStreak || 0} days
+              </p>
             </div>
             <Target className="w-12 h-12 p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400" />
           </div>
@@ -361,7 +431,8 @@ export default function DashboardHome(): React.ReactElement {
                 Today's Medications
                 {todaysMeds.length > 0 && (
                   <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                    ({todaysMeds.filter(m => m.status === 'taken').length}/{todaysMeds.length} taken)
+                    ({todaysMeds.filter((m) => m.status === 'taken').length}/{todaysMeds.length}{' '}
+                    taken)
                   </span>
                 )}
               </h2>
@@ -379,9 +450,12 @@ export default function DashboardHome(): React.ReactElement {
                 <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center mb-4">
                   <Pill className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No medications yet</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  No medications yet
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-                  Start tracking your medications by adding your first one. We'll send you reminders so you never miss a dose.
+                  Start tracking your medications by adding your first one. We'll send you reminders
+                  so you never miss a dose.
                 </p>
                 <button
                   onClick={handleAddMedication}
@@ -394,7 +468,7 @@ export default function DashboardHome(): React.ReactElement {
             ) : (
               <>
                 <div className="space-y-4">
-                  {todaysMeds.map(med => {
+                  {todaysMeds.map((med) => {
                     // compute a safe ReactNode for the icon (handles component types, elements, primitives)
                     const renderIcon: React.ReactNode = (() => {
                       // if icon is a component (function/class), render it
@@ -418,18 +492,29 @@ export default function DashboardHome(): React.ReactElement {
                     })();
 
                     return (
-                      <div key={med.id} className={`rounded-xl p-4 bg-gradient-to-r ${med.color ?? ''} bg-opacity-10 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all`}>
+                      <div
+                        key={med.id}
+                        className={`rounded-xl p-4 bg-gradient-to-r ${med.color ?? ''} bg-opacity-10 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all`}
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-4 flex-1">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color ?? 'from-indigo-100 to-indigo-200'} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}>
+                            <div
+                              className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color ?? 'from-indigo-100 to-indigo-200'} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}
+                            >
                               {renderIcon}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{med.name}</h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{med.dosage}</p>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                {med.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {med.dosage}
+                              </p>
                               <div className="flex items-center gap-2 mt-2">
                                 <Clock className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{med.time}</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  {med.time}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -445,8 +530,16 @@ export default function DashboardHome(): React.ReactElement {
                                 Upcoming
                               </div>
                             ) : (
-                              <button onClick={() => handleMarkAsTaken(med.id)} disabled={isUpdating} className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50">
-                                {isUpdating ? <InlineSpinner className="w-4 h-4 mx-auto" /> : 'Mark as Taken'}
+                              <button
+                                onClick={() => handleMarkAsTaken(med.id)}
+                                disabled={isUpdating}
+                                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
+                              >
+                                {isUpdating ? (
+                                  <InlineSpinner className="w-4 h-4 mx-auto" />
+                                ) : (
+                                  'Mark as Taken'
+                                )}
                               </button>
                             )}
                           </div>
@@ -487,10 +580,15 @@ export default function DashboardHome(): React.ReactElement {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                    {therapySession.therapist.split(' ').map(n => n[0]).join('')}
+                    {therapySession.therapist
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">{therapySession.therapist}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {therapySession.therapist}
+                    </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Licensed Therapist</p>
                   </div>
                 </div>
@@ -498,7 +596,9 @@ export default function DashboardHome(): React.ReactElement {
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                     <Calendar className="w-4 h-4" />
-                    <span>{therapySession.date} at {therapySession.time}</span>
+                    <span>
+                      {therapySession.date} at {therapySession.time}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Video className="w-4 h-4" />
@@ -526,8 +626,12 @@ export default function DashboardHome(): React.ReactElement {
           ) : (
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No upcoming sessions</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Book a session with a health coach</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                No upcoming sessions
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Book a session with a health coach
+              </p>
               <button
                 onClick={handleBookSession}
                 className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all"
@@ -539,10 +643,12 @@ export default function DashboardHome(): React.ReactElement {
 
           {/* Mood Tracker */}
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">How are you feeling today?</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              How are you feeling today?
+            </h3>
 
             <div className="grid grid-cols-3 gap-3">
-              {moods.map(mood => {
+              {moods.map((mood) => {
                 const Icon = mood.icon;
                 const isSelected = selectedMood === mood.value;
                 return (
@@ -551,8 +657,14 @@ export default function DashboardHome(): React.ReactElement {
                     onClick={() => handleMoodSelect(mood.value)}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${isSelected ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
                   >
-                    <Icon className={`w-8 h-8 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : mood.color}`} />
-                    <span className={`text-sm font-medium ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}>{mood.label}</span>
+                    <Icon
+                      className={`w-8 h-8 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : mood.color}`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`}
+                    >
+                      {mood.label}
+                    </span>
                   </button>
                 );
               })}
@@ -573,7 +685,8 @@ export default function DashboardHome(): React.ReactElement {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Today's Tip</h3>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-              Taking your medications at the same time every day makes them easier to remember. Set consistent reminders!
+              Taking your medications at the same time every day makes them easier to remember. Set
+              consistent reminders!
             </p>
             <button
               onClick={handleReadMoreTips}
