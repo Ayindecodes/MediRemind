@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   ArrowLeft,
   Plus,
@@ -733,9 +734,13 @@ export default function AddMedicationPage() {
                 <div className="flex items-center gap-4">
                   {photoPreview ? (
                     <div className="relative">
-                      <img
+                      {/* A local data: URL the user just picked, so there's nothing to optimize */}
+                      <Image
                         src={photoPreview}
                         alt="Preview"
+                        width={80}
+                        height={80}
+                        unoptimized
                         className="w-20 h-20 rounded-lg object-cover"
                       />
                       <button
