@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ArrowRight, Play, CheckCircle, Sparkles, TrendingUp } from 'lucide-react';
 
 type FloatingPillProps = {
@@ -23,12 +23,6 @@ const FloatingPill: React.FC<FloatingPillProps> = ({ delay, duration, emoji, cla
 );
 
 export default function HeroSection() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
     <section
       id="hero"
@@ -50,11 +44,7 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
           {/* Left: Text Content */}
-          <div
-            className={`flex-1 flex flex-col gap-6 text-center lg:text-left transition-all duration-1000 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-          >
+          <div className="flex-1 flex flex-col gap-6 text-center lg:text-left hero-enter">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 self-center lg:self-start px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 w-fit">
               <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -119,11 +109,7 @@ export default function HeroSection() {
           </div>
 
           {/* Right: App Preview */}
-          <div
-            className={`flex-1 relative transition-all duration-1000 delay-300 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-          >
+          <div className="flex-1 relative hero-enter hero-enter-delayed">
             <div className="relative max-w-2xl mx-auto">
               {/* Floating Stats Cards */}
               <div className="absolute -top-8 -left-8 z-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg rounded-2xl p-4 shadow-xl border border-white/20 animate-float">
@@ -240,6 +226,32 @@ export default function HeroSection() {
 
         .animate-float {
           animation: float 6s ease-in-out infinite;
+        }
+
+        /* Both hero columns fade and rise into place once on load (the second 300ms later) */
+        @keyframes hero-enter {
+          from {
+            opacity: 0;
+            transform: translateY(2.5rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .hero-enter {
+          animation: hero-enter 1s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        .hero-enter-delayed {
+          animation-delay: 300ms;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-enter {
+            animation: none;
+          }
         }
       `}</style>
     </section>
