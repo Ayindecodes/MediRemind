@@ -1,13 +1,12 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
-import Image from "next/image";
-
+import Image from 'next/image';
 
 // The Health Coach isn't built yet, so this section only describes it as planned
 export default function TherapistSection() {
   return (
-    <section 
-      id="therapist" 
+    <section
+      id="therapist"
       className="relative w-full py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 transition-all duration-300 overflow-hidden"
     >
       {/* Background Decoration */}
@@ -19,7 +18,6 @@ export default function TherapistSection() {
       <div className="relative max-w-7xl mx-auto">
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
           {/* Left Side: Content */}
           <div className="order-2 lg:order-1">
             {/* Badge */}
@@ -41,8 +39,9 @@ export default function TherapistSection() {
 
             {/* Description */}
             <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-              We are planning a Health Coach feature that would connect you with qualified professionals
-              for guidance on building lasting medication habits. It is not available yet.
+              We are planning a Health Coach feature that would connect you with qualified
+              professionals for guidance on building lasting medication habits. It is not available
+              yet.
             </p>
           </div>
 
@@ -50,21 +49,22 @@ export default function TherapistSection() {
           <div className="relative order-1 lg:order-2">
             {/* Decorative Background Element */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-3xl transform rotate-6"></div>
-            
+
             {/* Image Container */}
             <div className="relative bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border-8 border-white dark:border-slate-700">
               {/* Image Placeholder */}
               <div className="aspect-[4/3] bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
                 {/* Replace this div with your actual image */}
-                
-                {<Image
-  src="/therapy.jpg"
-  alt="Professional therapist consultation"
-  width={800}
-  height={600}
-  className="w-full h-full object-cover rounded-3xl"
-/>
-}
+
+                {
+                  <Image
+                    src="/therapy.jpg"
+                    alt="Professional therapist consultation"
+                    width={800}
+                    height={600}
+                    className="w-full h-full object-cover rounded-3xl"
+                  />
+                }
               </div>
             </div>
           </div>

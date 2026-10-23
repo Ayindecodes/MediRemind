@@ -2,32 +2,33 @@ import React, { useState } from 'react';
 import { ArrowRight, Clock, Tag } from 'lucide-react';
 
 const blogPosts = [
-  { 
-    title: "5 Tips to Remember Your Medication", 
-    img: "/blog1.png", 
-    excerpt: "Discover proven strategies to never miss a dose and build lasting medication habits.",
-    link: "#",
-    date: "Dec 1, 2024",
-    readTime: "5 min read",
-    category: "Tips & Tricks"
+  {
+    title: '5 Tips to Remember Your Medication',
+    img: '/blog1.png',
+    excerpt: 'Discover proven strategies to never miss a dose and build lasting medication habits.',
+    link: '#',
+    date: 'Dec 1, 2024',
+    readTime: '5 min read',
+    category: 'Tips & Tricks',
   },
-  { 
-    title: "How MediRemind Improves Health Outcomes", 
-    img: "/blog2.png", 
-    excerpt: "Real stories from users who transformed their health with consistent medication adherence.",
-    link: "#",
-    date: "Nov 28, 2024",
-    readTime: "7 min read",
-    category: "Success Stories"
+  {
+    title: 'How MediRemind Improves Health Outcomes',
+    img: '/blog2.png',
+    excerpt:
+      'Real stories from users who transformed their health with consistent medication adherence.',
+    link: '#',
+    date: 'Nov 28, 2024',
+    readTime: '7 min read',
+    category: 'Success Stories',
   },
-  { 
-    title: "Family Medication Management Made Easy", 
-    img: "/blog3.png", 
-    excerpt: "A complete guide to managing medications for your entire family from one account.",
-    link: "#",
-    date: "Nov 25, 2024",
-    readTime: "6 min read",
-    category: "Family Care"
+  {
+    title: 'Family Medication Management Made Easy',
+    img: '/blog3.png',
+    excerpt: 'A complete guide to managing medications for your entire family from one account.',
+    link: '#',
+    date: 'Nov 25, 2024',
+    readTime: '6 min read',
+    category: 'Family Care',
   },
 ];
 
@@ -35,8 +36,8 @@ export default function BlogSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section 
-      id="blog" 
+    <section
+      id="blog"
       className="relative w-full py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 transition-all duration-300 overflow-hidden"
     >
       {/* Background Decoration */}
@@ -64,7 +65,8 @@ export default function BlogSection() {
           </h2>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Expert tips, success stories, and guides to help you stay on top of your medication routine.
+            Expert tips, success stories, and guides to help you stay on top of your medication
+            routine.
           </p>
         </div>
 
@@ -84,8 +86,7 @@ export default function BlogSection() {
               >
                 {/* Image Container */}
                 <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-700 dark:to-slate-600 overflow-hidden">
-
-                  <img 
+                  <img
                     src="/medd.png"
                     alt="Medication Practice"
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
@@ -119,9 +120,7 @@ export default function BlogSection() {
 
                   {/* Date & Read More */}
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {post.date}
-                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{post.date}</span>
                     <a
                       href={post.link}
                       className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:gap-3 transition-all"
@@ -153,11 +152,10 @@ export default function BlogSection() {
         {/* Newsletter */}
         <div className="mt-20 p-8 md:p-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl shadow-2xl text-white">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Stay Updated with Health Tips
-            </h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Stay Updated with Health Tips</h3>
             <p className="text-indigo-100 mb-6">
-              Get weekly medication reminders, health tips, and exclusive content delivered to your inbox.
+              Get weekly medication reminders, health tips, and exclusive content delivered to your
+              inbox.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
@@ -169,9 +167,7 @@ export default function BlogSection() {
                 Subscribe
               </button>
             </div>
-            <p className="text-xs text-indigo-200 mt-4">
-              No spam. Unsubscribe anytime. 🔒
-            </p>
+            <p className="text-xs text-indigo-200 mt-4">No spam. Unsubscribe anytime. 🔒</p>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 // components/Footer.tsx
-"use client";
+'use client';
 
-import { FaTwitter, FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaTwitter, FaFacebook, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
   return (
@@ -11,9 +11,15 @@ export default function Footer() {
           © 2025 MediRemind. All rights reserved.
         </p>
         <div className="flex gap-4 text-gray-700 dark:text-gray-300">
-          <a href="#"><FaTwitter size={20} /></a>
-          <a href="#"><FaFacebook size={20} /></a>
-          <a href="#"><FaInstagram size={20} /></a>
+          <a href="#">
+            <FaTwitter size={20} />
+          </a>
+          <a href="#">
+            <FaFacebook size={20} />
+          </a>
+          <a href="#">
+            <FaInstagram size={20} />
+          </a>
         </div>
       </div>
     </footer>

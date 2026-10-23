@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { Bell, Users, TrendingUp, Calendar, Zap, Shield, Clock, Heart, Award, Smartphone, Cloud, FileText } from 'lucide-react';
+import {
+  Bell,
+  Users,
+  TrendingUp,
+  Calendar,
+  Zap,
+  Shield,
+  Clock,
+  Heart,
+  Award,
+  Smartphone,
+  Cloud,
+  FileText,
+} from 'lucide-react';
 
 export default function FeaturesSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -7,67 +20,67 @@ export default function FeaturesSection() {
   const features = [
     {
       icon: Bell,
-      title: "Smart Reminders",
-      description: "Adaptive notifications that learn your schedule and never let you miss a dose.",
-      gradient: "from-blue-500 to-cyan-500",
-      benefits: ["Missed dose detection", "Snooze with follow-ups", "Custom sounds"]
+      title: 'Smart Reminders',
+      description: 'Adaptive notifications that learn your schedule and never let you miss a dose.',
+      gradient: 'from-blue-500 to-cyan-500',
+      benefits: ['Missed dose detection', 'Snooze with follow-ups', 'Custom sounds'],
     },
     {
       icon: Award,
-      title: "Streak Tracking",
-      description: "Stay motivated with gamified streaks, badges, and achievement rewards.",
-      gradient: "from-purple-500 to-pink-500",
-      benefits: ["Daily streaks", "Achievement badges", "Progress rings"]
+      title: 'Streak Tracking',
+      description: 'Stay motivated with gamified streaks, badges, and achievement rewards.',
+      gradient: 'from-purple-500 to-pink-500',
+      benefits: ['Daily streaks', 'Achievement badges', 'Progress rings'],
     },
     {
       icon: TrendingUp,
-      title: "Analytics & Insights",
-      description: "Visualize your adherence with beautiful charts and detailed reports.",
-      gradient: "from-green-500 to-emerald-500",
-      benefits: ["Weekly trends", "Adherence score", "PDF export"]
+      title: 'Analytics & Insights',
+      description: 'Visualize your adherence with beautiful charts and detailed reports.',
+      gradient: 'from-green-500 to-emerald-500',
+      benefits: ['Weekly trends', 'Adherence score', 'PDF export'],
     },
     {
       icon: Users,
-      title: "Family Mode",
-      description: "Manage medications for your entire family from one account.",
-      gradient: "from-orange-500 to-red-500",
-      benefits: ["Multiple profiles", "Caregiver access", "Shared schedules"]
+      title: 'Family Mode',
+      description: 'Manage medications for your entire family from one account.',
+      gradient: 'from-orange-500 to-red-500',
+      benefits: ['Multiple profiles', 'Caregiver access', 'Shared schedules'],
     },
     {
       icon: Calendar,
-      title: "Refill Reminders",
-      description: "Never run out of medication with automatic refill alerts.",
-      gradient: "from-indigo-500 to-purple-500",
-      benefits: ["Auto-calculate", "Pharmacy notes", "7-day warnings"]
+      title: 'Refill Reminders',
+      description: 'Never run out of medication with automatic refill alerts.',
+      gradient: 'from-indigo-500 to-purple-500',
+      benefits: ['Auto-calculate', 'Pharmacy notes', '7-day warnings'],
     },
     {
       icon: Cloud,
-      title: "Cloud Sync",
-      description: "Access your medications from any device, anywhere, anytime.",
-      gradient: "from-cyan-500 to-blue-500",
-      benefits: ["Cross-device", "Offline mode", "Real-time sync"]
+      title: 'Cloud Sync',
+      description: 'Access your medications from any device, anywhere, anytime.',
+      gradient: 'from-cyan-500 to-blue-500',
+      benefits: ['Cross-device', 'Offline mode', 'Real-time sync'],
     },
     {
       icon: Shield,
-      title: "Privacy First",
-      description: "Your health data is never sold or shared with advertisers.",
-      gradient: "from-slate-500 to-gray-600",
-      benefits: ["No data selling", "Never shared with advertisers"]
+      title: 'Privacy First',
+      description: 'Your health data is never sold or shared with advertisers.',
+      gradient: 'from-slate-500 to-gray-600',
+      benefits: ['No data selling', 'Never shared with advertisers'],
     },
     {
       icon: Smartphone,
-      title: "Beautiful UI",
-      description: "Gorgeous glassmorphic design that makes health tracking enjoyable.",
-      gradient: "from-pink-500 to-rose-500",
-      benefits: ["Dark mode", "Smooth animations", "Intuitive UX"]
+      title: 'Beautiful UI',
+      description: 'Gorgeous glassmorphic design that makes health tracking enjoyable.',
+      gradient: 'from-pink-500 to-rose-500',
+      benefits: ['Dark mode', 'Smooth animations', 'Intuitive UX'],
     },
     {
       icon: FileText,
-      title: "History Export",
-      description: "Generate professional PDF reports for your doctor appointments.",
-      gradient: "from-amber-500 to-yellow-500",
-      benefits: ["PDF generation", "Full history", "Doctor-ready"]
-    }
+      title: 'History Export',
+      description: 'Generate professional PDF reports for your doctor appointments.',
+      gradient: 'from-amber-500 to-yellow-500',
+      benefits: ['PDF generation', 'Full history', 'Doctor-ready'],
+    },
   ];
 
   return (
@@ -100,8 +113,8 @@ export default function FeaturesSection() {
           </h2>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            From smart reminders to family management, MediRemind has every feature 
-            you need to never miss a medication again.
+            From smart reminders to family management, MediRemind has every feature you need to
+            never miss a medication again.
           </p>
         </div>
 
@@ -121,10 +134,14 @@ export default function FeaturesSection() {
                 }`}
               >
                 {/* Gradient Border Effect */}
-                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                <div
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                ></div>
 
                 {/* Icon */}
-                <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <div
+                  className={`relative w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                >
                   <Icon className="w-7 h-7 text-white" />
                 </div>
 
@@ -140,17 +157,24 @@ export default function FeaturesSection() {
                 {/* Benefits */}
                 <ul className="space-y-2">
                   {feature.benefits.map((benefit, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${feature.gradient}`}></div>
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                    >
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${feature.gradient}`}
+                      ></div>
                       {benefit}
                     </li>
                   ))}
                 </ul>
 
                 {/* Hover Arrow */}
-                <div className={`absolute bottom-6 right-6 text-indigo-600 dark:text-indigo-400 transition-all duration-300 ${
-                  isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
-                }`}>
+                <div
+                  className={`absolute bottom-6 right-6 text-indigo-600 dark:text-indigo-400 transition-all duration-300 ${
+                    isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'
+                  }`}
+                >
                   →
                 </div>
               </div>
@@ -165,9 +189,7 @@ export default function FeaturesSection() {
               <h3 className="text-2xl font-bold text-white mb-2">
                 Ready to take control of your health?
               </h3>
-              <p className="text-indigo-100">
-                Start tracking your medications today, for free.
-              </p>
+              <p className="text-indigo-100">Start tracking your medications today, for free.</p>
             </div>
             <a
               href="/signup"

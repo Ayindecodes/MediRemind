@@ -1,9 +1,12 @@
 // components/NewsletterSection.tsx
-"use client";
+'use client';
 
 export default function NewsletterSection() {
   return (
-    <section id="newsletter" className="w-full py-20 px-6 md:px-12 bg-gray-50 dark:bg-[#0f172a] transition-all duration-300">
+    <section
+      id="newsletter"
+      className="w-full py-20 px-6 md:px-12 bg-gray-50 dark:bg-[#0f172a] transition-all duration-300"
+    >
       <div className="max-w-2xl mx-auto text-center p-10 bg-white dark:bg-[#1e293b] backdrop-blur-lg border border-white/20 rounded-xl shadow-md">
         <h2 className="text-3xl font-bold font-inter text-gray-900 dark:text-gray-100 mb-4">
           Subscribe to Our Newsletter

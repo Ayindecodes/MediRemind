@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon, ChevronDown } from 'lucide-react';
 
@@ -9,10 +9,10 @@ export default function Header() {
 
   // Persist dark mode in localStorage
   useEffect(() => {
-    const stored = localStorage.getItem("darkMode");
-    if (stored === "true") {
+    const stored = localStorage.getItem('darkMode');
+    if (stored === 'true') {
       setDarkMode(true);
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add('dark');
     }
   }, []);
 
@@ -27,34 +27,33 @@ export default function Header() {
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
-      localStorage.setItem("darkMode", String(!prev));
+      localStorage.setItem('darkMode', String(!prev));
       if (!prev) {
-        document.documentElement.classList.add("dark");
+        document.documentElement.classList.add('dark');
       } else {
-        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.remove('dark');
       }
       return !prev;
     });
   };
 
   const navLinks = [
-    { href: "#features", label: "Features" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#blog", label: "Blog" },
-    { href: "#therapist", label: "Therapy" },
+    { href: '#features', label: 'Features' },
+    { href: '#pricing', label: 'Pricing' },
+    { href: '#blog', label: 'Blog' },
+    { href: '#therapist', label: 'Therapy' },
   ];
 
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-lg' 
+        scrolled
+          ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-lg'
           : 'bg-white dark:bg-slate-900'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
-          
           {/* Logo */}
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">

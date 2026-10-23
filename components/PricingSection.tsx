@@ -6,93 +6,89 @@ export default function PricingSection() {
 
   const plans = [
     {
-      name: "Free",
-      tagline: "Perfect to get started",
+      name: 'Free',
+      tagline: 'Perfect to get started',
       icon: Zap,
       price: {
         monthly: 0,
-        yearly: 0
+        yearly: 0,
       },
-      period: "forever",
+      period: 'forever',
       features: [
-        "Up to 3 medications",
-        "Basic reminders",
-        "7-day history",
-        "Single profile",
-        "Email support"
+        'Up to 3 medications',
+        'Basic reminders',
+        '7-day history',
+        'Single profile',
+        'Email support',
       ],
-      limitations: [
-        "No family mode",
-        "No PDF export",
-        "Limited analytics"
-      ],
-      cta: "Get Started Free",
-      ctaLink: "/signup",
+      limitations: ['No family mode', 'No PDF export', 'Limited analytics'],
+      cta: 'Get Started Free',
+      ctaLink: '/signup',
       popular: false,
-      gradient: "from-gray-500 to-gray-600"
+      gradient: 'from-gray-500 to-gray-600',
     },
     {
-      name: "Premium",
-      tagline: "For serious health tracking",
+      name: 'Premium',
+      tagline: 'For serious health tracking',
       icon: Star,
       price: {
         monthly: 3,
-        yearly: 30
+        yearly: 30,
       },
       period: billingCycle === 'monthly' ? 'per month' : 'per year',
       savings: billingCycle === 'yearly' ? 'Save $6/year' : null,
       features: [
-        "Unlimited medications",
-        "Smart adaptive reminders",
-        "Full medication history",
-        "Family mode (up to 5 profiles)",
-        "Advanced analytics & insights",
-        "PDF export for doctors",
-        "Refill reminders",
-        "Photo uploads for pills",
-        "Priority email support",
-        "Cloud sync across devices"
+        'Unlimited medications',
+        'Smart adaptive reminders',
+        'Full medication history',
+        'Family mode (up to 5 profiles)',
+        'Advanced analytics & insights',
+        'PDF export for doctors',
+        'Refill reminders',
+        'Photo uploads for pills',
+        'Priority email support',
+        'Cloud sync across devices',
       ],
       limitations: [],
       // Paid plans can't be bought yet
-      cta: "Coming Soon",
+      cta: 'Coming Soon',
       ctaLink: null,
       popular: true,
-      gradient: "from-indigo-600 to-purple-600"
+      gradient: 'from-indigo-600 to-purple-600',
     },
     {
-      name: "Family",
-      tagline: "For the whole household",
+      name: 'Family',
+      tagline: 'For the whole household',
       icon: Crown,
       price: {
         monthly: 8,
-        yearly: 80
+        yearly: 80,
       },
       period: billingCycle === 'monthly' ? 'per month' : 'per year',
       savings: billingCycle === 'yearly' ? 'Save $16/year' : null,
       features: [
-        "Everything in Premium",
-        "Unlimited family profiles",
-        "Caregiver access & permissions",
-        "Shared medication schedules",
-        "Family adherence dashboard",
-        "Multiple device support",
-        "Dedicated account manager",
-        "Phone support",
-        "Custom onboarding",
-        "Early access to new features"
+        'Everything in Premium',
+        'Unlimited family profiles',
+        'Caregiver access & permissions',
+        'Shared medication schedules',
+        'Family adherence dashboard',
+        'Multiple device support',
+        'Dedicated account manager',
+        'Phone support',
+        'Custom onboarding',
+        'Early access to new features',
       ],
       limitations: [],
-      cta: "Coming Soon",
+      cta: 'Coming Soon',
       ctaLink: null,
       popular: false,
-      gradient: "from-amber-500 to-orange-600"
-    }
+      gradient: 'from-amber-500 to-orange-600',
+    },
   ];
 
   return (
-    <section 
-      id="pricing" 
+    <section
+      id="pricing"
       className="relative w-full py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800 transition-all duration-300 overflow-hidden"
     >
       {/* Background Decoration */}
@@ -159,14 +155,16 @@ export default function PricingSection() {
               <div
                 key={index}
                 className={`relative bg-white dark:bg-slate-800 rounded-3xl border-2 ${
-                  plan.popular 
-                    ? 'border-indigo-600 dark:border-indigo-500 shadow-2xl transform scale-105' 
+                  plan.popular
+                    ? 'border-indigo-600 dark:border-indigo-500 shadow-2xl transform scale-105'
                     : 'border-gray-200 dark:border-gray-700 shadow-lg'
                 } transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
-                  <div className={`absolute top-0 right-0 bg-gradient-to-r ${plan.gradient} text-white px-6 py-2 text-sm font-bold`}>
+                  <div
+                    className={`absolute top-0 right-0 bg-gradient-to-r ${plan.gradient} text-white px-6 py-2 text-sm font-bold`}
+                  >
                     MOST POPULAR
                   </div>
                 )}
@@ -175,16 +173,16 @@ export default function PricingSection() {
                 <div className="p-8">
                   {/* Icon & Name */}
                   <div className="flex items-center gap-3 mb-4">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center shadow-lg`}>
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center shadow-lg`}
+                    >
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
                       <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                         {plan.name}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {plan.tagline}
-                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{plan.tagline}</p>
                     </div>
                   </div>
 
@@ -194,9 +192,7 @@ export default function PricingSection() {
                       <span className="text-5xl font-bold text-gray-900 dark:text-white">
                         ${billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly}
                       </span>
-                      <span className="text-gray-600 dark:text-gray-400">
-                        /{plan.period}
-                      </span>
+                      <span className="text-gray-600 dark:text-gray-400">/{plan.period}</span>
                     </div>
                     {plan.savings && (
                       <p className="text-sm text-green-600 dark:text-green-400 font-medium mt-1">
@@ -231,9 +227,7 @@ export default function PricingSection() {
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                          {feature}
-                        </span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
                       </div>
                     ))}
                   </div>

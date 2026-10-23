@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { ArrowRight, Play, CheckCircle, Sparkles, Calendar, Bell, TrendingUp } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Play, CheckCircle, Sparkles, Calendar, Bell, TrendingUp } from 'lucide-react';
 
 type FloatingPillProps = {
   delay: number;
@@ -12,7 +12,7 @@ type FloatingPillProps = {
 
 const FloatingPill: React.FC<FloatingPillProps> = ({ delay, duration, emoji, className }) => (
   <div
-    className={`absolute opacity-20 dark:opacity-10 ${className ?? ""}`}
+    className={`absolute opacity-20 dark:opacity-10 ${className ?? ''}`}
     style={{
       animation: `float ${duration}s ease-in-out ${delay}s infinite`,
     }}
@@ -52,13 +52,15 @@ export default function HeroSection() {
           {/* Left: Text Content */}
           <div
             className={`flex-1 flex flex-col gap-6 text-center lg:text-left transition-all duration-1000 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
             {/* Badge */}
             <div className="inline-flex items-center gap-2 self-center lg:self-start px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 w-fit">
               <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">Medication Tracker</span>
+              <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                Medication Tracker
+              </span>
             </div>
 
             {/* Main Headline */}
@@ -73,19 +75,26 @@ export default function HeroSection() {
 
             {/* Subheadline */}
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl">
-              Smart reminders, streak tracking, and beautiful design that makes staying healthy{" "}
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400">actually enjoyable</span>.
+              Smart reminders, streak tracking, and beautiful design that makes staying healthy{' '}
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                actually enjoyable
+              </span>
+              .
             </p>
 
             {/* Feature Pills */}
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow-md">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Free Forever</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Free Forever
+                </span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow-md">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">No Credit Card</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  No Credit Card
+                </span>
               </div>
             </div>
 
@@ -112,7 +121,7 @@ export default function HeroSection() {
           {/* Right: App Preview */}
           <div
             className={`flex-1 relative transition-all duration-1000 delay-300 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
             <div className="relative max-w-2xl mx-auto">
@@ -131,7 +140,7 @@ export default function HeroSection() {
 
               <div
                 className="absolute -bottom-8 -right-8 z-10 bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg rounded-2xl p-4 shadow-xl border border-white/20 animate-float"
-                style={{ animationDelay: "1s" }}
+                style={{ animationDelay: '1s' }}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
@@ -156,31 +165,50 @@ export default function HeroSection() {
                   {/* Medication Cards */}
                   <div className="p-6 space-y-4">
                     {[
-                      { name: "Aspirin", time: "8:00 AM", status: "taken", color: "from-blue-500 to-cyan-500" },
-                      { name: "Vitamin D", time: "2:00 PM", status: "upcoming", color: "from-amber-500 to-orange-500" },
-                      { name: "Blood Pressure", time: "8:00 PM", status: "pending", color: "from-purple-500 to-pink-500" },
+                      {
+                        name: 'Aspirin',
+                        time: '8:00 AM',
+                        status: 'taken',
+                        color: 'from-blue-500 to-cyan-500',
+                      },
+                      {
+                        name: 'Vitamin D',
+                        time: '2:00 PM',
+                        status: 'upcoming',
+                        color: 'from-amber-500 to-orange-500',
+                      },
+                      {
+                        name: 'Blood Pressure',
+                        time: '8:00 PM',
+                        status: 'pending',
+                        color: 'from-purple-500 to-pink-500',
+                      },
                     ].map((med, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border border-gray-200 dark:border-gray-600"
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color} flex items-center justify-center text-white text-xl shadow-lg`}>
+                          <div
+                            className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color} flex items-center justify-center text-white text-xl shadow-lg`}
+                          >
                             💊
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">{med.name}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {med.name}
+                            </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{med.time}</p>
                           </div>
                         </div>
                         <div
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            med.status === "taken"
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                            med.status === 'taken'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                           }`}
                         >
-                          {med.status === "taken" ? "✓ Taken" : "Pending"}
+                          {med.status === 'taken' ? '✓ Taken' : 'Pending'}
                         </div>
                       </div>
                     ))}
