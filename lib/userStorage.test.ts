@@ -173,6 +173,21 @@ describe('login rate limit', () => {
     expect(storage.checkRateLimit('ada@example.com').allowed).toBe(true);
   });
 
+  it('starts a fresh count once a block has expired', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-23T09:00:00Z'), toFake: ['Date'] });
+    for (let i = 0; i < 5; i++) storage.recordFailedAttempt('ada@example.com');
+    vi.setSystemTime(Date.now() + 30 * MINUTE);
+
+    expect(storage.checkRateLimit('ada@example.com')).toEqual({ allowed: true });
+
+    // One wrong password after the block shouldn't lock the account for another 30 minutes
+    storage.recordFailedAttempt('ada@example.com');
+    expect(storage.checkRateLimit('ada@example.com')).toEqual({
+      allowed: true,
+      remainingAttempts: 4,
+    });
+  });
+
   it('forgets failures after a successful login', () => {
     for (let i = 0; i < 4; i++) storage.recordFailedAttempt('ada@example.com');
     storage.resetAttempts('Ada@Example.com');

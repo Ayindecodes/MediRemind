@@ -242,10 +242,20 @@ export function verifyCode(email: string, code: string, type: 'signup' | 'login'
 
 /* ===================== LOGIN RATE LIMIT ===================== */
 
+// An email's failed-attempt record, forgotten once its block has expired so the count starts over
+function activeAttempt(key: string, now: number) {
+  const attempt = loginAttempts.get(key);
+  if (attempt?.blockedUntil && now >= attempt.blockedUntil) {
+    loginAttempts.delete(key);
+    return undefined;
+  }
+  return attempt;
+}
+
 export function checkRateLimit(email: string) {
   const key = email.toLowerCase();
-  const attempt = loginAttempts.get(key);
   const now = Date.now();
+  const attempt = activeAttempt(key, now);
 
   if (!attempt) return { allowed: true };
 
@@ -266,7 +276,7 @@ export function recordFailedAttempt(email: string) {
   const key = email.toLowerCase();
   const now = Date.now();
 
-  const attempt = loginAttempts.get(key) ?? { attempts: 0, lastAttempt: now };
+  const attempt = activeAttempt(key, now) ?? { attempts: 0, lastAttempt: now };
   attempt.attempts += 1;
   attempt.lastAttempt = now;
 
