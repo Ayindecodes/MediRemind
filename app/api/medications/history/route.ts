@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail } from '@/lib/userStorage';
+import { getUserByEmail, type Medication, type MedicationLog } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -23,32 +23,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Load logs
-    let logs = new Map();
+    let logs = new Map<string, MedicationLog>();
     if (fs.existsSync(LOGS_FILE)) {
       const data = fs.readFileSync(LOGS_FILE, 'utf-8');
-      logs = new Map(Object.entries(JSON.parse(data)));
+      logs = new Map(Object.entries(JSON.parse(data)) as [string, MedicationLog][]);
     }
 
     // Load medications for names
-    let medications = new Map();
+    let medications = new Map<string, Medication>();
     if (fs.existsSync(MEDICATIONS_FILE)) {
       const data = fs.readFileSync(MEDICATIONS_FILE, 'utf-8');
-      medications = new Map(Object.entries(JSON.parse(data)));
+      medications = new Map(Object.entries(JSON.parse(data)) as [string, Medication][]);
     }
 
     // Filter user's logs and enrich with medication names
     const userLogs = Array.from(logs.values())
-      .filter((log: any) => log.userId === user.id)
-      .map((log: any) => {
-        const med: any = medications.get(log.medicationId);
+      .filter((log) => log.userId === user.id)
+      .map((log) => {
+        const med = medications.get(log.medicationId);
         return {
           ...log,
           medicationName: med?.name || 'Unknown Medication',
         };
       })
       .sort(
-        (a: any, b: any) =>
-          new Date(b.takenAt || b.date).getTime() - new Date(a.takenAt || a.date).getTime(),
+        (a, b) => new Date(b.takenAt || b.date).getTime() - new Date(a.takenAt || a.date).getTime(),
       );
 
     return NextResponse.json({ history: userLogs });
