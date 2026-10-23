@@ -169,7 +169,7 @@ export default function SignUpPage() {
           message: data.message || 'Signup failed. Please try again.',
         });
       }
-    } catch (error) {
+    } catch {
       setApiResponse({
         type: 'error',
         message: 'Network error. Please check your connection and try again.',
@@ -222,7 +222,7 @@ export default function SignUpPage() {
           message: data.message || 'Verification failed. Please try again.',
         });
       }
-    } catch (error) {
+    } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setIsVerifying(false);
@@ -249,7 +249,7 @@ export default function SignUpPage() {
       } else {
         setApiResponse({ type: 'error', message: data.message || 'Failed to resend code.' });
       }
-    } catch (error) {
+    } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setIsSubmitting(false);

@@ -106,7 +106,7 @@ export default function LoginPage() {
           });
         }
       }
-    } catch (error) {
+    } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please check your connection.' });
     } finally {
       setIsSubmitting(false);
@@ -160,7 +160,7 @@ export default function LoginPage() {
           message: data.message || 'Invalid code. Please try again.',
         });
       }
-    } catch (error) {
+    } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setIsVerifying(false);
@@ -186,7 +186,7 @@ export default function LoginPage() {
       } else {
         setApiResponse({ type: 'error', message: data.message || 'Failed to resend code.' });
       }
-    } catch (error) {
+    } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setIsSubmitting(false);
