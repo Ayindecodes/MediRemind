@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       email: user.email,
       plan: user.plan,
       planExpiry: user.planExpiry,
-      verified: user.verified
+      verified: user.verified,
     });
   } catch (error) {
     console.error('Profile error:', error);

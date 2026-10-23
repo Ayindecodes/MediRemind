@@ -6,7 +6,7 @@ import {
   createVerificationSession,
   checkRateLimit,
   recordFailedAttempt,
-  resetAttempts
+  resetAttempts,
 } from '@/lib/userStorage';
 import { escapeHtml, sendEmail } from '@/lib/email';
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: 'Email and password are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
     if (!rateCheck.allowed) {
       if (rateCheck.blockedMinutes) {
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             message: `Too many failed attempts. Please try again in ${rateCheck.blockedMinutes} minutes.`,
             blocked: true,
-            blockedMinutes: rateCheck.blockedMinutes
+            blockedMinutes: rateCheck.blockedMinutes,
           },
-          { status: 429 }
+          { status: 429 },
         );
       }
     }
@@ -43,15 +43,18 @@ export async function POST(request: NextRequest) {
       recordFailedAttempt(email);
       return NextResponse.json(
         { success: false, message: 'Invalid email or password' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Check if user is verified
     if (!user.verified) {
       return NextResponse.json(
-        { success: false, message: 'Please verify your email first. Check your inbox for the verification code.' },
-        { status: 403 }
+        {
+          success: false,
+          message: 'Please verify your email first. Check your inbox for the verification code.',
+        },
+        { status: 403 },
       );
     }
 
@@ -60,12 +63,12 @@ export async function POST(request: NextRequest) {
     if (!passwordValid) {
       recordFailedAttempt(email);
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           message: 'Invalid email or password',
-          remainingAttempts: rateCheck.remainingAttempts 
+          remainingAttempts: rateCheck.remainingAttempts,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -140,23 +143,25 @@ export async function POST(request: NextRequest) {
     // In development the code is also printed above, so a failed email doesn't block local testing
     if (!emailSent && process.env.NODE_ENV !== 'development') {
       return NextResponse.json(
-        { success: false, message: "We couldn't send your login code. Please try again in a moment." },
-        { status: 502 }
+        {
+          success: false,
+          message: "We couldn't send your login code. Please try again in a moment.",
+        },
+        { status: 502 },
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Verification code sent to your email',
-      requiresVerification: true,
-      ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Verification code sent to your email',
+        requiresVerification: true,
+        ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode }),
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

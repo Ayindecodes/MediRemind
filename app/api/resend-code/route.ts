@@ -8,34 +8,25 @@ export async function POST(request: NextRequest) {
     const { email, type } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { success: false, message: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
     }
 
     // Login codes are only issued by /api/login, after the password is checked
     if (type && type !== 'signup') {
-      return NextResponse.json(
-        { success: false, message: 'Invalid code type' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: 'Invalid code type' }, { status: 400 });
     }
 
     // Check if user exists
     const user = getUserByEmail(email);
     if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
     // Codes are stored per email, so a new signup code would overwrite a pending login code
     if (user.verified) {
       return NextResponse.json(
         { success: false, message: 'Account already verified. Please log in.' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -106,22 +97,24 @@ export async function POST(request: NextRequest) {
     // In development the code is also printed above, so a failed email doesn't block local testing
     if (!emailSent && process.env.NODE_ENV !== 'development') {
       return NextResponse.json(
-        { success: false, message: "We couldn't send the verification email. Please try again in a moment." },
-        { status: 502 }
+        {
+          success: false,
+          message: "We couldn't send the verification email. Please try again in a moment.",
+        },
+        { status: 502 },
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Verification code resent successfully',
-      ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Verification code resent successfully',
+        ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode }),
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error('Resend code error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

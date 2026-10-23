@@ -6,6 +6,6 @@ import { NextResponse } from 'next/server';
 export async function POST() {
   return NextResponse.json(
     { error: 'Paid plans are coming soon. Upgrades are not available yet.' },
-    { status: 403 }
+    { status: 403 },
   );
 }

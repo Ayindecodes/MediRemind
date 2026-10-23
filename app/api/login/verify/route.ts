@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!email || !code) {
       return NextResponse.json(
         { success: false, message: 'Email and code are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,25 +24,22 @@ export async function POST(request: NextRequest) {
     if (!result.valid) {
       return NextResponse.json(
         { success: false, message: result.error || 'Invalid or expired verification code' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const user = getUserByEmail(email);
     if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
     const token = jwt.sign(
       {
         userId: user.id,
-        email: user.email
+        email: user.email,
       },
       jwtSecret,
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     );
 
     return NextResponse.json({
@@ -51,15 +48,11 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         fullName: user.fullName,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
-
   } catch (error) {
     console.error('Login verification error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

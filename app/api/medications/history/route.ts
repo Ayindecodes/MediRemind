@@ -43,10 +43,13 @@ export async function GET(request: NextRequest) {
         const med: any = medications.get(log.medicationId);
         return {
           ...log,
-          medicationName: med?.name || 'Unknown Medication'
+          medicationName: med?.name || 'Unknown Medication',
         };
       })
-      .sort((a: any, b: any) => new Date(b.takenAt || b.date).getTime() - new Date(a.takenAt || a.date).getTime());
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.takenAt || b.date).getTime() - new Date(a.takenAt || a.date).getTime(),
+      );
 
     return NextResponse.json({ history: userLogs });
   } catch (error) {

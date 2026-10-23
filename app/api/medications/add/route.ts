@@ -23,20 +23,26 @@ export async function POST(request: NextRequest) {
 
     // Check plan limits
     const existingMeds = getUserMedications(user.id);
-    
+
     if (user.plan === 'free' && existingMeds.length >= 3) {
-      return NextResponse.json({ 
-        error: 'Free plan is limited to 3 medications. Please upgrade to add more.',
-        upgradeRequired: true 
-      }, { status: 403 });
+      return NextResponse.json(
+        {
+          error: 'Free plan is limited to 3 medications. Please upgrade to add more.',
+          upgradeRequired: true,
+        },
+        { status: 403 },
+      );
     }
 
     // Free plan cannot upload photos
     if (user.plan === 'free' && medData.photoUrl) {
-      return NextResponse.json({ 
-        error: 'Photo uploads are only available on Premium and Family plans.',
-        upgradeRequired: true 
-      }, { status: 403 });
+      return NextResponse.json(
+        {
+          error: 'Photo uploads are only available on Premium and Family plans.',
+          upgradeRequired: true,
+        },
+        { status: 403 },
+      );
     }
 
     // Create medication
@@ -56,10 +62,12 @@ export async function POST(request: NextRequest) {
       enableSound: medData.enableSound,
       enableEmail: medData.enableEmail,
       soundType: medData.soundType,
-      refillReminder: medData.refillReminder ? {
-        enabled: true,
-        daysLeft: parseInt(medData.refillReminder)
-      } : undefined
+      refillReminder: medData.refillReminder
+        ? {
+            enabled: true,
+            daysLeft: parseInt(medData.refillReminder),
+          }
+        : undefined,
     });
 
     // Send confirmation email if enabled
@@ -99,12 +107,16 @@ export async function POST(request: NextRequest) {
                     <h3 style="margin-top: 0; color: #111827;">${escapeHtml(medData.icon)} ${escapeHtml(medData.name)}</h3>
                     <p style="margin: 8px 0;"><strong>Dosage:</strong> ${escapeHtml(medData.dosage)}</p>
                     <p style="margin: 8px 0;"><strong>Frequency:</strong> ${escapeHtml(medData.frequency).replace(/_/g, ' ')}</p>
-                    ${medData.times && medData.times.length > 0 ? `
+                    ${
+                      medData.times && medData.times.length > 0
+                        ? `
                       <p style="margin: 8px 0;"><strong>Reminder Times:</strong></p>
                       <div>
                         ${medData.times.map((time: string) => `<span class="time-badge">${escapeHtml(time)}</span>`).join('')}
                       </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     ${medData.notes ? `<p style="margin: 12px 0 0 0; font-size: 14px; color: #6B7280;"><strong>Notes:</strong> ${escapeHtml(medData.notes)}</p>` : ''}
                   </div>
                   
@@ -140,24 +152,32 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Medication added: ${medication.name} for user ${user.email}`);
 
-    return NextResponse.json({
-      success: true,
-      message: 'Medication added successfully!',
-      medication,
-      emailSent
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Medication added successfully!',
+        medication,
+        emailSent,
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
     console.error('Add medication error:', error);
-    
+
     if (error.message === 'Email already registered') {
-      return NextResponse.json({ 
-        error: error.message 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: error.message,
+        },
+        { status: 400 },
+      );
     }
 
-    return NextResponse.json({ 
-      error: 'Failed to add medication. Please try again.' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to add medication. Please try again.',
+      },
+      { status: 500 },
+    );
   }
 }

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!fullName || !email || !password) {
       return NextResponse.json(
         { success: false, message: 'All fields are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: 'Email already registered. Please login instead.' },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -92,20 +92,22 @@ export async function POST(request: NextRequest) {
     const codeSent = emailSent || process.env.NODE_ENV === 'development';
 
     // The account exists either way; if the email failed, the user can use "Resend Code"
-    return NextResponse.json({
-      success: true,
-      codeSent,
-      message: codeSent
-        ? `Verification code sent to ${email}`
-        : `Your account was created, but we couldn't send the verification email to ${email}. Tap "Resend Code" to try again.`,
-      ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        codeSent,
+        message: codeSent
+          ? `Verification code sent to ${email}`
+          : `Your account was created, but we couldn't send the verification email to ${email}. Tap "Resend Code" to try again.`,
+        ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode }),
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
     console.error('Signup error:', error);
     return NextResponse.json(
       { success: false, message: error.message || 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

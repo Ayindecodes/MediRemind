@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { medicationId, takenAt } = await request.json();
-    
+
     // Extract scheduled time from medicationId
     const parts = medicationId.split('_');
     const scheduledTime = parts[parts.length - 1];
@@ -27,9 +27,8 @@ export async function POST(request: NextRequest) {
     const result = markMedicationAsTaken(user.id, actualMedId, scheduledTime);
 
     return NextResponse.json({
-  success: true
-});
-
+      success: true,
+    });
   } catch (error) {
     console.error('Mark taken error:', error);
     return NextResponse.json({ error: 'Failed to mark medication' }, { status: 500 });

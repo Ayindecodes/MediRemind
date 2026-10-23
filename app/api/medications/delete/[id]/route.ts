@@ -4,10 +4,7 @@ import jwt from 'jsonwebtoken';
 import { getUserByEmail } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
 

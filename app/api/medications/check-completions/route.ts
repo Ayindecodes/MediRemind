@@ -69,11 +69,11 @@ export async function POST(request: NextRequest) {
       fs.writeFileSync(MEDICATIONS_FILE, JSON.stringify(Object.fromEntries(medications), null, 2));
 
       // Create notifications for completed medications
-      completedMeds.forEach(med => {
+      completedMeds.forEach((med) => {
         createNotification(user.id, {
           type: 'streak',
           message: `🎉 Congratulations! You've completed your "${med.name}" treatment course.`,
-          actionUrl: '/dashboard/medications'
+          actionUrl: '/dashboard/medications',
         });
       });
     }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       completedCount: completedMeds.length,
-      completedMedications: completedMeds.map(m => m.name)
+      completedMedications: completedMeds.map((m) => m.name),
     });
   } catch (error) {
     console.error('Check completions error:', error);
@@ -98,7 +98,11 @@ export async function GET(request: NextRequest) {
 
     // Nothing to check until the first medication has been saved
     if (!fs.existsSync(MEDICATIONS_FILE)) {
-      return NextResponse.json({ success: true, completedCount: 0, message: 'No medications to check' });
+      return NextResponse.json({
+        success: true,
+        completedCount: 0,
+        message: 'No medications to check',
+      });
     }
 
     const medications = JSON.parse(fs.readFileSync(MEDICATIONS_FILE, 'utf-8'));
@@ -107,7 +111,7 @@ export async function GET(request: NextRequest) {
 
     let completedCount = 0;
 
-    Object.keys(medications).forEach(key => {
+    Object.keys(medications).forEach((key) => {
       const med = medications[key];
       if (med.endDate && !med.completed) {
         const endDate = new Date(med.endDate);
@@ -123,7 +127,7 @@ export async function GET(request: NextRequest) {
             createNotification(med.userId, {
               type: 'streak',
               message: `🎉 Congratulations! You've completed your "${med.name}" treatment course.`,
-              actionUrl: '/dashboard/medications'
+              actionUrl: '/dashboard/medications',
             });
           }
         }
@@ -137,7 +141,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       completedCount,
-      message: `Checked and marked ${completedCount} medications as completed`
+      message: `Checked and marked ${completedCount} medications as completed`,
     });
   } catch (error) {
     console.error('Auto-check completions error:', error);

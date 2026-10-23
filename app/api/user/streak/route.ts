@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       currentStreak: streak.current,
       longestStreak: streak.longest,
       totalMedsTaken: streak.totalMedsTaken,
-      weeklyAdherence: streak.weeklyAdherence
+      weeklyAdherence: streak.weeklyAdherence,
     });
   } catch (error) {
     console.error('Streak error:', error);
