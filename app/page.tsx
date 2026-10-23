@@ -3,7 +3,6 @@
 import Header from "../components/Header"; // ✅ Correct
 import HeroSection from "../components/HeroSection";
 import FeaturesSection from "../components/FeaturesSection";
-import StatsSection from "../components/StatsSection";
 import BlogSection from "../components/BlogSection";
 import NewsletterSection from "../components/NewsletterSection";
 import TherapistSection from "../components/TherapistSection";
@@ -16,7 +15,6 @@ export default function Home() {
       <Header />
       <HeroSection />
       <FeaturesSection />
-      <StatsSection />
       <BlogSection />
       <NewsletterSection />
       <TherapistSection />
