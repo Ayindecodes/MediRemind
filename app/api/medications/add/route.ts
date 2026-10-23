@@ -161,17 +161,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Add medication error:', error);
-
-    if (error.message === 'Email already registered') {
-      return NextResponse.json(
-        {
-          error: error.message,
-        },
-        { status: 400 },
-      );
-    }
 
     return NextResponse.json(
       {
