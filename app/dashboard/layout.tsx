@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Home,
   Pill,
@@ -17,6 +18,7 @@ import {
   Moon,
   Crown,
 } from 'lucide-react';
+import { useStoredUser } from '@/lib/useLocalStorage';
 
 interface User {
   id: string;
@@ -35,21 +37,39 @@ interface Notification {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const user = useStoredUser<User>();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  // When notifications were last fetched; "time ago" labels are measured from it
+  const [fetchedAt, setFetchedAt] = useState(0);
+
+  // Send signed-out visitors to the login page
+  useEffect(() => {
+    if (user === null) router.replace('/login');
+  }, [user, router]);
 
   useEffect(() => {
-    // Load user data from localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // If no user, redirect to login
-      window.location.href = '/login';
-    }
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const response = await fetch('/api/notifications', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data.notifications || []);
+          setFetchedAt(Date.now());
+        }
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      }
+    };
 
     // Fetch real notifications
     fetchNotifications();
@@ -58,24 +78,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const interval = setInterval(fetchNotifications, 30000); // Every 30 seconds
     return () => clearInterval(interval);
   }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
-
-      const response = await fetch('/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
@@ -88,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const formatTimeAgo = (timestamp: number) => {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    const seconds = Math.floor((fetchedAt - timestamp) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
