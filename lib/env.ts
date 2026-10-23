@@ -7,7 +7,9 @@ function requiredSecret(name: string): string {
   const value = process.env[name];
 
   if (!value) {
-    throw new Error(`${name} is not set. Add it to .env.local (generate one with: openssl rand -base64 32)`);
+    throw new Error(
+      `${name} is not set. Add it to .env.local (generate one with: openssl rand -base64 32)`,
+    );
   }
   if (value.length < MIN_SECRET_LENGTH) {
     throw new Error(`${name} must be at least ${MIN_SECRET_LENGTH} characters`);

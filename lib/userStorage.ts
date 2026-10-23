@@ -134,9 +134,7 @@ function loadMap<T>(file: string): Map<string, T> {
     fs.writeFileSync(file, JSON.stringify({}));
     return new Map();
   }
-  return new Map(
-    Object.entries(JSON.parse(fs.readFileSync(file, 'utf8'))) as [string, T][]
-  );
+  return new Map(Object.entries(JSON.parse(fs.readFileSync(file, 'utf8'))) as [string, T][]);
 }
 
 function saveMap<T>(file: string, map: Map<string, T>) {
@@ -144,8 +142,7 @@ function saveMap<T>(file: string, map: Map<string, T>) {
   fs.writeFileSync(file, JSON.stringify(Object.fromEntries(map), null, 2));
 }
 
-const uid = (p: string) =>
-  `${p}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+const uid = (p: string) => `${p}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
 /* ===================== USERS ===================== */
 
@@ -168,7 +165,7 @@ export function createUser(fullName: string, email: string, password: string): U
     createdAt: Date.now(),
     plan: 'free',
     streak: { current: 0, longest: 0 },
-    stats: { totalMedsTaken: 0, weeklyAdherence: 0 }
+    stats: { totalMedsTaken: 0, weeklyAdherence: 0 },
   };
 
   users.set(key, user);
@@ -204,7 +201,7 @@ export function createVerificationSession(email: string, type: 'signup' | 'login
     code,
     expiresAt: Date.now() + 15 * 60 * 1000,
     attempts: 0,
-    type
+    type,
   });
 
   saveMap(SESSIONS_FILE, sessions);
@@ -252,13 +249,13 @@ export function checkRateLimit(email: string) {
   if (attempt.blockedUntil && now < attempt.blockedUntil) {
     return {
       allowed: false,
-      blockedMinutes: Math.ceil((attempt.blockedUntil - now) / 60000)
+      blockedMinutes: Math.ceil((attempt.blockedUntil - now) / 60000),
     };
   }
 
   return {
     allowed: true,
-    remainingAttempts: 5 - attempt.attempts
+    remainingAttempts: 5 - attempt.attempts,
   };
 }
 
@@ -292,7 +289,7 @@ export function addMedication(userId: string, data: Omit<Medication, 'id' | 'use
 }
 
 export function getUserMedications(userId: string) {
-  return [...loadMap<Medication>(MEDICATIONS_FILE).values()].filter(m => m.userId === userId);
+  return [...loadMap<Medication>(MEDICATIONS_FILE).values()].filter((m) => m.userId === userId);
 }
 
 // ===================== TODAY'S MEDICATIONS =====================
@@ -302,8 +299,8 @@ export function getTodaysMedications(userId: string) {
   const logs = loadMap<any>(MED_LOGS_FILE);
   const today = new Date().toISOString().split('T')[0];
 
-  return meds.flatMap(med =>
-    med.times.map(time => {
+  return meds.flatMap((med) =>
+    med.times.map((time) => {
       const logId = `${userId}_${med.id}_${today}_${time}`;
       const log = logs.get(logId);
 
@@ -316,12 +313,11 @@ export function getTodaysMedications(userId: string) {
         status: log?.status ?? 'upcoming',
         color: med.color,
         icon: med.icon,
-        takenAt: log?.takenAt ?? null
+        takenAt: log?.takenAt ?? null,
       };
-    })
+    }),
   );
 }
-
 
 export function markMedicationAsTaken(userId: string, medicationId: string, scheduledTime: string) {
   const logs = loadMap<MedicationLog>(MED_LOGS_FILE);
@@ -335,7 +331,7 @@ export function markMedicationAsTaken(userId: string, medicationId: string, sche
     scheduledTime,
     takenAt: new Date().toISOString(),
     status: 'taken',
-    date: today
+    date: today,
   });
 
   saveMap(MED_LOGS_FILE, logs);
@@ -353,7 +349,14 @@ export function getUserStreak(_userId: string) {
 export function logMood(userId: string, mood: 'happy' | 'neutral' | 'sad', note?: string) {
   const moods = loadMap<Mood>(MOODS_FILE);
   const today = new Date().toISOString().split('T')[0];
-  const entry = { id: `${userId}_${today}`, userId, mood, note, date: today, timestamp: Date.now() };
+  const entry = {
+    id: `${userId}_${today}`,
+    userId,
+    mood,
+    note,
+    date: today,
+    timestamp: Date.now(),
+  };
   moods.set(entry.id, entry);
   saveMap(MOODS_FILE, moods);
   return entry;
@@ -366,7 +369,10 @@ export function getTodayMood(userId: string) {
 
 /* ===================== NOTIFICATIONS ===================== */
 
-export function createNotification(userId: string, data: Omit<Notification, 'id' | 'userId' | 'timestamp' | 'read'>) {
+export function createNotification(
+  userId: string,
+  data: Omit<Notification, 'id' | 'userId' | 'timestamp' | 'read'>,
+) {
   const notifs = loadMap<Notification>(NOTIFICATIONS_FILE);
   const notif = { id: uid('notif'), userId, timestamp: Date.now(), read: false, ...data };
   notifs.set(notif.id, notif);
@@ -376,7 +382,7 @@ export function createNotification(userId: string, data: Omit<Notification, 'id'
 
 export function getUserNotifications(userId: string, limit = 10) {
   return [...loadMap<Notification>(NOTIFICATIONS_FILE).values()]
-    .filter(n => n.userId === userId)
+    .filter((n) => n.userId === userId)
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, limit);
 }
@@ -385,12 +391,16 @@ export function getUserNotifications(userId: string, limit = 10) {
 
 export function getUpcomingSession(userId: string) {
   const sessions = loadMap<TherapySession>(THERAPY_FILE);
-  return [...sessions.values()].find(s => s.userId === userId && s.status === 'upcoming') || null;
+  return [...sessions.values()].find((s) => s.userId === userId && s.status === 'upcoming') || null;
 }
 
-export function updateUserPlan(userId: string, plan: 'free' | 'individual' | 'family', expiryDays?: number) {
+export function updateUserPlan(
+  userId: string,
+  plan: 'free' | 'individual' | 'family',
+  expiryDays?: number,
+) {
   const users = loadMap<User>(USERS_FILE);
-  const user = [...users.values()].find(u => u.id === userId);
+  const user = [...users.values()].find((u) => u.id === userId);
   if (!user) throw new Error('User not found');
 
   user.plan = plan;
