@@ -109,7 +109,7 @@ export default function UpgradePage() {
       {/* Header */}
       <div className="mb-8">
         <button
-          onClick={() => (window.location.href = '/dashboard')}
+          onClick={() => router.push('/dashboard')}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
         >
           <ArrowLeft className="w-5 h-5" />
