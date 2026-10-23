@@ -366,7 +366,7 @@ export default function LoginPage() {
 
               <div className="mt-6 text-center border-t border-gray-200 dark:border-gray-700 pt-6">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <a
                     href="/signup"
                     className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
@@ -458,7 +458,7 @@ export default function LoginPage() {
 
               <div className="text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Didn't receive the code?
+                  Didn&apos;t receive the code?
                 </p>
                 <button
                   type="button"
