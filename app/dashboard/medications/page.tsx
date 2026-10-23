@@ -4,12 +4,9 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   Clock,
-  Calendar,
-  ChevronDown,
   CheckCircle,
   AlertCircle,
   X,
@@ -18,10 +15,7 @@ import {
   History,
   TrendingUp,
   Package,
-  ArrowLeft,
   MoreVertical,
-  Eye,
-  EyeOff,
   Circle,
   CheckCircle2,
 } from 'lucide-react';
@@ -76,8 +70,6 @@ export default function MedicationsPage() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('active');
   const [showHistory, setShowHistory] = useState(false);
   const [editingMed, setEditingMed] = useState<Medication | null>(null);
-  const [deletingMed, setDeletingMed] = useState<Medication | null>(null);
-  const [selectedMed, setSelectedMed] = useState<Medication | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
@@ -232,7 +224,7 @@ export default function MedicationsPage() {
     }
   };
 
-  const handleMarkDoseAsTaken = async (medId: string, doseId: string, scheduledTime: string) => {
+  const handleMarkDoseAsTaken = async (medId: string, doseId: string) => {
     setIsUpdatingDose(true);
     try {
       const token = localStorage.getItem('auth_token');
@@ -747,9 +739,7 @@ export default function MedicationsPage() {
 
                                     {dose.status !== 'taken' && (
                                       <button
-                                        onClick={() =>
-                                          handleMarkDoseAsTaken(med.id, dose.id, dose.time)
-                                        }
+                                        onClick={() => handleMarkDoseAsTaken(med.id, dose.id)}
                                         disabled={isUpdatingDose}
                                         className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all disabled:opacity-50"
                                       >
