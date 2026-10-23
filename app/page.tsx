@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import Header from "../components/Header"; // ✅ Correct
-import HeroSection from "../components/HeroSection";
-import FeaturesSection from "../components/FeaturesSection";
-import BlogSection from "../components/BlogSection";
-import NewsletterSection from "../components/NewsletterSection";
-import TherapistSection from "../components/TherapistSection";
-import PricingSection from "../components/PricingSection";
-import Footer from "../components/Footer";
+import Header from '../components/Header'; // ✅ Correct
+import HeroSection from '../components/HeroSection';
+import FeaturesSection from '../components/FeaturesSection';
+import BlogSection from '../components/BlogSection';
+import NewsletterSection from '../components/NewsletterSection';
+import TherapistSection from '../components/TherapistSection';
+import PricingSection from '../components/PricingSection';
+import Footer from '../components/Footer';
 
 export default function Home() {
   return (
