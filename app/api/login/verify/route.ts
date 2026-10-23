@@ -16,11 +16,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const isValid = verifyCode(email, code);
+    // Login sessions are only created by /api/login after the password is checked
+    const result = verifyCode(email, code, 'login');
 
-    if (!isValid) {
+    if (!result.valid) {
       return NextResponse.json(
-        { success: false, message: 'Invalid or expired verification code' },
+        { success: false, message: result.error || 'Invalid or expired verification code' },
         { status: 400 }
       );
     }

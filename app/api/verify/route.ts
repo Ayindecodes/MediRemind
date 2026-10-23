@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = verifyCode(email, code);
+    const result = verifyCode(email, code, 'signup');
 
     if (!result.valid) {
       return NextResponse.json(

@@ -208,11 +208,12 @@ export function createVerificationSession(email: string, type: 'signup' | 'login
   return code;
 }
 
-export function verifyCode(email: string, code: string) {
+export function verifyCode(email: string, code: string, type: 'signup' | 'login') {
   const sessions = loadMap<Session>(SESSIONS_FILE);
   const session = sessions.get(email.toLowerCase());
 
-  if (!session) return { valid: false, error: 'No session found' };
+  // A signup code must never complete a login, and vice versa
+  if (!session || session.type !== type) return { valid: false, error: 'No session found' };
   if (Date.now() > session.expiresAt) return { valid: false, error: 'Code expired' };
   if (session.code !== code) return { valid: false, error: 'Invalid code' };
 
