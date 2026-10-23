@@ -50,9 +50,9 @@ export default function FeaturesSection() {
     {
       icon: Shield,
       title: "Privacy First",
-      description: "Your health data is encrypted and never shared with third parties.",
+      description: "Your health data is never sold or shared with advertisers.",
       gradient: "from-slate-500 to-gray-600",
-      benefits: ["End-to-end encrypted", "HIPAA compliant", "No data selling"]
+      benefits: ["No data selling", "Never shared with advertisers"]
     },
     {
       icon: Smartphone,
@@ -166,7 +166,7 @@ export default function FeaturesSection() {
                 Ready to take control of your health?
               </h3>
               <p className="text-indigo-100">
-                Join thousands of users who never miss their medications.
+                Start tracking your medications today, for free.
               </p>
             </div>
             <a
@@ -176,31 +176,6 @@ export default function FeaturesSection() {
               Get Started Free →
             </a>
           </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: "10,000+", label: "Active Users", icon: Users },
-            { value: "98%", label: "Adherence Rate", icon: TrendingUp },
-            { value: "4.9/5", label: "User Rating", icon: Award },
-            { value: "50M+", label: "Reminders Sent", icon: Bell }
-          ].map((stat, i) => {
-            const StatIcon = stat.icon;
-            return (
-              <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 mb-3">
-                  <StatIcon className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {stat.label}
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </section>
