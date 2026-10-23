@@ -1,6 +1,7 @@
 // lib/userStorage.ts
 import fs from 'fs';
 import path from 'path';
+import { randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
 
 /* ===================== PATHS ===================== */
@@ -192,9 +193,11 @@ export function verifyPassword(email: string, password: string) {
 
 /* ===================== SESSIONS ===================== */
 
+const MAX_CODE_ATTEMPTS = 5;
+
 export function createVerificationSession(email: string, type: 'signup' | 'login') {
   const sessions = loadMap<Session>(SESSIONS_FILE);
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = randomInt(100000, 1000000).toString();
 
   sessions.set(email.toLowerCase(), {
     email,
@@ -209,15 +212,30 @@ export function createVerificationSession(email: string, type: 'signup' | 'login
 }
 
 export function verifyCode(email: string, code: string, type: 'signup' | 'login') {
+  const key = email.toLowerCase();
   const sessions = loadMap<Session>(SESSIONS_FILE);
-  const session = sessions.get(email.toLowerCase());
+  const session = sessions.get(key);
 
   // A signup code must never complete a login, and vice versa
   if (!session || session.type !== type) return { valid: false, error: 'No session found' };
   if (Date.now() > session.expiresAt) return { valid: false, error: 'Code expired' };
-  if (session.code !== code) return { valid: false, error: 'Invalid code' };
 
-  sessions.delete(email.toLowerCase());
+  if (session.code !== code) {
+    session.attempts += 1;
+
+    // Burn the code after too many wrong guesses so it can't be brute-forced
+    if (session.attempts >= MAX_CODE_ATTEMPTS) {
+      sessions.delete(key);
+      saveMap(SESSIONS_FILE, sessions);
+      return { valid: false, error: 'Too many incorrect attempts. Please request a new code.' };
+    }
+
+    sessions.set(key, session);
+    saveMap(SESSIONS_FILE, sessions);
+    return { valid: false, error: 'Invalid code' };
+  }
+
+  sessions.delete(key);
   saveMap(SESSIONS_FILE, sessions);
   return { valid: true };
 }

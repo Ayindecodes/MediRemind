@@ -33,6 +33,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Codes are stored per email, so a new signup code would overwrite a pending login code
+    if (user.verified) {
+      return NextResponse.json(
+        { success: false, message: 'Account already verified. Please log in.' },
+        { status: 400 }
+      );
+    }
+
     // Generate new verification code
     const verificationCode = createVerificationSession(email, 'signup');
 
