@@ -14,11 +14,7 @@
     "jsx": "react-jsx",
     "incremental": true,
 
-
-    
-    
-
-    "baseUrl": ".",                     // ✅ ADD THIS
+    "baseUrl": ".", // ✅ ADD THIS
     "paths": {
       "@/*": ["./*"]
     },
