@@ -277,7 +277,7 @@ export default function AddMedicationPage() {
 
       // Redirect after 2 seconds
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }, 2000);
     } catch (error) {
       console.error('Error adding medication:', error);
@@ -289,7 +289,7 @@ export default function AddMedicationPage() {
   };
 
   const handleCancel = () => {
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
   // Show loading while checking user
@@ -343,7 +343,7 @@ export default function AddMedicationPage() {
               </div>
 
               <button
-                onClick={() => (window.location.href = '/dashboard/upgrade')}
+                onClick={() => router.push('/dashboard/upgrade')}
                 className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all mb-2"
               >
                 View Pricing Plans
@@ -382,7 +382,7 @@ export default function AddMedicationPage() {
                 <span className="font-semibold">{medicationCount}/3</span> medications used
               </p>
               <button
-                onClick={() => (window.location.href = '/dashboard/upgrade')}
+                onClick={() => router.push('/dashboard/upgrade')}
                 className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1"
               >
                 Upgrade for unlimited
@@ -431,7 +431,7 @@ export default function AddMedicationPage() {
                   : "You've reached the 3 medication limit for free accounts."}
               </p>
               <button
-                onClick={() => (window.location.href = '/dashboard/upgrade')}
+                onClick={() => router.push('/dashboard/upgrade')}
                 className="text-xs text-amber-700 dark:text-amber-300 underline hover:no-underline mt-2"
               >
                 Upgrade to Premium →
@@ -779,7 +779,7 @@ export default function AddMedicationPage() {
                       Photo uploads are available on Premium and Family plans.{' '}
                       <button
                         type="button"
-                        onClick={() => (window.location.href = '/dashboard/upgrade')}
+                        onClick={() => router.push('/dashboard/upgrade')}
                         className="text-indigo-600 dark:text-indigo-400 hover:underline"
                       >
                         Upgrade now
