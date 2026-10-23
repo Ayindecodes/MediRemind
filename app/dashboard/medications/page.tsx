@@ -46,6 +46,16 @@ interface TodayDose {
   takenAt?: string;
 }
 
+// One entry from GET /api/medications/today
+interface TodayDoseResponse {
+  id: string;
+  medicationId: string;
+  name: string;
+  time: string;
+  status: TodayDose['status'];
+  takenAt: string | null;
+}
+
 interface MedicationWithDoses extends Medication {
   todayDoses?: TodayDose[];
 }
@@ -130,13 +140,15 @@ export default function MedicationsPage() {
         // Merge today's doses with medications
         const medsWithDoses = (medsData.medications || []).map((med: Medication) => {
           const todayDoses = (todayData.medications || [])
-            .filter((dose: any) => dose.medicationId === med.id || dose.name === med.name)
-            .map((dose: any) => ({
+            .filter(
+              (dose: TodayDoseResponse) => dose.medicationId === med.id || dose.name === med.name,
+            )
+            .map((dose: TodayDoseResponse): TodayDose => ({
               id: dose.id,
               medicationId: med.id,
               time: dose.time,
               status: dose.status,
-              takenAt: dose.takenAt,
+              takenAt: dose.takenAt ?? undefined,
             }));
 
           return { ...med, todayDoses };
