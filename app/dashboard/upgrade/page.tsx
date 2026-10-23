@@ -270,10 +270,10 @@ export default function UpgradePage() {
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
               <Shield className="w-5 h-5 text-indigo-600" />
-              Is my data secure?
+              Is my data private?
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Yes! All your data is encrypted and stored securely. We never share your medical information with third parties.
+              We never sell your medical information or share it with advertisers.
             </p>
           </div>
 
@@ -303,29 +303,8 @@ export default function UpgradePage() {
               What payment methods do you accept?
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              We accept all major credit cards, debit cards, and PayPal. All payments are processed securely through Stripe.
+              Paid plans are not available yet. We will share payment options when they launch.
             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust Badges */}
-      <div className="mt-12 text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Trusted by thousands of users worldwide
-        </p>
-        <div className="flex items-center justify-center gap-8 opacity-50">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            <span className="text-sm">HIPAA Compliant</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Check className="w-5 h-5" />
-            <span className="text-sm">SSL Encrypted</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Crown className="w-5 h-5" />
-            <span className="text-sm">30-Day Guarantee</span>
           </div>
         </div>
       </div>
