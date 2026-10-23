@@ -63,9 +63,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Send confirmation email if enabled
+    let emailSent = false;
     if (medData.enableEmail) {
       try {
-        const emailSent = await sendEmail({
+        emailSent = await sendEmail({
           to: user.email,
           subject: `New Medication Added: ${medData.name}`,
           html: `
@@ -142,7 +143,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Medication added successfully!',
-      medication
+      medication,
+      emailSent
     }, { status: 201 });
 
   } catch (error: any) {

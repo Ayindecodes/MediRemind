@@ -88,9 +88,16 @@ export async function POST(request: NextRequest) {
       console.log('========================================');
     }
 
+    // In development the code is also printed above, so a failed email doesn't block local testing
+    const codeSent = emailSent || process.env.NODE_ENV === 'development';
+
+    // The account exists either way; if the email failed, the user can use "Resend Code"
     return NextResponse.json({
       success: true,
-      message: `Verification code sent to ${email}`,
+      codeSent,
+      message: codeSent
+        ? `Verification code sent to ${email}`
+        : `Your account was created, but we couldn't send the verification email to ${email}. Tap "Resend Code" to try again.`,
       ...(process.env.NODE_ENV === 'development' && { debug_code: verificationCode })
     }, { status: 201 });
 

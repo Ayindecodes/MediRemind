@@ -137,6 +137,14 @@ export async function POST(request: NextRequest) {
     // Reset failed attempts on successful password verification
     resetAttempts(email);
 
+    // In development the code is also printed above, so a failed email doesn't block local testing
+    if (!emailSent && process.env.NODE_ENV !== 'development') {
+      return NextResponse.json(
+        { success: false, message: "We couldn't send your login code. Please try again in a moment." },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Verification code sent to your email',

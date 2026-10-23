@@ -12,6 +12,7 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiResponse, setApiResponse] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [codeSent, setCodeSent] = useState(true);
   const [errors, setErrors] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
   const [touched, setTouched] = useState({ fullName: false, email: false, password: false, confirmPassword: false });
   const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string; color: string; }>({ score: 0, label: 'None', color: 'bg-gray-300' });
@@ -80,7 +81,11 @@ export default function SignUpPage() {
 
       const data = await response.json();
       if (response.ok) {
-        setApiResponse({ type: 'success', message: `Verification code sent to ${formData.email}!` });
+        // The account exists even if the email failed; the verify step offers "Resend Code"
+        setCodeSent(data.codeSent !== false);
+        setApiResponse(data.codeSent === false
+          ? { type: 'error', message: data.message }
+          : { type: 'success', message: `Verification code sent to ${formData.email}!` });
         setTimeout(() => setStep('verify'), 1000);
       } else {
         setApiResponse({ type: 'error', message: data.message || 'Signup failed. Please try again.' });
@@ -146,6 +151,7 @@ export default function SignUpPage() {
       });
       const data = await response.json();
       if (response.ok) {
+        setCodeSent(true);
         setApiResponse({ type: 'success', message: 'New verification code sent! Check your email.' });
         setVerificationCode(['', '', '', '', '', '']);
       } else {
@@ -174,7 +180,7 @@ export default function SignUpPage() {
             <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">MediRemind</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{step === 'signup' ? 'Create Account' : 'Verify Your Email'}</h1>
-          <p className="text-gray-600 dark:text-gray-400">{step === 'signup' ? 'Start your journey to better medication adherence' : `We sent a 6-digit code to ${formData.email}`}</p>
+          <p className="text-gray-600 dark:text-gray-400">{step === 'signup' ? 'Start your journey to better medication adherence' : codeSent ? `We sent a 6-digit code to ${formData.email}` : `We couldn't email a code to ${formData.email} yet`}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
@@ -233,7 +239,7 @@ export default function SignUpPage() {
           ) : (
             <div className="space-y-6">
               <div className="flex justify-center"><div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center"><ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" /></div></div>
-              <div className="text-center"><p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter the 6-digit code we sent to<br /><span className="font-medium text-gray-900 dark:text-white">{formData.email}</span></p></div>
+              <div className="text-center"><p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{codeSent ? 'Enter the 6-digit code we sent to' : 'Use "Resend Code" below to get a 6-digit code at'}<br /><span className="font-medium text-gray-900 dark:text-white">{formData.email}</span></p></div>
               
               <div className="flex justify-center gap-2">
                 {[0, 1, 2, 3, 4, 5].map((index) => (

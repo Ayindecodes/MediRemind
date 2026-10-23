@@ -36,6 +36,7 @@ export default function AddMedicationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
@@ -231,6 +232,7 @@ export default function AddMedicationPage() {
         throw new Error(data.error || 'Failed to add medication');
       }
 
+      setConfirmationEmailSent(data.emailSent === true);
       setShowSuccess(true);
 
       // Redirect after 2 seconds
@@ -354,7 +356,9 @@ export default function AddMedicationPage() {
             <div>
               <p className="text-sm font-medium text-green-800 dark:text-green-300">Medication added successfully!</p>
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                {formData.enableEmail ? 'A confirmation email has been sent. ' : ''}
+                {confirmationEmailSent
+                  ? 'A confirmation email has been sent. '
+                  : formData.enableEmail ? "We couldn't send the confirmation email. " : ''}
                 Redirecting to dashboard...
               </p>
             </div>

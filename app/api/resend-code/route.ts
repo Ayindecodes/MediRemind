@@ -103,6 +103,14 @@ export async function POST(request: NextRequest) {
       console.log('========================================');
     }
 
+    // In development the code is also printed above, so a failed email doesn't block local testing
+    if (!emailSent && process.env.NODE_ENV !== 'development') {
+      return NextResponse.json(
+        { success: false, message: "We couldn't send the verification email. Please try again in a moment." },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Verification code resent successfully',
