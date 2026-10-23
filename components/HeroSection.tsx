@@ -58,7 +58,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 self-center lg:self-start px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 w-fit">
               <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">#1 Medication Tracker</span>
+              <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">Medication Tracker</span>
             </div>
 
             {/* Main Headline */}
@@ -87,10 +87,6 @@ export default function HeroSection() {
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">No Credit Card</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow-md">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">10,000+ Users</span>
-              </div>
             </div>
 
             {/* CTA Buttons */}
@@ -111,32 +107,6 @@ export default function HeroSection() {
                 Watch Demo
               </a>
             </div>
-
-            {/* Social Proof */}
-            <div className="flex items-center gap-4 justify-center lg:justify-start mt-4">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white font-bold"
-                  >
-                    {String.fromCharCode(64 + i)}
-                  </div>
-                ))}
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <span key={i} className="text-yellow-400">
-                      ⭐
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold">4.9/5</span> from 2,450 reviews
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Right: App Preview */}
@@ -154,7 +124,7 @@ export default function HeroSection() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">98%</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Adherence Rate</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Weekly Adherence</p>
                   </div>
                 </div>
               </div>
