@@ -1,0 +1,12 @@
+# Formatting-only commits, skipped by `git blame` so it shows who actually wrote each line.
+# GitHub reads this file automatically. Locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# Note: these SHAs only stay valid if the branch is merged with a merge commit (not squash or rebase).
+
+# Prettier, Task 21
+cbd7c86ebe4c3e528feaf272335df62d7b38e8ca # style: format lib/ with Prettier
+87862b93b1d7e8bcdde28c7e4c96b0b17ddfbcfb # style: format API routes with Prettier
+95af1b8f42ab009d15deedd2d1fdefc37516deb6 # style: format login and signup pages with Prettier
+fc753179b1a4de47ff8573e999c21558bff79c24 # style: format dashboard pages with Prettier
+86184dcc0e91f06408f9785b9397e98deec44f52 # style: format the root layout, landing page and global CSS with Prettier
+e653d8b4943408d4b43bb281150277fc20af7160 # style: format landing page components with Prettier
+3e99ed9ec947b2c883639e21959a0fe5080fedfc # style: format config files with Prettier
