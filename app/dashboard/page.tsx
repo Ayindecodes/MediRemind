@@ -19,6 +19,7 @@ import {
   ChevronRight,
   RefreshCw,
   Pill,
+  type LucideIcon,
 } from 'lucide-react';
 
 type User = {
@@ -33,7 +34,7 @@ type Medication = {
   time?: string;
   status?: 'taken' | 'upcoming' | 'missed' | string;
   color?: string; // tailwind color classes or gradient token
-  icon?: React.ReactNode | React.ComponentType<any>;
+  icon?: React.ReactNode | React.ComponentType;
   takenAt?: string;
 };
 
@@ -253,7 +254,7 @@ export default function DashboardHome(): React.ReactElement {
     fetchDashboardData();
   };
 
-  const moods: { value: string; icon: React.ComponentType<any>; label: string; color: string }[] = [
+  const moods: { value: string; icon: LucideIcon; label: string; color: string }[] = [
     { value: 'happy', icon: Smile, label: 'Great', color: 'text-green-500' },
     { value: 'neutral', icon: Meh, label: 'Okay', color: 'text-yellow-500' },
     { value: 'sad', icon: Frown, label: 'Not good', color: 'text-red-500' },
@@ -471,7 +472,7 @@ export default function DashboardHome(): React.ReactElement {
                     const renderIcon: React.ReactNode = (() => {
                       // if icon is a component (function/class), render it
                       if (med.icon && typeof med.icon === 'function') {
-                        const C = med.icon as React.ComponentType<any>;
+                        const C = med.icon as React.ComponentType;
                         return <C />;
                       }
 
