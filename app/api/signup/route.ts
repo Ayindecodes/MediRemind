@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user (unverified)
-    const user = createUser(fullName, email, password);
+    createUser(fullName, email, password);
 
     // Generate verification code
     const verificationCode = createVerificationSession(email, 'signup');

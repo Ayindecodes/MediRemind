@@ -17,14 +17,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { medicationId, takenAt } = await request.json();
+    const { medicationId } = await request.json();
 
     // Extract scheduled time from medicationId
     const parts = medicationId.split('_');
     const scheduledTime = parts[parts.length - 1];
     const actualMedId = parts.slice(2, -2).join('_');
 
-    const result = markMedicationAsTaken(user.id, actualMedId, scheduledTime);
+    markMedicationAsTaken(user.id, actualMedId, scheduledTime);
 
     return NextResponse.json({
       success: true,
