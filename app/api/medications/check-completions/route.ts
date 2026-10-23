@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, createNotification } from '@/lib/userStorage';
-import { getJwtSecret } from '@/lib/env';
+import { getJwtSecret, getCronSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import { timingSafeEqual } from 'crypto';
 
 const MEDICATIONS_FILE = path.join(process.cwd(), 'data', 'medications.json');
+
+// Constant-time check of `Authorization: Bearer <CRON_SECRET>`
+function isCronRequest(request: NextRequest) {
+  const received = Buffer.from(request.headers.get('authorization') ?? '');
+  const expected = Buffer.from(`Bearer ${getCronSecret()}`);
+  return received.length === expected.length && timingSafeEqual(received, expected);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +27,11 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Nothing to check until the first medication has been saved
+    if (!fs.existsSync(MEDICATIONS_FILE)) {
+      return NextResponse.json({ success: true, completedCount: 0, completedMedications: [] });
     }
 
     // Load medications
@@ -76,10 +89,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Also create a GET endpoint for cron jobs or scheduled checks
+// GET endpoint for cron jobs: checks every user's medications, so it requires CRON_SECRET
 export async function GET(request: NextRequest) {
   try {
-    // This can be called by a cron job without auth
+    if (!isCronRequest(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Nothing to check until the first medication has been saved
+    if (!fs.existsSync(MEDICATIONS_FILE)) {
+      return NextResponse.json({ success: true, completedCount: 0, message: 'No medications to check' });
+    }
+
     const medications = JSON.parse(fs.readFileSync(MEDICATIONS_FILE, 'utf-8'));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
