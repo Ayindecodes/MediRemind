@@ -1,0 +1,100 @@
+# Contributing to MediRemind
+
+## Setup
+
+Requires Node.js 22 or newer.
+
+```bash
+npm ci
+npx playwright install --only-shell chromium   # once, for the browser tests
+```
+
+Create `.env.local` (git ignores it):
+
+```bash
+JWT_SECRET=<at least 32 characters: openssl rand -base64 32>
+# Optional locally:
+# RESEND_API_KEY=re_...                      # without it, sign-in codes are printed to the dev server log
+# NEXT_PUBLIC_APP_URL=http://localhost:3000  # used for links in emails
+# CRON_SECRET=<32+ characters>               # only to call the cron route by hand
+# MEDIREMIND_DATA_DIR=/some/path             # store data somewhere other than ./data
+```
+
+The server checks these when it starts and lists anything missing or invalid (`lib/env.ts`).
+
+## Scripts
+
+| Command            | What it does                                                    |
+| ------------------ | --------------------------------------------------------------- |
+| `npm run dev`      | Development server on http://localhost:3000                     |
+| `npm run build`    | Production build (needs no environment variables)               |
+| `npm run lint`     | ESLint (must report 0 problems)                                 |
+| `npm run format`   | Format everything with Prettier (`format:check` only checks)    |
+| `npm test`         | Unit and API tests with Vitest (`test:watch` re-runs on change) |
+| `npm run test:e2e` | Browser tests: builds the app and runs Playwright against it    |
+
+CI (`.github/workflows/ci.yml`) runs lint, formatting, types, unit tests, the build, a security audit and the
+browser tests on every pull request.
+
+## Branches and pull requests
+
+- Never commit directly to `main`. Branch from `main`, push, and open a pull request.
+- Keep each pull request to one task. When one depends on another that isn't merged yet, base it on that
+  branch (a stacked PR) and merge them in order.
+- Merge with **"Create a merge commit"**. Squash would lose the small commits, and rebase changes commit IDs
+  that `.git-blame-ignore-revs` relies on.
+- Run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once, so `git blame` skips formatting-only
+  commits (GitHub does this automatically).
+
+## Commits
+
+Make small commits, each one doing one thing and passing the type check on its own. Messages follow
+[Conventional Commits](https://www.conventionalcommits.org/) and CI checks this on pull requests:
+
+```
+<type>(<optional scope>): <what changed, in the imperative>
+
+<why, and anything a reviewer should know>
+```
+
+| Type       | For                                                                |
+| ---------- | ------------------------------------------------------------------ |
+| `feat`     | New behaviour users or developers can use                          |
+| `fix`      | A bug fix                                                          |
+| `refactor` | Code changes that don't change behaviour                           |
+| `perf`     | Faster or lighter, same behaviour                                  |
+| `test`     | Tests only                                                         |
+| `docs`     | Documentation only                                                 |
+| `style`    | Formatting only (list large reformats in `.git-blame-ignore-revs`) |
+| `build`    | Build configuration                                                |
+| `ci`       | CI workflows                                                       |
+| `chore`    | Dependencies, tooling and other upkeep                             |
+| `revert`   | Undoing an earlier commit                                          |
+
+Common scopes: `api`, `auth`, `storage`, `env`, `email`, `dashboard`, `medications`, `add-medication`,
+`landing`, `billing`, `deps`, `lint`, `e2e`.
+
+## Code conventions
+
+- **Formatting and lint:** Prettier decides the formatting; ESLint must report 0 problems. Don't disable a rule
+  to silence it; fix the cause, or explain the exception in a comment.
+- **Types:** no `any`. Narrow caught errors with `instanceof Error`.
+- **React:** read browser storage with `useLocalStorageItem` / `useStoredUser` (`lib/useLocalStorage.ts`), not
+  `setState` in an effect; define data loaders inside the effect that uses them; derive values with `useMemo`.
+- **Navigation:** use `useRouter()` from `next/navigation`, not `window.location.href`.
+- **Configuration:** read environment variables through `lib/env.ts`, never with a fallback secret.
+- **Emails:** send with `sendEmail()` and pass user-provided text through `escapeHtml()` (`lib/email.ts`).
+- **Copy:** don't claim anything that isn't true (certifications, user numbers, ratings, payment providers).
+
+## Tests
+
+- `lib/*.test.ts`: unit tests next to the code.
+- `tests/api/*.test.ts`: call the real route handlers, using the helpers in `tests/helpers.ts`.
+- `e2e/*.spec.ts`: browser tests against the production build.
+- Tests must never touch the real `data/` folder; the helpers point storage at a temporary folder.
+- A known bug can be recorded with `test.fail(...)` and a note pointing at the task that will fix it.
+
+## Security
+
+- Never commit secrets, `.env*` files or the contents of `data/` (it holds real user data).
+- Report security problems privately to the maintainer rather than in a public issue.
