@@ -7,7 +7,8 @@ import bcrypt from 'bcryptjs';
 /* ===================== PATHS ===================== */
 
 // MEDIREMIND_DATA_DIR moves the JSON store elsewhere (the browser tests use a temporary folder)
-const DATA_DIR = process.env.MEDIREMIND_DATA_DIR || path.join(process.cwd(), 'data');
+const DATA_DIR =
+  process.env.MEDIREMIND_DATA_DIR || path.join(/*turbopackIgnore: true*/ process.cwd(), 'data');
 
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
