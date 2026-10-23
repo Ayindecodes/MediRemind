@@ -44,3 +44,40 @@ const appUrl = z.preprocess(
 export function getAppUrl(): string {
   return read(appUrl, process.env.NEXT_PUBLIC_APP_URL) ?? 'http://localhost:3000';
 }
+
+// Everything the server reads. NEXT_PUBLIC_ variables are also visible to browser code; the rest are server-only.
+const serverEnv = z.object({
+  JWT_SECRET: requiredSecret('JWT_SECRET'),
+  // Only needed once a scheduler calls the cron routes, but must be strong if set
+  CRON_SECRET: z.preprocess(emptyAsUnset, secretString('CRON_SECRET').optional()),
+  RESEND_API_KEY: z.preprocess(emptyAsUnset, z.string().optional()),
+  NEXT_PUBLIC_APP_URL: appUrl,
+});
+
+/**
+ * Checks every variable at once; called when a server instance starts (instrumentation.ts).
+ * Throws listing every problem that would break the app, and returns warnings for settings
+ * that are optional but expected in production.
+ */
+export function checkServerEnv(): string[] {
+  const result = serverEnv.safeParse(process.env);
+  if (!result.success) {
+    const problems = result.error.issues.map((issue) => `  - ${issue.message}`).join('\n');
+    throw new Error(`Invalid environment configuration:\n${problems}`);
+  }
+
+  const warnings: string[] = [];
+  if (process.env.NODE_ENV === 'production') {
+    if (!result.data.RESEND_API_KEY) {
+      warnings.push(
+        'RESEND_API_KEY is not set, so no emails (including sign-in codes) can be sent.',
+      );
+    }
+    if (!result.data.NEXT_PUBLIC_APP_URL) {
+      warnings.push(
+        'NEXT_PUBLIC_APP_URL is not set, so links in emails point to http://localhost:3000.',
+      );
+    }
+  }
+  return warnings;
+}
