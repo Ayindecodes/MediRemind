@@ -573,7 +573,7 @@ export default function DashboardHome(): React.ReactElement {
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Today's Tip</h3>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-              Taking medications at the same time daily can improve adherence by up to 40%. Set consistent reminders!
+              Taking your medications at the same time every day makes them easier to remember. Set consistent reminders!
             </p>
             <button
               onClick={handleReadMoreTips}
