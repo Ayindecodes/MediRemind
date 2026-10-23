@@ -276,9 +276,10 @@ export default function AddMedicationPage() {
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding medication:', error);
-      setErrors({ submit: error.message || 'Failed to add medication. Please try again.' });
+      const message = error instanceof Error && error.message ? error.message : '';
+      setErrors({ submit: message || 'Failed to add medication. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
