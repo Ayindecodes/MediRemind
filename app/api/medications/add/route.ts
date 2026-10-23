@@ -2,10 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addMedication, getUserByEmail, getUserMedications } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
-import { Resend } from 'resend';
+import { escapeHtml, sendEmail } from '@/lib/email';
 import jwt from 'jsonwebtoken';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,8 +65,7 @@ export async function POST(request: NextRequest) {
     // Send confirmation email if enabled
     if (medData.enableEmail) {
       try {
-        await resend.emails.send({
-          from: 'MediRemind <onboarding@resend.dev>',
+        const emailSent = await sendEmail({
           to: user.email,
           subject: `New Medication Added: ${medData.name}`,
           html: `
@@ -94,20 +91,20 @@ export async function POST(request: NextRequest) {
                     <div class="brand">MediRemind</div>
                   </div>
                   
-                  <h2>Hi ${user.fullName}!</h2>
+                  <h2>Hi ${escapeHtml(user.fullName)}!</h2>
                   <p>You've successfully added a new medication to your schedule:</p>
-                  
+
                   <div class="med-card">
-                    <h3 style="margin-top: 0; color: #111827;">${medData.icon} ${medData.name}</h3>
-                    <p style="margin: 8px 0;"><strong>Dosage:</strong> ${medData.dosage}</p>
-                    <p style="margin: 8px 0;"><strong>Frequency:</strong> ${medData.frequency.replace(/_/g, ' ')}</p>
+                    <h3 style="margin-top: 0; color: #111827;">${escapeHtml(medData.icon)} ${escapeHtml(medData.name)}</h3>
+                    <p style="margin: 8px 0;"><strong>Dosage:</strong> ${escapeHtml(medData.dosage)}</p>
+                    <p style="margin: 8px 0;"><strong>Frequency:</strong> ${escapeHtml(medData.frequency).replace(/_/g, ' ')}</p>
                     ${medData.times && medData.times.length > 0 ? `
                       <p style="margin: 8px 0;"><strong>Reminder Times:</strong></p>
                       <div>
-                        ${medData.times.map((time: string) => `<span class="time-badge">${time}</span>`).join('')}
+                        ${medData.times.map((time: string) => `<span class="time-badge">${escapeHtml(time)}</span>`).join('')}
                       </div>
                     ` : ''}
-                    ${medData.notes ? `<p style="margin: 12px 0 0 0; font-size: 14px; color: #6B7280;"><strong>Notes:</strong> ${medData.notes}</p>` : ''}
+                    ${medData.notes ? `<p style="margin: 12px 0 0 0; font-size: 14px; color: #6B7280;"><strong>Notes:</strong> ${escapeHtml(medData.notes)}</p>` : ''}
                   </div>
                   
                   <p>We'll send you reminders ${medData.enableSound ? 'with sound notifications ' : ''}to help you stay on track!</p>
@@ -131,9 +128,11 @@ export async function POST(request: NextRequest) {
           `,
         });
 
-        console.log(`✅ Medication confirmation email sent to ${user.email}`);
+        if (emailSent) {
+          console.log(`✅ Medication confirmation email sent to ${user.email}`);
+        }
       } catch (emailError) {
-        console.error('Email sending failed:', emailError);
+        console.error('Building the confirmation email failed:', emailError);
         // Don't fail the request if email fails
       }
     }

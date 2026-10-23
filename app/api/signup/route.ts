@@ -1,9 +1,7 @@
 // app/api/signup/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { createUser, createVerificationSession, getUserByEmail } from '@/lib/userStorage';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { escapeHtml, sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,12 +30,10 @@ export async function POST(request: NextRequest) {
     const verificationCode = createVerificationSession(email, 'signup');
 
     // Send verification email
-    try {
-      await resend.emails.send({
-        from: 'MediRemind <onboarding@resend.dev>',
-        to: email,
-        subject: 'Verify Your MediRemind Account',
-        html: `
+    const emailSent = await sendEmail({
+      to: email,
+      subject: 'Verify Your MediRemind Account',
+      html: `
           <!DOCTYPE html>
           <html>
             <head>
@@ -60,7 +56,7 @@ export async function POST(request: NextRequest) {
                   <div class="brand">MediRemind</div>
                 </div>
                 
-                <h2>Hi ${fullName}!</h2>
+                <h2>Hi ${escapeHtml(fullName)}!</h2>
                 <p>Thanks for signing up with MediRemind. To complete your registration, please verify your email address.</p>
                 
                 <div class="code-box">
@@ -78,17 +74,19 @@ export async function POST(request: NextRequest) {
             </body>
           </html>
         `,
-      });
+    });
 
+    if (emailSent) {
       console.log(`✅ Verification email sent to ${email}`);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
     }
 
-    console.log('========================================');
-    console.log(`📧 Signup - Verification Code for ${email}`);
-    console.log(`Code: ${verificationCode}`);
-    console.log('========================================');
+    // Only print codes locally; in production they must only travel by email
+    if (process.env.NODE_ENV === 'development') {
+      console.log('========================================');
+      console.log(`📧 Signup - Verification Code for ${email}`);
+      console.log(`Code: ${verificationCode}`);
+      console.log('========================================');
+    }
 
     return NextResponse.json({
       success: true,

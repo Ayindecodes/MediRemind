@@ -1,9 +1,7 @@
 // app/api/resend-code/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { createVerificationSession, getUserByEmail } from '@/lib/userStorage';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { escapeHtml, sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,7 +65,7 @@ export async function POST(request: NextRequest) {
               <div class="brand">MediRemind</div>
             </div>
             
-            <h2>Hi ${user.fullName}!</h2>
+            <h2>Hi ${escapeHtml(user.fullName)}!</h2>
             <p>Here's your new verification code to complete your registration:</p>
             
             <div class="code-box">
@@ -87,23 +85,23 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send email
-    try {
-      await resend.emails.send({
-        from: 'MediRemind <onboarding@resend.dev>',
-        to: email,
-        subject: 'Verify Your MediRemind Account',
-        html: emailContent,
-      });
+    const emailSent = await sendEmail({
+      to: email,
+      subject: 'Verify Your MediRemind Account',
+      html: emailContent,
+    });
 
+    if (emailSent) {
       console.log(`✅ Resent signup verification email to ${email}`);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
     }
 
-    console.log('========================================');
-    console.log(`🔄 Resend - Verification Code for ${email} (signup)`);
-    console.log(`Code: ${verificationCode}`);
-    console.log('========================================');
+    // Only print codes locally; in production they must only travel by email
+    if (process.env.NODE_ENV === 'development') {
+      console.log('========================================');
+      console.log(`🔄 Resend - Verification Code for ${email} (signup)`);
+      console.log(`Code: ${verificationCode}`);
+      console.log('========================================');
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,16 +1,14 @@
 // app/api/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
-import { 
-  getUserByEmail, 
-  verifyPassword, 
+import {
+  getUserByEmail,
+  verifyPassword,
   createVerificationSession,
   checkRateLimit,
   recordFailedAttempt,
   resetAttempts
 } from '@/lib/userStorage';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { escapeHtml, sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,12 +73,10 @@ export async function POST(request: NextRequest) {
     const verificationCode = createVerificationSession(email, 'login');
 
     // Send login verification email
-    try {
-      await resend.emails.send({
-        from: 'MediRemind <onboarding@resend.dev>',
-        to: email,
-        subject: 'MediRemind Login Verification Code',
-        html: `
+    const emailSent = await sendEmail({
+      to: email,
+      subject: 'MediRemind Login Verification Code',
+      html: `
           <!DOCTYPE html>
           <html>
             <head>
@@ -104,7 +100,7 @@ export async function POST(request: NextRequest) {
                   <div class="brand">MediRemind</div>
                 </div>
                 
-                <h2>Hi ${user.fullName}!</h2>
+                <h2>Hi ${escapeHtml(user.fullName)}!</h2>
                 <p>We received a login request for your account. To continue, please enter the verification code below:</p>
                 
                 <div class="code-box">
@@ -124,17 +120,19 @@ export async function POST(request: NextRequest) {
             </body>
           </html>
         `,
-      });
+    });
 
+    if (emailSent) {
       console.log(`✅ Login verification email sent to ${email}`);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
     }
 
-    console.log('========================================');
-    console.log(`🔐 Login - Verification Code for ${email}`);
-    console.log(`Code: ${verificationCode}`);
-    console.log('========================================');
+    // Only print codes locally; in production they must only travel by email
+    if (process.env.NODE_ENV === 'development') {
+      console.log('========================================');
+      console.log(`🔐 Login - Verification Code for ${email}`);
+      console.log(`Code: ${verificationCode}`);
+      console.log('========================================');
+    }
 
     // Reset failed attempts on successful password verification
     resetAttempts(email);
