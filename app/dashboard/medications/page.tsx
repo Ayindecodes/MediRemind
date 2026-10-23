@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Plus,
   Search,
@@ -72,7 +72,6 @@ interface MedicationLog {
 
 export default function MedicationsPage() {
   const [medications, setMedications] = useState<MedicationWithDoses[]>([]);
-  const [filteredMedications, setFilteredMedications] = useState<MedicationWithDoses[]>([]);
   const [medicationHistory, setMedicationHistory] = useState<MedicationLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingDose, setIsUpdatingDose] = useState(false);
@@ -81,14 +80,79 @@ export default function MedicationsPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [editingMed, setEditingMed] = useState<Medication | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  // Bumped after a dose is marked as taken, so the history effect loads it again
+  const [historyVersion, setHistoryVersion] = useState(0);
 
+  // Load medications (with today's doses) once
   useEffect(() => {
+    const fetchMedications = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const [medsRes, todayRes] = await Promise.all([
+          fetch('/api/medications/list', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('/api/medications/today', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (medsRes.ok) {
+          const medsData = await medsRes.json();
+          const todayData = todayRes.ok ? await todayRes.json() : { medications: [] };
+
+          // Merge today's doses with medications
+          const medsWithDoses = (medsData.medications || []).map((med: Medication) => {
+            const todayDoses = (todayData.medications || [])
+              .filter(
+                (dose: TodayDoseResponse) => dose.medicationId === med.id || dose.name === med.name,
+              )
+              .map((dose: TodayDoseResponse): TodayDose => ({
+                id: dose.id,
+                medicationId: med.id,
+                time: dose.time,
+                status: dose.status,
+                takenAt: dose.takenAt ?? undefined,
+              }));
+
+            return { ...med, todayDoses };
+          });
+
+          setMedications(medsWithDoses);
+        }
+      } catch (error) {
+        console.error('Failed to fetch medications:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchMedications();
-    fetchHistory();
   }, []);
 
+  // Load dose history, and load it again whenever historyVersion changes
   useEffect(() => {
-    // Filter medications based on search and status
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('/api/medications/history', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMedicationHistory(data.history || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch history:', error);
+      }
+    };
+
+    fetchHistory();
+  }, [historyVersion]);
+
+  // Medications matching the search box and the All/Active/Completed filter
+  const filteredMedications = useMemo(() => {
     let filtered = medications;
 
     // Filter by search query
@@ -117,67 +181,8 @@ export default function MedicationsPage() {
       });
     }
 
-    setFilteredMedications(filtered);
+    return filtered;
   }, [searchQuery, filterStatus, medications]);
-
-  const fetchMedications = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('auth_token');
-      const [medsRes, todayRes] = await Promise.all([
-        fetch('/api/medications/list', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch('/api/medications/today', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      if (medsRes.ok) {
-        const medsData = await medsRes.json();
-        const todayData = todayRes.ok ? await todayRes.json() : { medications: [] };
-
-        // Merge today's doses with medications
-        const medsWithDoses = (medsData.medications || []).map((med: Medication) => {
-          const todayDoses = (todayData.medications || [])
-            .filter(
-              (dose: TodayDoseResponse) => dose.medicationId === med.id || dose.name === med.name,
-            )
-            .map((dose: TodayDoseResponse): TodayDose => ({
-              id: dose.id,
-              medicationId: med.id,
-              time: dose.time,
-              status: dose.status,
-              takenAt: dose.takenAt ?? undefined,
-            }));
-
-          return { ...med, todayDoses };
-        });
-
-        setMedications(medsWithDoses);
-      }
-    } catch (error) {
-      console.error('Failed to fetch medications:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchHistory = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/medications/history', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMedicationHistory(data.history || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch history:', error);
-    }
-  };
 
   const handleEdit = (med: Medication) => {
     setEditingMed({ ...med });
@@ -270,7 +275,7 @@ export default function MedicationsPage() {
         );
 
         // Refresh history
-        fetchHistory();
+        setHistoryVersion((v) => v + 1);
       } else {
         throw new Error('Failed to mark as taken');
       }
