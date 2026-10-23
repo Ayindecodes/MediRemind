@@ -7,20 +7,12 @@ Requires Node.js 22 or newer.
 ```bash
 npm ci
 npx playwright install --only-shell chromium   # once, for the browser tests
+cp .env.example .env.local                     # git ignores .env.local
 ```
 
-Create `.env.local` (git ignores it):
-
-```bash
-JWT_SECRET=<at least 32 characters: openssl rand -base64 32>
-# Optional locally:
-# RESEND_API_KEY=re_...                      # without it, sign-in codes are printed to the dev server log
-# NEXT_PUBLIC_APP_URL=http://localhost:3000  # used for links in emails
-# CRON_SECRET=<32+ characters>               # only to call the cron route by hand
-# MEDIREMIND_DATA_DIR=/some/path             # store data somewhere other than ./data
-```
-
-The server checks these when it starts and lists anything missing or invalid (`lib/env.ts`).
+In `.env.local`, set `JWT_SECRET` (`openssl rand -base64 32`). The other variables are optional locally:
+without `RESEND_API_KEY`, sign-in codes are printed to the dev server log. `.env.example` explains each one,
+and the server checks them when it starts (`lib/env.ts`).
 
 ## Scripts
 
