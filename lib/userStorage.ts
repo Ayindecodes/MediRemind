@@ -292,6 +292,18 @@ export function getUserMedications(userId: string) {
   return [...loadMap<Medication>(MEDICATIONS_FILE).values()].filter((m) => m.userId === userId);
 }
 
+// Deletes the medication if it belongs to the user. Returns it, or null if not found.
+// Its dose logs are kept so past adherence history stays intact.
+export function deleteMedication(userId: string, medicationId: string) {
+  const meds = loadMap<Medication>(MEDICATIONS_FILE);
+  const med = meds.get(medicationId);
+  if (!med || med.userId !== userId) return null;
+
+  meds.delete(medicationId);
+  saveMap(MEDICATIONS_FILE, meds);
+  return med;
+}
+
 // ===================== TODAY'S MEDICATIONS =====================
 
 export function getTodaysMedications(userId: string) {
