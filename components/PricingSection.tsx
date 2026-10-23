@@ -54,8 +54,9 @@ export default function PricingSection() {
         "Cloud sync across devices"
       ],
       limitations: [],
-      cta: "Start Premium",
-      ctaLink: "/signup?plan=premium",
+      // Paid plans can't be bought yet
+      cta: "Coming Soon",
+      ctaLink: null,
       popular: true,
       gradient: "from-indigo-600 to-purple-600"
     },
@@ -82,8 +83,8 @@ export default function PricingSection() {
         "Early access to new features"
       ],
       limitations: [],
-      cta: "Start Family Plan",
-      ctaLink: "/signup?plan=family",
+      cta: "Coming Soon",
+      ctaLink: null,
       popular: false,
       gradient: "from-amber-500 to-orange-600"
     }
@@ -119,7 +120,7 @@ export default function PricingSection() {
           </h2>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-            Start free, upgrade anytime. No credit card required for free plan.
+            Start free. No credit card required for the free plan.
           </p>
 
           {/* Billing Toggle */}
@@ -205,16 +206,22 @@ export default function PricingSection() {
                   </div>
 
                   {/* CTA Button */}
-                  <a
-                    href={plan.ctaLink}
-                    className={`block w-full text-center px-6 py-4 rounded-xl font-semibold transition-all duration-200 mb-6 ${
-                      plan.popular
-                        ? `bg-gradient-to-r ${plan.gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
-                        : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600'
-                    }`}
-                  >
-                    {plan.cta}
-                  </a>
+                  {plan.ctaLink ? (
+                    <a
+                      href={plan.ctaLink}
+                      className={`block w-full text-center px-6 py-4 rounded-xl font-semibold transition-all duration-200 mb-6 ${
+                        plan.popular
+                          ? `bg-gradient-to-r ${plan.gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
+                          : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      {plan.cta}
+                    </a>
+                  ) : (
+                    <span className="block w-full text-center px-6 py-4 rounded-xl font-semibold mb-6 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-400 cursor-not-allowed">
+                      {plan.cta}
+                    </span>
+                  )}
 
                   {/* Features List */}
                   <div className="space-y-3 mb-6">
@@ -258,28 +265,28 @@ export default function PricingSection() {
           <div className="p-6">
             <div className="text-3xl mb-3">✓</div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Cancel Anytime
+              Free Plan, No Card
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              No contracts, no hidden fees. Cancel with just one click.
+              Start with the free plan. No credit card required.
             </p>
           </div>
           <div className="p-6">
-            <div className="text-3xl mb-3">💳</div>
+            <div className="text-3xl mb-3">⏳</div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              Secure Payments
+              Paid Plans Coming Soon
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              All transactions encrypted and protected by Stripe.
+              Premium and Family are not available to buy yet.
             </p>
           </div>
           <div className="p-6">
-            <div className="text-3xl mb-3">🎁</div>
+            <div className="text-3xl mb-3">🔒</div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              14-Day Money Back
+              Your Data Is Not for Sale
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Not happy? Get a full refund within 14 days, no questions asked.
+              We never sell your health data or share it with advertisers.
             </p>
           </div>
         </div>
@@ -290,13 +297,13 @@ export default function PricingSection() {
             Still not sure? Try it free!
           </h3>
           <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-            Start with our free plan and upgrade anytime. No credit card required.
+            Start with our free plan. No credit card required.
           </p>
           <a
             href="/signup"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
           >
-            Start Free Trial
+            Get Started Free
             <ArrowRight className="w-5 h-5" />
           </a>
         </div>
