@@ -1,7 +1,16 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle, Loader, ShieldCheck } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  AlertCircle,
+  CheckCircle,
+  Loader,
+  ShieldCheck,
+} from 'lucide-react';
 
 export default function LoginPage() {
   const [step, setStep] = useState<'login' | 'verify'>('login');
@@ -10,14 +19,21 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [apiResponse, setApiResponse] = useState<{ type: 'success' | 'error' | 'warning', message: string } | null>(null);
+  const [apiResponse, setApiResponse] = useState<{
+    type: 'success' | 'error' | 'warning';
+    message: string;
+  } | null>(null);
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [touched, setTouched] = useState({ email: false, password: false });
 
   const validateField = (name: string, value: string) => {
     switch (name) {
       case 'email':
-        return !value.trim() ? 'Email is required' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Please enter a valid email' : '';
+        return !value.trim()
+          ? 'Email is required'
+          : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+            ? 'Please enter a valid email'
+            : '';
       case 'password':
         return !value ? 'Password is required' : '';
       default:
@@ -27,31 +43,32 @@ export default function LoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name as keyof typeof touched]) {
       const error = validateField(name, value);
-      setErrors(prev => ({ ...prev, [name]: error }));
+      setErrors((prev) => ({ ...prev, [name]: error }));
     }
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name } = e.target;
-    setTouched(prev => ({ ...prev, [name]: true }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
     const error = validateField(name, formData[name as keyof typeof formData]);
-    setErrors(prev => ({ ...prev, [name]: error }));
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  const isFormValid = () => formData.email.trim() !== '' && formData.password !== '' && !errors.email && !errors.password;
+  const isFormValid = () =>
+    formData.email.trim() !== '' && formData.password !== '' && !errors.email && !errors.password;
 
   const handleLogin = async () => {
     setTouched({ email: true, password: true });
     const newErrors = {
       email: validateField('email', formData.email),
-      password: validateField('password', formData.password)
+      password: validateField('password', formData.password),
     };
     setErrors(newErrors);
-    
-    if (Object.values(newErrors).some(error => error !== '')) return;
+
+    if (Object.values(newErrors).some((error) => error !== '')) return;
 
     setIsSubmitting(true);
     setApiResponse(null);
@@ -60,29 +77,32 @@ export default function LoginPage() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok && data.requiresVerification) {
-        setApiResponse({ type: 'success', message: `Verification code sent to ${formData.email}!` });
+        setApiResponse({
+          type: 'success',
+          message: `Verification code sent to ${formData.email}!`,
+        });
         setTimeout(() => setStep('verify'), 1000);
       } else if (!response.ok) {
         if (response.status === 429) {
-          setApiResponse({ 
-            type: 'error', 
-            message: data.message || 'Too many attempts. Please try again later.' 
+          setApiResponse({
+            type: 'error',
+            message: data.message || 'Too many attempts. Please try again later.',
           });
         } else if (response.status === 403) {
-          setApiResponse({ 
-            type: 'warning', 
-            message: data.message || 'Please verify your email first.' 
+          setApiResponse({
+            type: 'warning',
+            message: data.message || 'Please verify your email first.',
           });
         } else {
-          setApiResponse({ 
-            type: 'error', 
-            message: data.message || 'Login failed. Please check your credentials.' 
+          setApiResponse({
+            type: 'error',
+            message: data.message || 'Login failed. Please check your credentials.',
           });
         }
       }
@@ -121,21 +141,24 @@ export default function LoginPage() {
       const response = await fetch('/api/login/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code })
+        body: JSON.stringify({ email: formData.email, code }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setApiResponse({ type: 'success', message: 'Login successful! Redirecting...' });
-        
+
         // Store the JWT token
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
-        setTimeout(() => window.location.href = '/dashboard', 2000);
+
+        setTimeout(() => (window.location.href = '/dashboard'), 2000);
       } else {
-        setApiResponse({ type: 'error', message: data.message || 'Invalid code. Please try again.' });
+        setApiResponse({
+          type: 'error',
+          message: data.message || 'Invalid code. Please try again.',
+        });
       }
     } catch (error) {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });
@@ -152,7 +175,7 @@ export default function LoginPage() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -183,13 +206,17 @@ export default function LoginPage() {
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
               <span className="text-3xl">💊</span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">MediRemind</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              MediRemind
+            </span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {step === 'login' ? 'Welcome Back' : 'Verify Your Login'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {step === 'login' ? 'Enter your credentials to access your account' : `We sent a 6-digit code to ${formData.email}`}
+            {step === 'login'
+              ? 'Enter your credentials to access your account'
+              : `We sent a 6-digit code to ${formData.email}`}
           </p>
         </div>
 
@@ -198,7 +225,10 @@ export default function LoginPage() {
             <div className="space-y-6">
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Email Address
                 </label>
                 <div className="relative">
@@ -229,7 +259,10 @@ export default function LoginPage() {
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -266,28 +299,36 @@ export default function LoginPage() {
               </div>
 
               {apiResponse && (
-                <div className={`p-4 rounded-lg border ${
-                  apiResponse.type === 'success'
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                    : apiResponse.type === 'warning'
-                    ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                }`}>
+                <div
+                  className={`p-4 rounded-lg border ${
+                    apiResponse.type === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                      : apiResponse.type === 'warning'
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  }`}
+                >
                   <div className="flex items-start gap-2">
                     {apiResponse.type === 'success' ? (
                       <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                     ) : (
-                      <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-                        apiResponse.type === 'warning' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
-                      }`} />
+                      <AlertCircle
+                        className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                          apiResponse.type === 'warning'
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}
+                      />
                     )}
-                    <p className={`text-sm ${
-                      apiResponse.type === 'success'
-                        ? 'text-green-800 dark:text-green-300'
-                        : apiResponse.type === 'warning'
-                        ? 'text-yellow-800 dark:text-yellow-300'
-                        : 'text-red-800 dark:text-red-300'
-                    }`}>
+                    <p
+                      className={`text-sm ${
+                        apiResponse.type === 'success'
+                          ? 'text-green-800 dark:text-green-300'
+                          : apiResponse.type === 'warning'
+                            ? 'text-yellow-800 dark:text-yellow-300'
+                            : 'text-red-800 dark:text-red-300'
+                      }`}
+                    >
                       {apiResponse.message}
                     </p>
                   </div>
@@ -315,7 +356,10 @@ export default function LoginPage() {
               </button>
 
               <div className="text-center">
-                <a href="/forgot-password" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                <a
+                  href="/forgot-password"
+                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                >
                   Forgot your password?
                 </a>
               </div>
@@ -323,7 +367,10 @@ export default function LoginPage() {
               <div className="mt-6 text-center border-t border-gray-200 dark:border-gray-700 pt-6">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Don't have an account?{' '}
-                  <a href="/signup" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                  <a
+                    href="/signup"
+                    className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                  >
                     Sign up
                   </a>
                 </p>
@@ -339,8 +386,11 @@ export default function LoginPage() {
 
               <div className="text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  For your security, enter the 6-digit code we sent to<br />
-                  <span className="font-medium text-gray-900 dark:text-white">{formData.email}</span>
+                  For your security, enter the 6-digit code we sent to
+                  <br />
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {formData.email}
+                  </span>
                 </p>
               </div>
 
@@ -360,22 +410,26 @@ export default function LoginPage() {
               </div>
 
               {apiResponse && (
-                <div className={`p-4 rounded-lg border ${
-                  apiResponse.type === 'success'
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                }`}>
+                <div
+                  className={`p-4 rounded-lg border ${
+                    apiResponse.type === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  }`}
+                >
                   <div className="flex items-start gap-2">
                     {apiResponse.type === 'success' ? (
                       <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     )}
-                    <p className={`text-sm ${
-                      apiResponse.type === 'success'
-                        ? 'text-green-800 dark:text-green-300'
-                        : 'text-red-800 dark:text-red-300'
-                    }`}>
+                    <p
+                      className={`text-sm ${
+                        apiResponse.type === 'success'
+                          ? 'text-green-800 dark:text-green-300'
+                          : 'text-red-800 dark:text-red-300'
+                      }`}
+                    >
                       {apiResponse.message}
                     </p>
                   </div>
@@ -403,7 +457,9 @@ export default function LoginPage() {
               </button>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Didn't receive the code?</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Didn't receive the code?
+                </p>
                 <button
                   type="button"
                   onClick={handleResendCode}
