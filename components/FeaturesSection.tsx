@@ -6,8 +6,6 @@ import {
   Calendar,
   Zap,
   Shield,
-  Clock,
-  Heart,
   Award,
   Smartphone,
   Cloud,

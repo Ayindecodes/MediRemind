@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Play, CheckCircle, Sparkles, Calendar, Bell, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, CheckCircle, Sparkles, TrendingUp } from 'lucide-react';
 
 type FloatingPillProps = {
   delay: number;
