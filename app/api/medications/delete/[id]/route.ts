@@ -1,7 +1,7 @@
 // app/api/medications/delete/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { getUserByEmail } from '@/lib/userStorage';
+import { createNotification, deleteMedication, getUserByEmail } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -20,8 +20,18 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // TODO: delete medication logic here
-    // deleteMedication(user.id, id)
+    const medication = deleteMedication(user.id, id);
+    if (!medication) {
+      return NextResponse.json({ error: 'Medication not found' }, { status: 404 });
+    }
+
+    createNotification(user.id, {
+      type: 'reminder',
+      message: `Medication "${medication.name}" has been deleted`,
+      actionUrl: '/dashboard/medications',
+    });
+
+    console.log(`✅ Medication ${medication.name} deleted`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
