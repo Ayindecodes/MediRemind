@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Check,
   X,
@@ -14,6 +15,7 @@ import {
   TrendingUp,
   Clock,
 } from 'lucide-react';
+import { useStoredUser } from '@/lib/useLocalStorage';
 
 interface User {
   plan: 'free' | 'individual' | 'family';
@@ -22,17 +24,14 @@ interface User {
 }
 
 export default function UpgradePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const user = useStoredUser<User>();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
+  // Send signed-out visitors to the login page
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      window.location.href = '/login';
-    }
-  }, []);
+    if (user === null) router.replace('/login');
+  }, [user, router]);
 
   if (!user) return null;
 
