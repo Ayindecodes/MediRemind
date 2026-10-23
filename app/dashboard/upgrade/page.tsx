@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   Check, X, Crown, Users, Zap, ArrowLeft, Star,
-  Shield, Sparkles, TrendingUp
+  Shield, Sparkles, TrendingUp, Clock
 } from 'lucide-react';
 
 interface User {
@@ -15,7 +15,6 @@ interface User {
 export default function UpgradePage() {
   const [user, setUser] = useState<User | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -25,43 +24,6 @@ export default function UpgradePage() {
       window.location.href = '/login';
     }
   }, []);
-
-  const handleUpgrade = async (plan: 'individual' | 'family') => {
-    setIsProcessing(true);
-    
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/user/upgrade', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          plan,
-          billingCycle
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Update localStorage
-        const updatedUser = { ...user, plan };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        alert(`🎉 Successfully upgraded to ${plan === 'individual' ? 'Premium' : 'Family'} plan!`);
-        window.location.href = '/dashboard';
-      } else {
-        throw new Error('Upgrade failed');
-      }
-    } catch (error) {
-      console.error('Upgrade error:', error);
-      alert('Failed to upgrade. Please try again or contact support.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   if (!user) return null;
 
@@ -105,8 +67,9 @@ export default function UpgradePage() {
         { text: 'Priority email support', included: true },
         { text: 'Cloud sync across devices', included: true },
       ],
-      cta: user.plan === 'individual' ? 'Current Plan' : 'Upgrade to Premium',
-      disabled: user.plan === 'individual' || user.plan === 'family',
+      // Paid plans stay disabled until payments are live
+      cta: user.plan === 'individual' ? 'Current Plan' : 'Coming Soon',
+      disabled: true,
       popular: true
     },
     {
@@ -127,8 +90,8 @@ export default function UpgradePage() {
         { text: 'Custom onboarding', included: true },
         { text: 'Early access to new features', included: true },
       ],
-      cta: user.plan === 'family' ? 'Current Plan' : 'Upgrade to Family',
-      disabled: user.plan === 'family',
+      cta: user.plan === 'family' ? 'Current Plan' : 'Coming Soon',
+      disabled: true,
       popular: false
     }
   ];
@@ -151,6 +114,21 @@ export default function UpgradePage() {
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             Upgrade to unlock powerful features and never miss a dose
           </p>
+        </div>
+      </div>
+
+      {/* Payments Notice */}
+      <div className="max-w-2xl mx-auto mb-8 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              Paid plans are coming soon
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              We are setting up secure payments. Until then, everything on the Free plan is available to you.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -247,11 +225,7 @@ export default function UpgradePage() {
               </div>
 
               <button
-                onClick={() => {
-                  if (plan.id === 'individual') handleUpgrade('individual');
-                  if (plan.id === 'family') handleUpgrade('family');
-                }}
-                disabled={plan.disabled || isProcessing}
+                disabled={plan.disabled}
                 className={`w-full py-3 px-4 rounded-lg font-semibold transition-all mb-6 ${
                   plan.disabled || isCurrentPlan
                     ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 cursor-not-allowed'
@@ -260,7 +234,7 @@ export default function UpgradePage() {
                     : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:scale-105'
                 }`}
               >
-                {isProcessing ? 'Processing...' : plan.cta}
+                {plan.cta}
               </button>
 
               <div className="space-y-3">
