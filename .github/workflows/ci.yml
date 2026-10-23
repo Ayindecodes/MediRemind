@@ -55,8 +55,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Only the browser, from Playwright's CDN. The runner already has the system libraries
+      # (it ships Google Chrome); --with-deps would also install fonts and xvfb through apt,
+      # which once took 11 minutes on a slow Ubuntu mirror.
       - name: Install the browser
-        run: npx playwright install --with-deps --only-shell chromium
+        run: npx playwright install --only-shell chromium
       - name: Browser tests (builds and starts the app itself)
         run: npm run test:e2e
       - name: Keep the report and traces when tests fail
