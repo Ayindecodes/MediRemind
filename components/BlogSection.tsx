@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Clock, User, Tag } from 'lucide-react';
+import { ArrowRight, Clock, Tag } from 'lucide-react';
 
 const blogPosts = [
   { 
@@ -7,7 +7,6 @@ const blogPosts = [
     img: "/blog1.png", 
     excerpt: "Discover proven strategies to never miss a dose and build lasting medication habits.",
     link: "#",
-    author: "Dr. Sarah Johnson",
     date: "Dec 1, 2024",
     readTime: "5 min read",
     category: "Tips & Tricks"
@@ -17,7 +16,6 @@ const blogPosts = [
     img: "/blog2.png", 
     excerpt: "Real stories from users who transformed their health with consistent medication adherence.",
     link: "#",
-    author: "Michael Chen",
     date: "Nov 28, 2024",
     readTime: "7 min read",
     category: "Success Stories"
@@ -27,7 +25,6 @@ const blogPosts = [
     img: "/blog3.png", 
     excerpt: "A complete guide to managing medications for your entire family from one account.",
     link: "#",
-    author: "Emily Rodriguez",
     date: "Nov 25, 2024",
     readTime: "6 min read",
     category: "Family Care"
@@ -107,10 +104,6 @@ export default function BlogSection() {
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       <span>{post.readTime}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <User className="w-3 h-3" />
-                      <span>{post.author}</span>
                     </div>
                   </div>
 
