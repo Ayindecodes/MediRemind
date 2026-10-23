@@ -16,6 +16,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commit-messages:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check every commit in the pull request follows Conventional Commits
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(feat|fix|refactor|perf|test|docs|style|build|ci|chore|revert)(\([a-z0-9/._-]+\))?!?: .+'
+          bad=$(git log --no-merges --format='%s' "$BASE..$HEAD" | grep -vE "$pattern" || true)
+          if [ -n "$bad" ]; then
+            echo "These commit messages don't follow Conventional Commits (see CONTRIBUTING.md):"
+            echo "$bad"
+            exit 1
+          fi
+          echo "All $(git rev-list --no-merges --count "$BASE..$HEAD") commits follow the convention."
+
   checks:
     name: Lint, types, unit tests and build (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
