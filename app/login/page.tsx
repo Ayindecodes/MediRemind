@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Eye,
   EyeOff,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [step, setStep] = useState<'login' | 'verify'>('login');
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
@@ -153,7 +155,7 @@ export default function LoginPage() {
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        setTimeout(() => (window.location.href = '/dashboard'), 2000);
+        setTimeout(() => router.push('/dashboard'), 2000);
       } else {
         setApiResponse({
           type: 'error',
