@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, createNotification } from '@/lib/userStorage';
+import { getUserByEmail, createNotification, type Medication } from '@/lib/userStorage';
 import { getJwtSecret, getCronSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -36,16 +36,16 @@ export async function POST(request: NextRequest) {
 
     // Load medications
     const data = fs.readFileSync(MEDICATIONS_FILE, 'utf-8');
-    const medications = new Map(Object.entries(JSON.parse(data)));
+    const medications = new Map(Object.entries(JSON.parse(data)) as [string, Medication][]);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const completedMeds: any[] = [];
+    const completedMeds: Medication[] = [];
     let hasChanges = false;
 
     // Check each user's medication
-    medications.forEach((med: any, key) => {
+    medications.forEach((med, key) => {
       if (med.userId === user.id && med.endDate && !med.completed) {
         const endDate = new Date(med.endDate);
         endDate.setHours(23, 59, 59, 999); // End of the end date
