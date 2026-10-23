@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { ArrowRight, Clock, Tag } from 'lucide-react';
 
 const blogPosts = [
@@ -86,10 +87,12 @@ export default function BlogSection() {
               >
                 {/* Image Container */}
                 <div className="relative h-48 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-700 dark:to-slate-600 overflow-hidden">
-                  <img
+                  <Image
                     src="/medd.png"
                     alt="Medication Practice"
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transform group-hover:scale-110 transition-transform duration-500"
                   />
 
                   {/* Category Badge */}
