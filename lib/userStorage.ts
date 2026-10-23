@@ -46,7 +46,7 @@ interface Session {
   type: 'signup' | 'login';
 }
 
-interface Medication {
+export interface Medication {
   id: string;
   userId: string;
   name: string;
@@ -68,9 +68,12 @@ interface Medication {
     enabled: boolean;
     daysLeft: number;
   };
+  // Set by the check-completions job once the end date has passed
+  completed?: boolean;
+  completedAt?: string;
 }
 
-interface MedicationLog {
+export interface MedicationLog {
   id: string;
   userId: string;
   medicationId: string;
@@ -308,7 +311,7 @@ export function deleteMedication(userId: string, medicationId: string) {
 
 export function getTodaysMedications(userId: string) {
   const meds = getUserMedications(userId);
-  const logs = loadMap<any>(MED_LOGS_FILE);
+  const logs = loadMap<MedicationLog>(MED_LOGS_FILE);
   const today = new Date().toISOString().split('T')[0];
 
   return meds.flatMap((med) =>
