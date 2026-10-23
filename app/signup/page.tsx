@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Eye,
   EyeOff,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [step, setStep] = useState<'signup' | 'verify'>('signup');
   const [formData, setFormData] = useState({
     fullName: '',
@@ -215,7 +217,7 @@ export default function SignUpPage() {
           type: 'success',
           message: 'Account verified! Redirecting to dashboard...',
         });
-        setTimeout(() => (window.location.href = '/dashboard'), 2000);
+        setTimeout(() => router.push('/dashboard'), 2000);
       } else {
         setApiResponse({
           type: 'error',
