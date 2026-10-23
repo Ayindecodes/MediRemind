@@ -82,11 +82,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    router.push('/login');
   };
 
   const handleUpgrade = () => {
-    window.location.href = '/dashboard/upgrade';
+    router.push('/dashboard/upgrade');
   };
 
   const formatTimeAgo = (timestamp: number) => {
@@ -426,7 +426,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                   <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
                     <button
-                      onClick={() => (window.location.href = '/dashboard/notifications')}
+                      onClick={() => router.push('/dashboard/notifications')}
                       className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                     >
                       View all notifications
