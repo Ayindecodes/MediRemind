@@ -255,22 +255,22 @@ export default function DashboardHome(): React.ReactElement {
    * Navigation helpers
    */
   const handleAddMedication = () => {
-    window.location.href = '/dashboard/medications/add';
+    router.push('/dashboard/medications/add');
   };
   const handleBookSession = () => {
-    window.location.href = '/dashboard/therapy';
+    router.push('/dashboard/therapy');
   };
   const handleChatNow = () => {
-    window.location.href = '/dashboard/therapy';
+    router.push('/dashboard/therapy');
   };
   const handleViewAllMeds = () => {
-    window.location.href = '/dashboard/medications';
+    router.push('/dashboard/medications');
   };
   const handleViewMoodHistory = () => {
-    window.location.href = '/dashboard/history?tab=mood';
+    router.push('/dashboard/history?tab=mood');
   };
   const handleReadMoreTips = () => {
-    window.location.href = '/dashboard/therapy?tab=resources';
+    router.push('/dashboard/therapy?tab=resources');
   };
   const handleRefresh = () => {
     refreshDashboardData();
