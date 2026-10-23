@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail } from '@/lib/userStorage';
+import { getUserByEmail, type Medication } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -25,10 +25,10 @@ export async function PUT(request: NextRequest) {
 
     // Load medications
     const data = fs.readFileSync(MEDICATIONS_FILE, 'utf-8');
-    const medications = new Map(Object.entries(JSON.parse(data)));
+    const medications = new Map(Object.entries(JSON.parse(data)) as [string, Medication][]);
 
     // Verify ownership
-    const existingMed: any = medications.get(updatedMed.id);
+    const existingMed = medications.get(updatedMed.id);
     if (!existingMed || existingMed.userId !== user.id) {
       return NextResponse.json({ error: 'Medication not found' }, { status: 404 });
     }
