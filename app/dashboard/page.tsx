@@ -352,7 +352,7 @@ export default function DashboardHome(): React.ReactElement {
             , {userData?.fullName?.split(' ')[0] || 'there'}! 👋
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Here's your medication overview for today
+            Here&apos;s your medication overview for today
           </p>
         </div>
 
@@ -426,7 +426,7 @@ export default function DashboardHome(): React.ReactElement {
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Today's Medications
+                Today&apos;s Medications
                 {todaysMeds.length > 0 && (
                   <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                     ({todaysMeds.filter((m) => m.status === 'taken').length}/{todaysMeds.length}{' '}
@@ -452,8 +452,8 @@ export default function DashboardHome(): React.ReactElement {
                   No medications yet
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
-                  Start tracking your medications by adding your first one. We'll send you reminders
-                  so you never miss a dose.
+                  Start tracking your medications by adding your first one. We&apos;ll send you
+                  reminders so you never miss a dose.
                 </p>
                 <button
                   onClick={handleAddMedication}
@@ -680,7 +680,7 @@ export default function DashboardHome(): React.ReactElement {
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-800 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Today's Tip</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Today&apos;s Tip</h3>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
               Taking your medications at the same time every day makes them easier to remember. Set

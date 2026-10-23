@@ -705,7 +705,7 @@ export default function MedicationsPage() {
                             <div className="mt-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
                               <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-indigo-600" />
-                                Today's Doses
+                                Today&apos;s Doses
                               </h4>
                               <div className="space-y-2">
                                 {med.todayDoses.map((dose) => (

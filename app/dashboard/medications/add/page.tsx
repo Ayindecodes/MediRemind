@@ -637,7 +637,7 @@ export default function AddMedicationPage() {
                     Sound Notifications
                   </label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Play a sound when it's time to take this medication
+                    Play a sound when it&apos;s time to take this medication
                   </p>
 
                   {formData.enableSound && (
@@ -846,7 +846,7 @@ export default function AddMedicationPage() {
               Reminder Tips
             </h3>
             <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
-              <li>• Set reminders for times when you're usually at home</li>
+              <li>• Set reminders for times when you&apos;re usually at home</li>
               <li>• Enable both sound and email for important medications</li>
               <li>• Add notes about taking with food or avoiding certain activities</li>
               <li>• Use different colors to easily identify medications at a glance</li>
