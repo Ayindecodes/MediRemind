@@ -6,12 +6,13 @@ import bcrypt from 'bcryptjs';
 
 /* ===================== PATHS ===================== */
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+// MEDIREMIND_DATA_DIR moves the JSON store elsewhere (the browser tests use a temporary folder)
+const DATA_DIR = process.env.MEDIREMIND_DATA_DIR || path.join(process.cwd(), 'data');
 
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
-const MEDICATIONS_FILE = path.join(DATA_DIR, 'medications.json');
-const MED_LOGS_FILE = path.join(DATA_DIR, 'medication_logs.json');
+export const MEDICATIONS_FILE = path.join(DATA_DIR, 'medications.json');
+export const MED_LOGS_FILE = path.join(DATA_DIR, 'medication_logs.json');
 const MOODS_FILE = path.join(DATA_DIR, 'moods.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
 const THERAPY_FILE = path.join(DATA_DIR, 'therapy.json');

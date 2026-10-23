@@ -28,6 +28,19 @@ const readDataFile = (name: string) =>
 
 const MINUTE = 60 * 1000;
 
+describe('data folder', () => {
+  it('can be moved with MEDIREMIND_DATA_DIR', async () => {
+    const custom = path.join(root, 'elsewhere');
+    vi.stubEnv('MEDIREMIND_DATA_DIR', custom);
+    vi.resetModules();
+    const moved = await import('./userStorage');
+
+    moved.createUser('Ada', 'ada@example.com', 'Passw0rdOk');
+    expect(fs.existsSync(path.join(custom, 'users.json'))).toBe(true);
+    expect(fs.existsSync(path.join(root, 'data'))).toBe(false);
+  });
+});
+
 describe('users', () => {
   it('creates an unverified free-plan user with a lowercased email and hashed password', () => {
     const user = storage.createUser('Ada Obi', 'Ada@Example.com', 'Passw0rdOk');
