@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Plus,
@@ -19,6 +20,7 @@ import {
   Crown,
   Lock,
 } from 'lucide-react';
+import { useStoredUser } from '@/lib/useLocalStorage';
 
 interface User {
   plan: 'free' | 'individual' | 'family';
@@ -27,7 +29,8 @@ interface User {
 }
 
 export default function AddMedicationPage() {
-  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const user = useStoredUser<User>();
   const [medicationCount, setMedicationCount] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
@@ -53,33 +56,32 @@ export default function AddMedicationPage() {
   const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Signed-out visitors go to the login page; signed-in users get their medication count
   useEffect(() => {
-    // Load user and check medication count
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      fetchMedicationCount();
-    } else {
-      window.location.href = '/login';
+    if (user === null) {
+      router.replace('/login');
+      return;
     }
-  }, []);
+    if (!user) return; // Still reading the stored user
 
-  const fetchMedicationCount = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/medications/list', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const fetchMedicationCount = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch('/api/medications/list', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMedicationCount(data.medications?.length || 0);
+        if (response.ok) {
+          const data = await response.json();
+          setMedicationCount(data.medications?.length || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch medication count:', error);
       }
-    } catch (error) {
-      console.error('Failed to fetch medication count:', error);
-    }
-  };
+    };
+
+    fetchMedicationCount();
+  }, [user, router]);
 
   const medicationForms = [
     { value: 'tablet', label: 'Tablet' },
