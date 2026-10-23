@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, createNotification, type Medication } from '@/lib/userStorage';
+import {
+  getUserByEmail,
+  createNotification,
+  type Medication,
+  MEDICATIONS_FILE,
+} from '@/lib/userStorage';
 import { getJwtSecret, getCronSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
-import path from 'path';
 import { timingSafeEqual } from 'crypto';
-
-const MEDICATIONS_FILE = path.join(process.cwd(), 'data', 'medications.json');
 
 // Constant-time check of `Authorization: Bearer <CRON_SECRET>`
 function isCronRequest(request: NextRequest) {

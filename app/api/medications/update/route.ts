@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, type Medication } from '@/lib/userStorage';
+import { getUserByEmail, type Medication, MEDICATIONS_FILE } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
-import path from 'path';
-
-const MEDICATIONS_FILE = path.join(process.cwd(), 'data', 'medications.json');
 
 export async function PUT(request: NextRequest) {
   try {

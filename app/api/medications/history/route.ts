@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, type Medication, type MedicationLog } from '@/lib/userStorage';
+import {
+  getUserByEmail,
+  type Medication,
+  type MedicationLog,
+  MEDICATIONS_FILE,
+  MED_LOGS_FILE,
+} from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
-import path from 'path';
-
-const LOGS_FILE = path.join(process.cwd(), 'data', 'medication_logs.json');
-const MEDICATIONS_FILE = path.join(process.cwd(), 'data', 'medications.json');
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     // Load logs
     let logs = new Map<string, MedicationLog>();
-    if (fs.existsSync(LOGS_FILE)) {
-      const data = fs.readFileSync(LOGS_FILE, 'utf-8');
+    if (fs.existsSync(MED_LOGS_FILE)) {
+      const data = fs.readFileSync(MED_LOGS_FILE, 'utf-8');
       logs = new Map(Object.entries(JSON.parse(data)) as [string, MedicationLog][]);
     }
 
