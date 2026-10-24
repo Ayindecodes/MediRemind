@@ -21,6 +21,7 @@ const load = async () => ({
   add: await import('@/app/api/medications/add/route'),
   list: await import('@/app/api/medications/list/route'),
   update: await import('@/app/api/medications/update/route'),
+  markTaken: await import('@/app/api/medications/mark-taken/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -335,5 +336,19 @@ describe('PUT /api/medications/update', () => {
 
     expect((await update(bola.token, { id: med.id, name: 'Changed' })).status).toBe(404);
     expect((await saved(ada.token)).name).toBe('Amlodipine');
+  });
+});
+
+describe('POST /api/medications/mark-taken', () => {
+  it('answers a missing or non-text dose ID with 400, not a server error', async () => {
+    const { token } = signedInUser('ada@example.com');
+    const markTaken = (body: unknown) =>
+      call(m.markTaken.POST, '/api/medications/mark-taken', body, token);
+
+    expect(await markTaken({})).toEqual({ status: 400, body: { error: 'Missing the dose ID' } });
+    expect(await markTaken({ medicationId: 42 })).toEqual({
+      status: 400,
+      body: { error: 'Missing the dose ID' },
+    });
   });
 });
