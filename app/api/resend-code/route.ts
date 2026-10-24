@@ -2,19 +2,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createVerificationSession, getUserByEmail } from '@/lib/userStorage';
 import { escapeHtml, sendEmail } from '@/lib/email';
+import { resendCodeSchema } from '@/lib/validation/auth';
+import { parseJsonBody } from '@/lib/validation/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, type } = await request.json();
-
-    if (!email) {
-      return NextResponse.json({ success: false, message: 'Email is required' }, { status: 400 });
+    // Only signup codes can be resent: login codes are issued by /api/login, after the password
+    const input = await parseJsonBody(request, resendCodeSchema);
+    if (!input.ok) {
+      return NextResponse.json({ success: false, message: input.error }, { status: 400 });
     }
-
-    // Login codes are only issued by /api/login, after the password is checked
-    if (type && type !== 'signup') {
-      return NextResponse.json({ success: false, message: 'Invalid code type' }, { status: 400 });
-    }
+    const { email } = input.data;
 
     // Check if user exists
     const user = getUserByEmail(email);

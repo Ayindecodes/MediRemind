@@ -16,6 +16,7 @@ const load = async () => ({
   verify: await import('@/app/api/verify/route'),
   login: await import('@/app/api/login/route'),
   loginVerify: await import('@/app/api/login/verify/route'),
+  resendCode: await import('@/app/api/resend-code/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -152,6 +153,27 @@ describe('POST /api/login and /api/login/verify', () => {
     expect(res).toEqual({
       status: 400,
       body: { success: false, message: 'Enter the 6-digit code' },
+    });
+  });
+});
+
+describe('POST /api/resend-code', () => {
+  it('sends the new code to the normalised address', async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+
+    const res = await call(m.resendCode.POST, '/api/resend-code', {
+      email: ' Ada@Example.com',
+      type: 'signup',
+    });
+    expect(res.status).toBe(200);
+    expect(sendEmail.mock.calls[0][0].to).toBe('ada@example.com');
+  });
+
+  it('refuses an invalid email', async () => {
+    const res = await call(m.resendCode.POST, '/api/resend-code', { email: 'ada' });
+    expect(res).toEqual({
+      status: 400,
+      body: { success: false, message: 'Enter a valid email address' },
     });
   });
 });
