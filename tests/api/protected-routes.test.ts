@@ -96,7 +96,15 @@ describe('GET /api/medications/check-completions (Task 7)', () => {
   it('rejects requests without CRON_SECRET, including signed-in users', async () => {
     const { token } = signedInUser('ada@example.com');
 
-    expect((await cron()).status).toBe(401);
+    expect(await json(await cron())).toEqual({
+      status: 401,
+      body: {
+        error: {
+          code: 'unauthorized',
+          message: 'This endpoint needs the scheduler key (CRON_SECRET).',
+        },
+      },
+    });
     expect((await cron(token)).status).toBe(401);
     expect((await cron('x'.repeat(40))).status).toBe(401);
   });

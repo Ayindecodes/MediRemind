@@ -21,6 +21,7 @@ const load = async () => ({
   remove: await import('@/app/api/medications/delete/[id]/route'),
   markTaken: await import('@/app/api/medications/mark-taken/route'),
   moodLog: await import('@/app/api/mood/log/route'),
+  completions: await import('@/app/api/medications/check-completions/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -63,6 +64,11 @@ const routes = (): Route[] => [
     call: (req) => m.markTaken.POST(req),
   },
   { name: 'POST /api/mood/log', method: 'POST', call: (req) => m.moodLog.POST(req) },
+  {
+    name: 'POST /api/medications/check-completions',
+    method: 'POST',
+    call: (req) => m.completions.POST(req),
+  },
 ];
 
 const send = async (route: Route, token?: string) => {
