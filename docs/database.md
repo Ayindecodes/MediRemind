@@ -4,7 +4,8 @@ The Supabase (Postgres) schema the app is moving to in Phase 3. The app still ru
 described in [architecture.md](architecture.md) until its data layer switches over (Tasks 36–42).
 
 - Migrations: `supabase/migrations/`, applied in order. Change the schema only by adding one.
-- Tests: `supabase/tests/database/*.test.sql` (pgTAP), one file per table plus `schema_rules.test.sql`.
+- Tests: `supabase/tests/database/*.test.sql` (pgTAP): one file per table, one per table's access rules
+  (`*_access.test.sql`), plus `schema_rules`, `isolation`, `free_plan_limit` and `server_only_tables`.
 - Run them: `npm run db:start`, then `npm run db:test`. CI applies every migration to an empty database and
   runs the same tests on each pull request.
 
@@ -16,8 +17,8 @@ described in [architecture.md](architecture.md) until its data layer switches ov
 - **Money:** whole kobo in `integer` columns (`amount_kobo`, `cost_kobo`; 100 kobo = ₦1), as Paystack does.
 - **Choices:** `text` with a `check (... in (...))` list rather than Postgres enums, so values can be added
   or removed in a migration.
-- **Row level security:** on for every table. Until Task 35 adds policies, only the service role (server
-  code) can read or write anything. `schema_rules.test.sql` fails if a table without RLS appears.
+- **Row level security:** on for every table, with the access rules below. `schema_rules.test.sql` fails if
+  a table without RLS appears.
 - **Ownership:** every row belongs to a profile. Tables that point at a medicine use a composite foreign key
   to `medications (id, user_id)`, so a row can't belong to one person while pointing at another person's
   medicine.
@@ -55,9 +56,41 @@ erDiagram
 
 The comments in each migration explain every column.
 
+## Who can do what
+
+The app talks to the database as one of three roles:
+
+- **`anon`**: the public key with nobody signed in. It has no access to any table.
+- **`authenticated`**: a signed-in person. It reaches only their own rows (row level security) and only the
+  columns granted below. Supabase's default grant of everything is revoked first, so a rule like "people
+  can edit their profile" can't also let them edit their plan.
+- **`service_role`**: server code only, never sent to the browser. It has full access and bypasses row level
+  security, so it is used only for what people may not do themselves.
+
+| Table                 | A signed-in person can, for their own rows          | Only the server                                                                  |
+| --------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `profiles`            | Read; change name, time zone and language           | Create, delete; change phone, email and plan                                     |
+| `medications`         | Read, add, edit, archive and unarchive              | Photos, pausing; moving a medicine to someone else is impossible for anyone      |
+| `dose_logs`           | Read, record (source `app` or `push`), change, undo | Doses from WhatsApp or SMS replies, caregivers, and marking doses missed         |
+| `moods`               | Read, log, change, delete                           |                                                                                  |
+| `notifications`       | Read, mark read, clear                              | Create                                                                           |
+| `notification_prefs`  | Read, create, change                                | Recording the WhatsApp opt-in                                                    |
+| `push_subscriptions`  | Read, register a device, remove one                 | `last_used_at`; moving a device to another account                               |
+| `subscriptions`       | Read plan, billing, status, period and price        | Everything else, including Paystack's codes; creating and changing subscriptions |
+| `reminder_deliveries` | Nothing                                             | Everything                                                                       |
+| `payment_events`      | Nothing                                             | Everything                                                                       |
+
+**The free plan's limit** of 3 active medicines is enforced by a trigger on `medications`, for every role,
+server code included. Active means not archived, not paused and not finished (end date before today in the
+person's time zone). A paid plan past `plan_expires_at` counts as free. The trigger locks the profile while
+counting, so simultaneous inserts can't both slip under the limit, and it refuses with SQLSTATE `P0001` and
+the hint `upgrade_required`, the API's error code.
+
+`isolation.test.sql` checks every table a signed-in person can read and fails if any row of someone else's
+is visible, or if a readable table has no test data to check.
+
 ## Not in the schema yet
 
-- **Access rules** (row level security policies): Task 35.
 - **Creating a profile when someone signs up:** Task 37, with phone sign-in.
 - **Family and caregivers** (people managed by someone else, caregiver links and permissions): Phase 7.
   Medicines will gain an optional link to the person they're for; today every medicine is its owner's.
