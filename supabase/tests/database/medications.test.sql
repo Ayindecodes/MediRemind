@@ -13,7 +13,9 @@ select ok((select relrowsecurity from pg_class where oid = 'public.medications':
   'row level security is on');
 select has_index('public', 'medications', 'medications_user_id_idx', 'medications are indexed by owner');
 
-insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com');
+insert into auth.users (id, email, raw_user_meta_data) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com', '{"full_name": "Test"}');
+-- Signing up creates a profile; these tests set up their own
+delete from public.profiles;
 insert into public.profiles (id, full_name, phone)
   values ('11111111-1111-1111-1111-111111111111', 'Ada Obi', '+2348031234567');
 

@@ -11,7 +11,9 @@ select ok((select relrowsecurity from pg_class where oid = 'public.push_subscrip
 select has_index('public', 'push_subscriptions', 'push_subscriptions_user_id_idx',
   'subscriptions are indexed by owner');
 
-insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com');
+insert into auth.users (id, email, raw_user_meta_data) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com', '{"full_name": "Test"}');
+-- Signing up creates a profile; these tests set up their own
+delete from public.profiles;
 insert into public.profiles (id, full_name, email)
   values ('11111111-1111-1111-1111-111111111111', 'Ada Obi', 'ada@example.com');
 insert into public.push_subscriptions (user_id, endpoint, p256dh, auth)
