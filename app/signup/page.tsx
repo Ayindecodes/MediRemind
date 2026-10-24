@@ -222,7 +222,7 @@ export default function SignUpPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Verification failed. Please try again.',
+          message: errorFrom(data, 'Verification failed. Please try again.').message,
         });
       }
     } catch {

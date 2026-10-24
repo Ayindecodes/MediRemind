@@ -136,12 +136,28 @@ describe('POST /api/verify', () => {
         email: 'ada@example.com',
         code: 'abc',
       });
-      expect(res.body.message).toBe('Enter the 6-digit code');
+      expect(res.body.error).toEqual({
+        code: 'invalid_request',
+        message: 'Enter the 6-digit code',
+      });
     }
 
     // Five wrong guesses would have deleted the code; malformed ones never reached it
     const res = await call(m.verify.POST, '/api/verify', { email: 'Ada@Example.com', code });
     expect(res).toMatchObject({ status: 200, body: { success: true } });
+  });
+
+  it('answers a wrong code with invalid_code', async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+    const code = m.storage.createVerificationSession('ada@example.com', 'signup');
+
+    const wrong = code === '123456' ? '654321' : '123456';
+    expect(
+      await call(m.verify.POST, '/api/verify', { email: 'ada@example.com', code: wrong }),
+    ).toEqual({
+      status: 400,
+      body: { error: { code: 'invalid_code', message: 'Invalid code' } },
+    });
   });
 });
 
