@@ -20,6 +20,7 @@ const load = async () => ({
   resendCode: await import('@/app/api/resend-code/route'),
   add: await import('@/app/api/medications/add/route'),
   list: await import('@/app/api/medications/list/route'),
+  update: await import('@/app/api/medications/update/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -259,5 +260,80 @@ describe('POST /api/medications/add', () => {
       body: { error: "The end date can't be before the start date" },
     });
     expect(await listed(token)).toEqual([]);
+  });
+});
+
+describe('PUT /api/medications/update', () => {
+  const addMedication = async (token: string, fields: Record<string, unknown> = {}) => {
+    const body = { name: 'Amlodipine', dosage: '5mg', frequency: 'daily', times: ['08:00'] };
+    const res = await call(
+      m.add.POST,
+      '/api/medications/add',
+      { ...body, startDate: '2026-10-01', enableEmail: false, ...fields },
+      token,
+    );
+    return res.body.medication;
+  };
+
+  const update = (token: string, body: unknown) =>
+    call((req) => m.update.PUT(req), '/api/medications/update', body, token);
+
+  const saved = async (token: string) =>
+    (await call(m.list.GET, '/api/medications/list', undefined, token)).body.medications[0];
+
+  it('only changes editable fields, even when sent the whole medication like the edit form does', async () => {
+    const ada = signedInUser('ada@example.com');
+    const bola = signedInUser('bola@example.com');
+    const med = await addMedication(ada.token);
+
+    // The edit form sends the medication back with today's doses attached
+    const res = await update(ada.token, {
+      ...med,
+      name: 'Amlodipine Besylate',
+      userId: bola.user.id,
+      completed: true,
+      photoUrl: 'data:image/png;base64,AAAA',
+      todayDoses: [{ id: 'dose', status: 'taken' }],
+    });
+    expect(res.status).toBe(200);
+
+    const after = await saved(ada.token);
+    expect(after).toMatchObject({ id: med.id, userId: ada.user.id, name: 'Amlodipine Besylate' });
+    expect(after).not.toHaveProperty('completed');
+    expect(after).not.toHaveProperty('photoUrl');
+    expect(after).not.toHaveProperty('todayDoses');
+    expect(res.body.medication).toEqual(after);
+  });
+
+  it('clears the end date when the edit form sends it empty', async () => {
+    const { token } = signedInUser('ada@example.com');
+    const med = await addMedication(token, { endDate: '2026-10-31' });
+
+    expect((await update(token, { ...med, endDate: '' })).status).toBe(200);
+    expect(await saved(token)).not.toHaveProperty('endDate');
+  });
+
+  it('refuses edits that clash with the saved schedule', async () => {
+    const { token } = signedInUser('ada@example.com');
+    const med = await addMedication(token, { endDate: '2026-10-31' });
+
+    expect(await update(token, { id: med.id, startDate: '2026-11-15' })).toEqual({
+      status: 400,
+      body: { error: "The end date can't be before the start date" },
+    });
+    expect(await update(token, { id: med.id, times: [] })).toEqual({
+      status: 400,
+      body: { error: 'Add at least one reminder time' },
+    });
+    expect(await saved(token)).toEqual(med);
+  });
+
+  it("can't edit another user's medication", async () => {
+    const ada = signedInUser('ada@example.com');
+    const bola = signedInUser('bola@example.com');
+    const med = await addMedication(ada.token);
+
+    expect((await update(bola.token, { id: med.id, name: 'Changed' })).status).toBe(404);
+    expect((await saved(ada.token)).name).toBe('Amlodipine');
   });
 });
