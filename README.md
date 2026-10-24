@@ -78,6 +78,7 @@ lib/          Storage (userStorage.ts, moving to db/), shared types (types.ts), 
               route helpers (api/), configuration (env.ts), email (email.ts),
               browser helpers (apiClient.ts, useLocalStorage.ts)
 tests/api/    Tests that call the API route handlers
+tests/db/     Data-layer tests against the local Supabase stack
 e2e/          Browser tests and a fake email server for them
 data/         Local JSON data, created on first use (git-ignored: it holds real user data)
 supabase/     Local Supabase config, migrations and seed data

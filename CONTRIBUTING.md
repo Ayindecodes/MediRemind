@@ -121,6 +121,9 @@ Common scopes: `api`, `auth`, `storage`, `env`, `email`, `dashboard`, `medicatio
 
 - `lib/*.test.ts`: unit tests next to the code.
 - `tests/api/*.test.ts`: call the real route handlers, using the helpers in `tests/helpers.ts`.
+- `tests/db/*.test.ts`: the data layer against the local Supabase stack, as real signed-in people
+  (`npm run test:db`).
+- `supabase/tests/database/*.test.sql`: the schema and its access rules, in pgTAP (`npm run db:test`).
 - `e2e/*.spec.ts`: browser tests against the production build.
 - Tests must never touch the real `data/` folder; the helpers point storage at a temporary folder.
 - A known bug can be recorded with `test.fail(...)` and a note pointing at the task that will fix it.
