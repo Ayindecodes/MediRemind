@@ -1,0 +1,10 @@
+{
+  "about": "A real call from local Supabase Auth's send_sms hook, captured on 2026-10-24 with a throwaway secret used for nothing else. The number is a made-up test number.",
+  "secret": "v1,whsec_MfU77W5x6oCqX/vwgTUFszP3PqF4lw1LekxhfSzltGQ=",
+  "headers": {
+    "webhook-id": "2c47534f-d528-4e4e-9b19-2d2f7afc1389",
+    "webhook-timestamp": "1792876362",
+    "webhook-signature": "v1,NowufFT1X2gI1JyMlKF8bUMZUnL1nsCbqx9z+OqAVgI="
+  },
+  "body": "{\"metadata\":{\"uuid\":\"dd7d81fd-ce26-44e6-bbc7-007963215689\",\"time\":\"2026-10-24T21:12:42.898209096Z\",\"name\":\"send-sms\",\"ip_address\":\"172.23.0.1\"},\"user\":{\"id\":\"7f8a9374-e912-4b67-901f-6edb0e3c0cf8\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"\",\"phone\":\"2348035550123\",\"app_metadata\":{\"provider\":\"phone\",\"providers\":[\"phone\"]},\"user_metadata\":{\"email_verified\":false,\"full_name\":\"Chidi Okafor\",\"phone_verified\":false,\"sub\":\"7f8a9374-e912-4b67-901f-6edb0e3c0cf8\"},\"identities\":[{\"identity_id\":\"bafe627b-b29b-4edd-a8c2-04e74ab73ed3\",\"id\":\"7f8a9374-e912-4b67-901f-6edb0e3c0cf8\",\"user_id\":\"7f8a9374-e912-4b67-901f-6edb0e3c0cf8\",\"identity_data\":{\"email_verified\":false,\"full_name\":\"Chidi Okafor\",\"phone_verified\":false,\"sub\":\"7f8a9374-e912-4b67-901f-6edb0e3c0cf8\"},\"provider\":\"phone\",\"last_sign_in_at\":\"2026-10-24T21:12:42.884561617Z\",\"created_at\":\"2026-10-24T21:12:42.884595Z\",\"updated_at\":\"2026-10-24T21:12:42.884595Z\"}],\"created_at\":\"2026-10-24T21:12:42.880024Z\",\"updated_at\":\"2026-10-24T21:12:42.895642Z\",\"is_anonymous\":false},\"sms\":{\"otp\":\"599411\",\"phone\":\"2348035550123\"}}"
+}
