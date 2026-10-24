@@ -116,3 +116,27 @@ export interface StreakSummary {
   totalMedsTaken: number;
   weeklyAdherence: number;
 }
+
+/** What went wrong, in every error response the API sends: `{ "error": ApiError }` */
+export type ApiErrorCode =
+  | 'invalid_request'
+  | 'invalid_code'
+  | 'already_verified'
+  | 'unauthorized'
+  | 'invalid_credentials'
+  | 'email_not_verified'
+  | 'upgrade_required'
+  | 'payments_unavailable'
+  | 'not_found'
+  | 'email_taken'
+  | 'too_many_attempts'
+  | 'server_error'
+  | 'email_failed';
+
+export interface ApiError {
+  code: ApiErrorCode;
+  // Written for the person using the app, so pages can show it as it is
+  message: string;
+  // Extra facts for some codes, such as retryAfterMinutes for too_many_attempts
+  details?: Record<string, unknown>;
+}
