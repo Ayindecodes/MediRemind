@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MediRemind
 
-## Getting Started
+[![CI](https://github.com/Ayindecodes/MediRemind/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayindecodes/MediRemind/actions/workflows/ci.yml)
 
-First, run the development server:
+MediRemind helps people keep track of their medications and take them on time, built first for users in
+Nigeria.
+
+## Status
+
+Early development. What works today:
+
+- Sign-up and login with a password plus a 6-digit code sent by email
+- Adding, editing and deleting medications, with today's doses listed by time
+- Marking doses as taken, dose history, a daily mood check-in and in-app notifications
+- A free plan (up to 3 medications); paid plans are shown as coming soon
+
+Not built yet:
+
+- **Reminders**: nothing is sent at dose times yet
+- **A database**: data is stored in JSON files, which works locally but can't be saved on Vercel
+- Streaks and adherence statistics (always 0), payments, family accounts
+
+Known bug: a dose marked as taken shows as not taken again after reloading the page.
+
+## Tech stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Resend (email) · zod · Vitest ·
+Playwright · GitHub Actions · Vercel
+
+## Getting started
+
+Requires Node.js 22 or newer.
 
 ```bash
+npm ci
+cp .env.example .env.local   # then set JWT_SECRET: openssl rand -base64 32
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Without `RESEND_API_KEY`, sign-in codes are printed in the terminal running
+`npm run dev` instead of being emailed.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set these in `.env.local` locally, or in the Vercel project settings. The server checks them when it starts
+and lists anything missing or invalid.
 
-## Learn More
+| Variable              | Required             | Purpose                                                       |
+| --------------------- | -------------------- | ------------------------------------------------------------- |
+| `JWT_SECRET`          | Always               | Signs login tokens. At least 32 characters                    |
+| `RESEND_API_KEY`      | In production        | Sends sign-in codes and other emails through Resend           |
+| `NEXT_PUBLIC_APP_URL` | In production        | The app's public address, used for links in emails            |
+| `CRON_SECRET`         | When a cron job runs | Lets a scheduler call the cron routes. At least 32 characters |
+| `MEDIREMIND_DATA_DIR` | No                   | Stores the JSON data somewhere other than `./data`            |
 
-To learn more about Next.js, take a look at the following resources:
+`.env.example` has the same list with more detail.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command            | What it does                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| `npm run dev`      | Development server                                                                        |
+| `npm run build`    | Production build (needs no environment variables)                                         |
+| `npm run lint`     | ESLint                                                                                    |
+| `npm run format`   | Format with Prettier (`format:check` only checks)                                         |
+| `npm test`         | Unit and API tests (Vitest)                                                               |
+| `npm run test:e2e` | Browser tests (Playwright); run `npx playwright install --only-shell chromium` once first |
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/          Pages (landing, login, signup, dashboard) and API routes (app/api)
+components/   Landing page sections
+lib/          Storage (userStorage.ts), configuration (env.ts), email (email.ts),
+              browser storage hooks (useLocalStorage.ts)
+tests/api/    Tests that call the API route handlers
+e2e/          Browser tests and a fake email server for them
+data/         Local JSON data, created on first use (git-ignored: it holds real user data)
+docs/         Architecture notes
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [docs/architecture.md](docs/architecture.md) for how the pieces fit together.
+
+## Testing and CI
+
+`npm test` runs the unit and API tests, and `npm run test:e2e` runs the browser tests against a production
+build. Tests never touch the real `data/` folder.
+
+On every pull request, GitHub Actions runs lint, formatting, type-checking, the unit tests, a production
+build, a security audit, the browser tests and a commit message check. `main` only accepts changes whose
+checks pass.
+
+## Deployment
+
+Vercel deploys `main` to production and every pull request as a preview. Before relying on a deployment, set
+`JWT_SECRET`, `RESEND_API_KEY` and `NEXT_PUBLIC_APP_URL` in the Vercel project.
+
+Two current limits:
+
+- Vercel doesn't allow writing files, so sign-ups and other data can't be saved there until the planned
+  database is in place.
+- Emails are sent from Resend's test address (`onboarding@resend.dev`), which only delivers to the Resend
+  account owner until a sending domain is verified.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the branching, commit and code conventions. Please report security
+problems privately to the maintainer rather than in a public issue.
