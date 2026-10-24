@@ -65,33 +65,32 @@ memory, not in a file.
 
 ## API routes
 
-| Method and path                             | Login         | Purpose                                                  |
-| ------------------------------------------- | ------------- | -------------------------------------------------------- |
-| `POST /api/signup`                          | No            | Create an account and email a signup code                |
-| `POST /api/verify`                          | No            | Verify the account with the signup code                  |
-| `POST /api/resend-code`                     | No            | Email a new signup code (unverified accounts only)       |
-| `POST /api/login`                           | No            | Check the password and email a login code                |
-| `POST /api/login/verify`                    | No            | Exchange the login code for a token                      |
-| `GET /api/user/profile`                     | Token         | The signed-in user, including their plan                 |
-| `GET /api/user/streak`                      | Token         | Streak and adherence (placeholder: always 0)             |
-| `POST /api/user/upgrade`                    | –             | Always 403 until payments exist                          |
-| `POST /api/medications/add`                 | Token         | Add a medication; free plan: 3 medications, no photos    |
-| `GET /api/medications/list`                 | Token         | The user's medications                                   |
-| `GET /api/medications/today`                | Token         | One entry per scheduled time today, with its status      |
-| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken (see known limits)                |
-| `PUT /api/medications/update`               | Token         | Edit one of the user's medications                       |
-| `DELETE /api/medications/delete/[id]`       | Token         | Delete one of the user's medications                     |
-| `GET /api/medications/history`              | Token         | Doses taken, newest first                                |
-| `POST /api/medications/check-completions`   | Token         | Mark the user's finished courses as completed            |
-| `GET /api/medications/check-completions`    | `CRON_SECRET` | The same for every user, for a scheduler                 |
-| `POST /api/mood/log`, `GET /api/mood/today` | Token         | Daily mood                                               |
-| `GET /api/notifications`                    | Token         | The user's 10 newest notifications                       |
-| `GET /api/therapy/upcoming-session`         | Token         | Next coaching session (none exist yet)                   |
-| `POST /api/medications/create`              | No            | Unused placeholder: logs the request and returns success |
+| Method and path                             | Login         | Purpose                                               |
+| ------------------------------------------- | ------------- | ----------------------------------------------------- |
+| `POST /api/signup`                          | No            | Create an account and email a signup code             |
+| `POST /api/verify`                          | No            | Verify the account with the signup code               |
+| `POST /api/resend-code`                     | No            | Email a new signup code (unverified accounts only)    |
+| `POST /api/login`                           | No            | Check the password and email a login code             |
+| `POST /api/login/verify`                    | No            | Exchange the login code for a token                   |
+| `GET /api/user/profile`                     | Token         | The signed-in user, including their plan              |
+| `GET /api/user/streak`                      | Token         | Streak and adherence (placeholder: always 0)          |
+| `POST /api/user/upgrade`                    | –             | Always 403 until payments exist                       |
+| `POST /api/medications/add`                 | Token         | Add a medication; free plan: 3 medications, no photos |
+| `GET /api/medications/list`                 | Token         | The user's medications                                |
+| `GET /api/medications/today`                | Token         | One entry per scheduled time today, with its status   |
+| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken (see known limits)             |
+| `PUT /api/medications/update`               | Token         | Edit one of the user's medications                    |
+| `DELETE /api/medications/delete/[id]`       | Token         | Delete one of the user's medications                  |
+| `GET /api/medications/history`              | Token         | Doses taken, newest first                             |
+| `POST /api/medications/check-completions`   | Token         | Mark the user's finished courses as completed         |
+| `GET /api/medications/check-completions`    | `CRON_SECRET` | The same for every user, for a scheduler              |
+| `POST /api/mood/log`, `GET /api/mood/today` | Token         | Daily mood                                            |
+| `GET /api/notifications`                    | Token         | The user's 10 newest notifications                    |
+| `GET /api/therapy/upcoming-session`         | Token         | Next coaching session (none exist yet)                |
 
 ## Input and shared types
 
-- Every route that reads a body (except the unused `/api/medications/create` placeholder) checks it with `parseJsonBody()` (`lib/validation/request.ts`) and a zod
+- Every route that reads a body checks it with `parseJsonBody()` (`lib/validation/request.ts`) and a zod
   schema from `lib/validation/` (`auth.ts`, `medication.ts`, `mood.ts`). Fields a schema doesn't list are
   dropped, so a request can't set an owner, ID or status. Invalid input gets a 400 with a readable message
   in the route's usual error shape (`message` for sign-in routes, `error` for the others).
