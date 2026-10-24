@@ -9,17 +9,16 @@ import {
   resetAttempts,
 } from '@/lib/userStorage';
 import { escapeHtml, sendEmail } from '@/lib/email';
+import { loginSchema } from '@/lib/validation/auth';
+import { parseJsonBody } from '@/lib/validation/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { success: false, message: 'Email and password are required' },
-        { status: 400 },
-      );
+    const input = await parseJsonBody(request, loginSchema);
+    if (!input.ok) {
+      return NextResponse.json({ success: false, message: input.error }, { status: 400 });
     }
+    const { email, password } = input.data;
 
     // Check rate limiting
     const rateCheck = checkRateLimit(email);

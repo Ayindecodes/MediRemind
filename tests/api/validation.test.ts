@@ -14,6 +14,8 @@ const load = async () => ({
   storage: await import('@/lib/userStorage'),
   signup: await import('@/app/api/signup/route'),
   verify: await import('@/app/api/verify/route'),
+  login: await import('@/app/api/login/route'),
+  loginVerify: await import('@/app/api/login/verify/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -107,5 +109,49 @@ describe('POST /api/verify', () => {
     // Five wrong guesses would have deleted the code; malformed ones never reached it
     const res = await call(m.verify.POST, '/api/verify', { email: 'Ada@Example.com', code });
     expect(res).toMatchObject({ status: 200, body: { success: true } });
+  });
+});
+
+describe('POST /api/login and /api/login/verify', () => {
+  beforeEach(() => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+    m.storage.verifyUser('ada@example.com');
+  });
+
+  it('logs in with the email typed in any case, with spaces around it', async () => {
+    const login = await call(m.login.POST, '/api/login', {
+      email: ' ADA@example.com ',
+      password: PASSWORD,
+    });
+    expect(login.status).toBe(200);
+
+    const code = String(sendEmail.mock.calls[0][0].html).match(/class="code">(\d{6})</)?.[1];
+    const verified = await call(m.loginVerify.POST, '/api/login/verify', {
+      email: 'Ada@Example.com',
+      code,
+    });
+    expect(verified).toMatchObject({ status: 200, body: { user: { email: 'ada@example.com' } } });
+  });
+
+  it('refuses requests missing a field, without counting a failed attempt', async () => {
+    for (let i = 0; i < 5; i++) {
+      const res = await call(m.login.POST, '/api/login', { email: 'ada@example.com' });
+      expect(res).toEqual({
+        status: 400,
+        body: { success: false, message: 'Enter your password' },
+      });
+    }
+    expect(m.storage.checkRateLimit('ada@example.com')).toEqual({ allowed: true });
+  });
+
+  it('refuses a malformed code', async () => {
+    const res = await call(m.loginVerify.POST, '/api/login/verify', {
+      email: 'ada@example.com',
+      code: 123456,
+    });
+    expect(res).toEqual({
+      status: 400,
+      body: { success: false, message: 'Enter the 6-digit code' },
+    });
   });
 });

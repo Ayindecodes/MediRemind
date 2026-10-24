@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCode, getUserByEmail } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
+import { codeSchema } from '@/lib/validation/auth';
+import { parseJsonBody } from '@/lib/validation/request';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
@@ -9,14 +11,11 @@ export async function POST(request: NextRequest) {
     // Read the secret first so a misconfigured server doesn't burn the user's code
     const jwtSecret = getJwtSecret();
 
-    const { email, code } = await request.json();
-
-    if (!email || !code) {
-      return NextResponse.json(
-        { success: false, message: 'Email and code are required' },
-        { status: 400 },
-      );
+    const input = await parseJsonBody(request, codeSchema);
+    if (!input.ok) {
+      return NextResponse.json({ success: false, message: input.error }, { status: 400 });
     }
+    const { email, code } = input.data;
 
     // Login sessions are only created by /api/login after the password is checked
     const result = verifyCode(email, code, 'login');
