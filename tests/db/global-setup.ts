@@ -15,6 +15,13 @@ declare module 'vitest' {
   }
 }
 
+// Stops the run with a plain message. A thrown error would be lost: Vitest fails while formatting
+// errors thrown here, and reports "No test files found" instead.
+function stop(message: string): never {
+  console.error(`\n${message}\n`);
+  process.exit(1);
+}
+
 export default function setup(project: TestProject) {
   let status: Record<string, string>;
   try {
@@ -24,10 +31,10 @@ export default function setup(project: TestProject) {
     });
     status = JSON.parse(output);
   } catch {
-    throw new Error('The local Supabase stack is not running. Start it with: npm run db:start');
+    stop('The local Supabase stack is not running. Start it with: npm run db:start');
   }
   if (!status.API_URL || !status.PUBLISHABLE_KEY || !status.SECRET_KEY) {
-    throw new Error(
+    stop(
       'The local Supabase stack is not fully running (the data layer needs its API). Run: npm run db:start',
     );
   }
