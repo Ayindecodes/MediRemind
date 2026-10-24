@@ -1,27 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUpcomingSession, getUserByEmail } from '@/lib/userStorage';
-import { getJwtSecret } from '@/lib/env';
-import jwt from 'jsonwebtoken';
+// app/api/therapy/upcoming-session/route.ts
+import { NextResponse } from 'next/server';
+import { getUpcomingSession } from '@/lib/userStorage';
+import { withUser } from '@/lib/api/withUser';
 
-export async function GET(request: NextRequest) {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
-    const user = getUserByEmail(decoded.email);
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    const session = getUpcomingSession(user.id);
-
-    return NextResponse.json({ session });
-  } catch (error) {
-    console.error('Therapy session error:', error);
-    return NextResponse.json({ error: 'Failed to get session' }, { status: 500 });
-  }
-}
+export const GET = withUser(async (_request, user) =>
+  NextResponse.json({ session: getUpcomingSession(user.id) }),
+);

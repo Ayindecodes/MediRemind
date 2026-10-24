@@ -117,6 +117,43 @@ describe('POST /api/login/verify (Task 1: the login bypass)', () => {
   });
 });
 
+describe('POST /api/login: lockout', () => {
+  it('locks the email after 5 wrong passwords, saying how long to wait', async () => {
+    await (await signUp('ada@example.com')).verify();
+    const login = (password: string) =>
+      routes.login.POST(request('/api/login', { body: { email: 'ada@example.com', password } }));
+
+    for (let i = 0; i < 5; i++) {
+      const res = await login('Wrong-passw0rd');
+      expect(await res.json()).toEqual({
+        error: { code: 'invalid_credentials', message: 'Invalid email or password' },
+      });
+    }
+
+    // Even the right password is refused while the lock lasts
+    const locked = await login(PASSWORD);
+    expect(locked.status).toBe(429);
+    expect(locked.headers.get('Retry-After')).toBe('1800');
+    expect(await locked.json()).toEqual({
+      error: {
+        code: 'too_many_attempts',
+        message: 'Too many failed attempts. Please try again in 30 minutes.',
+        details: { retryAfterMinutes: 30 },
+      },
+    });
+  });
+
+  it('warns, rather than fails, when the account is not verified yet', async () => {
+    await signUp('ada@example.com');
+    const res = await call(routes.login.POST, '/api/login', {
+      email: 'ada@example.com',
+      password: PASSWORD,
+    });
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('email_not_verified');
+  });
+});
+
 describe('POST /api/resend-code (Tasks 1-2)', () => {
   it('never issues login codes, which need the password', async () => {
     await (await signUp('ada@example.com')).verify();
@@ -136,7 +173,12 @@ describe('POST /api/resend-code (Tasks 1-2)', () => {
       email: 'ada@example.com',
       type: 'signup',
     });
-    expect(resend.status).toBe(400);
+    expect(resend).toEqual({
+      status: 400,
+      body: {
+        error: { code: 'already_verified', message: 'Account already verified. Please log in.' },
+      },
+    });
 
     const login = await call(routes.loginVerify.POST, '/api/login/verify', {
       email: 'ada@example.com',
@@ -170,8 +212,9 @@ describe('guessing codes (Task 2)', () => {
     const guess = (c: string) =>
       call(routes.loginVerify.POST, '/api/login/verify', { email: 'ada@example.com', code: c });
 
-    for (let i = 0; i < 4; i++) expect((await guess('000000')).body.message).toBe('Invalid code');
-    expect((await guess('000000')).body.message).toBe(
+    for (let i = 0; i < 4; i++)
+      expect((await guess('000000')).body.error.message).toBe('Invalid code');
+    expect((await guess('000000')).body.error.message).toBe(
       'Too many incorrect attempts. Please request a new code.',
     );
     expect((await guess(code!)).status).toBe(400);
@@ -198,7 +241,15 @@ describe('tokens (Task 3)', () => {
     const body = { email: 'ada@example.com', code };
 
     vi.stubEnv('JWT_SECRET', undefined);
-    expect((await call(routes.loginVerify.POST, '/api/login/verify', body)).status).toBe(500);
+    expect(await call(routes.loginVerify.POST, '/api/login/verify', body)).toEqual({
+      status: 500,
+      body: {
+        error: {
+          code: 'server_error',
+          message: 'Something went wrong on our side. Please try again.',
+        },
+      },
+    });
 
     vi.stubEnv('JWT_SECRET', JWT_SECRET);
     expect((await call(routes.loginVerify.POST, '/api/login/verify', body)).status).toBe(200);

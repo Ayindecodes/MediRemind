@@ -13,6 +13,7 @@ import {
   Loader,
   ShieldCheck,
 } from 'lucide-react';
+import { errorFrom } from '@/lib/apiClient';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -168,7 +169,7 @@ export default function SignUpPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Signup failed. Please try again.',
+          message: errorFrom(data, 'Signup failed. Please try again.').message,
         });
       }
     } catch {
@@ -221,7 +222,7 @@ export default function SignUpPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Verification failed. Please try again.',
+          message: errorFrom(data, 'Verification failed. Please try again.').message,
         });
       }
     } catch {
@@ -249,7 +250,10 @@ export default function SignUpPage() {
         });
         setVerificationCode(['', '', '', '', '', '']);
       } else {
-        setApiResponse({ type: 'error', message: data.message || 'Failed to resend code.' });
+        setApiResponse({
+          type: 'error',
+          message: errorFrom(data, 'Failed to resend code.').message,
+        });
       }
     } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });

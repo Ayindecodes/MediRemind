@@ -35,7 +35,9 @@ visitors to `/login`.
 4. **Confirm** (`POST /api/login/verify`): the login code returns a JWT (signed with `JWT_SECRET`, valid for
    7 days, containing `userId` and `email`).
 5. The browser stores the token in `localStorage` as `auth_token` (and the user as `user`) and sends it as
-   `Authorization: Bearer <token>`. Each protected route verifies it and looks the user up by email.
+   `Authorization: Bearer <token>`. Protected routes are wrapped in `withUser()` (`lib/api/withUser.ts`),
+   which verifies the token and looks the user up once for all of them. A missing, expired or forged token,
+   or one for a deleted account, gets 401 `unauthorized`.
 
 Codes are 6 random digits, valid for 15 minutes and usable once. A code only works for its own step (signup
 or login), and the 5th wrong guess deletes it. `POST /api/resend-code` only issues new signup codes, and only
@@ -65,36 +67,60 @@ memory, not in a file.
 
 ## API routes
 
-| Method and path                             | Login         | Purpose                                                  |
-| ------------------------------------------- | ------------- | -------------------------------------------------------- |
-| `POST /api/signup`                          | No            | Create an account and email a signup code                |
-| `POST /api/verify`                          | No            | Verify the account with the signup code                  |
-| `POST /api/resend-code`                     | No            | Email a new signup code (unverified accounts only)       |
-| `POST /api/login`                           | No            | Check the password and email a login code                |
-| `POST /api/login/verify`                    | No            | Exchange the login code for a token                      |
-| `GET /api/user/profile`                     | Token         | The signed-in user, including their plan                 |
-| `GET /api/user/streak`                      | Token         | Streak and adherence (placeholder: always 0)             |
-| `POST /api/user/upgrade`                    | –             | Always 403 until payments exist                          |
-| `POST /api/medications/add`                 | Token         | Add a medication; free plan: 3 medications, no photos    |
-| `GET /api/medications/list`                 | Token         | The user's medications                                   |
-| `GET /api/medications/today`                | Token         | One entry per scheduled time today, with its status      |
-| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken (see known limits)                |
-| `PUT /api/medications/update`               | Token         | Edit one of the user's medications                       |
-| `DELETE /api/medications/delete/[id]`       | Token         | Delete one of the user's medications                     |
-| `GET /api/medications/history`              | Token         | Doses taken, newest first                                |
-| `POST /api/medications/check-completions`   | Token         | Mark the user's finished courses as completed            |
-| `GET /api/medications/check-completions`    | `CRON_SECRET` | The same for every user, for a scheduler                 |
-| `POST /api/mood/log`, `GET /api/mood/today` | Token         | Daily mood                                               |
-| `GET /api/notifications`                    | Token         | The user's 10 newest notifications                       |
-| `GET /api/therapy/upcoming-session`         | Token         | Next coaching session (none exist yet)                   |
-| `POST /api/medications/create`              | No            | Unused placeholder: logs the request and returns success |
+| Method and path                             | Login         | Purpose                                               |
+| ------------------------------------------- | ------------- | ----------------------------------------------------- |
+| `POST /api/signup`                          | No            | Create an account and email a signup code             |
+| `POST /api/verify`                          | No            | Verify the account with the signup code               |
+| `POST /api/resend-code`                     | No            | Email a new signup code (unverified accounts only)    |
+| `POST /api/login`                           | No            | Check the password and email a login code             |
+| `POST /api/login/verify`                    | No            | Exchange the login code for a token                   |
+| `GET /api/user/profile`                     | Token         | The signed-in user, including their plan              |
+| `GET /api/user/streak`                      | Token         | Streak and adherence (placeholder: always 0)          |
+| `POST /api/user/upgrade`                    | –             | Always 403 until payments exist                       |
+| `POST /api/medications/add`                 | Token         | Add a medication; free plan: 3 medications, no photos |
+| `GET /api/medications/list`                 | Token         | The user's medications                                |
+| `GET /api/medications/today`                | Token         | One entry per scheduled time today, with its status   |
+| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken (see known limits)             |
+| `PUT /api/medications/update`               | Token         | Edit one of the user's medications                    |
+| `DELETE /api/medications/delete/[id]`       | Token         | Delete one of the user's medications                  |
+| `GET /api/medications/history`              | Token         | Doses taken, newest first                             |
+| `POST /api/medications/check-completions`   | Token         | Mark the user's finished courses as completed         |
+| `GET /api/medications/check-completions`    | `CRON_SECRET` | The same for every user, for a scheduler              |
+| `POST /api/mood/log`, `GET /api/mood/today` | Token         | Daily mood                                            |
+| `GET /api/notifications`                    | Token         | The user's 10 newest notifications                    |
+| `GET /api/therapy/upcoming-session`         | Token         | Next coaching session (none exist yet)                |
+
+## Errors
+
+Every error response has the same body, built by `apiError()` (`lib/api/errors.ts`):
+
+```json
+{ "error": { "code": "not_found", "message": "Medication not found" } }
+```
+
+`code` is for code to check, `message` can be shown to the user as it is, and some codes add `details`
+(for example `retryAfterMinutes` with `too_many_attempts`, which also sets a `Retry-After` header). Each
+code always has the same status:
+
+| Status | Codes                                                                |
+| ------ | -------------------------------------------------------------------- |
+| 400    | `invalid_request`, `invalid_code`, `already_verified`                |
+| 401    | `unauthorized`, `invalid_credentials`                                |
+| 403    | `email_not_verified`, `upgrade_required`, `payments_unavailable`     |
+| 404    | `not_found`                                                          |
+| 409    | `email_taken`                                                        |
+| 429    | `too_many_attempts`                                                  |
+| 500    | `server_error` (unexpected errors; their own message is only logged) |
+| 502    | `email_failed`                                                       |
+
+Every handler runs inside `handleErrors()` (directly, or through `withUser()`), so nothing reaches the
+browser as an unhandled exception. Pages read errors with `errorFrom()` (`lib/apiClient.ts`).
 
 ## Input and shared types
 
-- Every route that reads a body (except the unused `/api/medications/create` placeholder) checks it with `parseJsonBody()` (`lib/validation/request.ts`) and a zod
+- Every route that reads a body checks it with `parseJsonBody()` (`lib/validation/request.ts`) and a zod
   schema from `lib/validation/` (`auth.ts`, `medication.ts`, `mood.ts`). Fields a schema doesn't list are
-  dropped, so a request can't set an owner, ID or status. Invalid input gets a 400 with a readable message
-  in the route's usual error shape (`message` for sign-in routes, `error` for the others).
+  dropped, so a request can't set an owner, ID or status. Invalid input gets 400 `invalid_request`.
 - Emails are trimmed and lowercased. Sign-up enforces the form's password rules; login accepts any
   password so older accounts still work. Medication times must be 24-hour `HH:MM`, dates must be real
   `YYYY-MM-DD` dates, and an end date can't be before the start date (edits are checked after merging).

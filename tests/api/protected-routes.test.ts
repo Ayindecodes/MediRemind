@@ -72,7 +72,15 @@ describe('POST /api/user/upgrade (Task 6)', () => {
 
     // The handler refuses before looking at the request at all
     const res = await json(await m.upgrade.POST());
-    expect(res.status).toBe(403);
+    expect(res).toEqual({
+      status: 403,
+      body: {
+        error: {
+          code: 'payments_unavailable',
+          message: 'Paid plans are coming soon. Upgrades are not available yet.',
+        },
+      },
+    });
 
     const profile = await json(
       await m.profile.GET(request('/api/user/profile', { method: 'GET', token })),
@@ -96,7 +104,15 @@ describe('GET /api/medications/check-completions (Task 7)', () => {
   it('rejects requests without CRON_SECRET, including signed-in users', async () => {
     const { token } = signedInUser('ada@example.com');
 
-    expect((await cron()).status).toBe(401);
+    expect(await json(await cron())).toEqual({
+      status: 401,
+      body: {
+        error: {
+          code: 'unauthorized',
+          message: 'This endpoint needs the scheduler key (CRON_SECRET).',
+        },
+      },
+    });
     expect((await cron(token)).status).toBe(401);
     expect((await cron('x'.repeat(40))).status).toBe(401);
   });
@@ -137,7 +153,10 @@ describe('DELETE /api/medications/delete/[id] (restored in Task 22)', () => {
     const other = signedInUser('other@example.com');
     const { body } = await json(await addMedication(owner.token));
 
-    expect((await remove(body.medication.id, other.token)).status).toBe(404);
+    expect(await json(await remove(body.medication.id, other.token))).toEqual({
+      status: 404,
+      body: { error: { code: 'not_found', message: 'Medication not found' } },
+    });
     expect(await listNames(owner.token)).toEqual(['Amlodipine']);
   });
 
@@ -163,7 +182,7 @@ describe('POST /api/medications/add: free plan limits', () => {
 
     const fourth = await json(await addMedication(token, { name: 'D' }));
     expect(fourth.status).toBe(403);
-    expect(fourth.body.upgradeRequired).toBe(true);
+    expect(fourth.body.error.code).toBe('upgrade_required');
   });
 
   it('refuses pill photos', async () => {
@@ -171,6 +190,6 @@ describe('POST /api/medications/add: free plan limits', () => {
 
     const res = await json(await addMedication(token, { photoUrl: 'data:image/png;base64,AAAA' }));
     expect(res.status).toBe(403);
-    expect(res.body.upgradeRequired).toBe(true);
+    expect(res.body.error.code).toBe('upgrade_required');
   });
 });

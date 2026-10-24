@@ -78,7 +78,12 @@ describe('POST /api/signup', () => {
 
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Your password must include an uppercase letter' },
+      body: {
+        error: {
+          code: 'invalid_request',
+          message: 'Your password must include an uppercase letter',
+        },
+      },
     });
     expect(m.storage.getUserByEmail('ada@example.com')).toBeUndefined();
     expect(sendEmail).not.toHaveBeenCalled();
@@ -88,7 +93,20 @@ describe('POST /api/signup', () => {
     const res = await callRaw(m.signup.POST, '/api/signup', 'fullName=Ada');
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'The request body must be valid JSON' },
+      body: { error: { code: 'invalid_request', message: 'The request body must be valid JSON' } },
+    });
+  });
+
+  it('refuses an email that is already registered, in any case', async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+
+    expect(
+      await signup({ fullName: 'Ada Obi', email: 'ADA@example.com', password: PASSWORD }),
+    ).toEqual({
+      status: 409,
+      body: {
+        error: { code: 'email_taken', message: 'Email already registered. Please login instead.' },
+      },
     });
   });
 
@@ -118,12 +136,28 @@ describe('POST /api/verify', () => {
         email: 'ada@example.com',
         code: 'abc',
       });
-      expect(res.body.message).toBe('Enter the 6-digit code');
+      expect(res.body.error).toEqual({
+        code: 'invalid_request',
+        message: 'Enter the 6-digit code',
+      });
     }
 
     // Five wrong guesses would have deleted the code; malformed ones never reached it
     const res = await call(m.verify.POST, '/api/verify', { email: 'Ada@Example.com', code });
     expect(res).toMatchObject({ status: 200, body: { success: true } });
+  });
+
+  it('answers a wrong code with invalid_code', async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+    const code = m.storage.createVerificationSession('ada@example.com', 'signup');
+
+    const wrong = code === '123456' ? '654321' : '123456';
+    expect(
+      await call(m.verify.POST, '/api/verify', { email: 'ada@example.com', code: wrong }),
+    ).toEqual({
+      status: 400,
+      body: { error: { code: 'invalid_code', message: 'Invalid code' } },
+    });
   });
 });
 
@@ -153,7 +187,7 @@ describe('POST /api/login and /api/login/verify', () => {
       const res = await call(m.login.POST, '/api/login', { email: 'ada@example.com' });
       expect(res).toEqual({
         status: 400,
-        body: { success: false, message: 'Enter your password' },
+        body: { error: { code: 'invalid_request', message: 'Enter your password' } },
       });
     }
     expect(m.storage.checkRateLimit('ada@example.com')).toEqual({ allowed: true });
@@ -166,7 +200,7 @@ describe('POST /api/login and /api/login/verify', () => {
     });
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Enter the 6-digit code' },
+      body: { error: { code: 'invalid_request', message: 'Enter the 6-digit code' } },
     });
   });
 });
@@ -187,7 +221,7 @@ describe('POST /api/resend-code', () => {
     const res = await call(m.resendCode.POST, '/api/resend-code', { email: 'ada' });
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Enter a valid email address' },
+      body: { error: { code: 'invalid_request', message: 'Enter a valid email address' } },
     });
   });
 });
@@ -256,11 +290,18 @@ describe('POST /api/medications/add', () => {
 
     expect(await add(token, { times: ['8 in the morning'] })).toEqual({
       status: 400,
-      body: { error: 'Reminder times must use the 24-hour HH:MM format' },
+      body: {
+        error: {
+          code: 'invalid_request',
+          message: 'Reminder times must use the 24-hour HH:MM format',
+        },
+      },
     });
     expect(await add(token, { endDate: '2026-09-01' })).toEqual({
       status: 400,
-      body: { error: "The end date can't be before the start date" },
+      body: {
+        error: { code: 'invalid_request', message: "The end date can't be before the start date" },
+      },
     });
     expect(await listed(token)).toEqual([]);
   });
@@ -322,11 +363,13 @@ describe('PUT /api/medications/update', () => {
 
     expect(await update(token, { id: med.id, startDate: '2026-11-15' })).toEqual({
       status: 400,
-      body: { error: "The end date can't be before the start date" },
+      body: {
+        error: { code: 'invalid_request', message: "The end date can't be before the start date" },
+      },
     });
     expect(await update(token, { id: med.id, times: [] })).toEqual({
       status: 400,
-      body: { error: 'Add at least one reminder time' },
+      body: { error: { code: 'invalid_request', message: 'Add at least one reminder time' } },
     });
     expect(await saved(token)).toEqual(med);
   });
@@ -336,7 +379,10 @@ describe('PUT /api/medications/update', () => {
     const bola = signedInUser('bola@example.com');
     const med = await addMedication(ada.token);
 
-    expect((await update(bola.token, { id: med.id, name: 'Changed' })).status).toBe(404);
+    expect(await update(bola.token, { id: med.id, name: 'Changed' })).toEqual({
+      status: 404,
+      body: { error: { code: 'not_found', message: 'Medication not found' } },
+    });
     expect((await saved(ada.token)).name).toBe('Amlodipine');
   });
 });
@@ -347,11 +393,12 @@ describe('POST /api/medications/mark-taken', () => {
     const markTaken = (body: unknown) =>
       call(m.markTaken.POST, '/api/medications/mark-taken', body, token);
 
-    expect(await markTaken({})).toEqual({ status: 400, body: { error: 'Missing the dose ID' } });
-    expect(await markTaken({ medicationId: 42 })).toEqual({
+    const missing = {
       status: 400,
-      body: { error: 'Missing the dose ID' },
-    });
+      body: { error: { code: 'invalid_request', message: 'Missing the dose ID' } },
+    };
+    expect(await markTaken({})).toEqual(missing);
+    expect(await markTaken({ medicationId: 42 })).toEqual(missing);
   });
 });
 
@@ -364,7 +411,7 @@ describe('POST /api/mood/log', () => {
 
     expect(await log({ mood: 'ecstatic' })).toEqual({
       status: 400,
-      body: { error: 'Choose how you are feeling' },
+      body: { error: { code: 'invalid_request', message: 'Choose how you are feeling' } },
     });
     expect(await today()).toBeNull();
 

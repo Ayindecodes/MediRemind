@@ -12,6 +12,7 @@ import {
   Loader,
   ShieldCheck,
 } from 'lucide-react';
+import { errorFrom } from '@/lib/apiClient';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -91,22 +92,12 @@ export default function LoginPage() {
         });
         setTimeout(() => setStep('verify'), 1000);
       } else if (!response.ok) {
-        if (response.status === 429) {
-          setApiResponse({
-            type: 'error',
-            message: data.message || 'Too many attempts. Please try again later.',
-          });
-        } else if (response.status === 403) {
-          setApiResponse({
-            type: 'warning',
-            message: data.message || 'Please verify your email first.',
-          });
-        } else {
-          setApiResponse({
-            type: 'error',
-            message: data.message || 'Login failed. Please check your credentials.',
-          });
-        }
+        const error = errorFrom(data, 'Login failed. Please check your credentials.');
+        // An unverified account isn't a failure, so it's shown as a warning
+        setApiResponse({
+          type: error.code === 'email_not_verified' ? 'warning' : 'error',
+          message: error.message,
+        });
       }
     } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please check your connection.' });
@@ -159,7 +150,7 @@ export default function LoginPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Invalid code. Please try again.',
+          message: errorFrom(data, 'Invalid code. Please try again.').message,
         });
       }
     } catch {
@@ -186,7 +177,10 @@ export default function LoginPage() {
         setApiResponse({ type: 'success', message: 'New code sent! Check your email.' });
         setVerificationCode(['', '', '', '', '', '']);
       } else {
-        setApiResponse({ type: 'error', message: data.message || 'Failed to resend code.' });
+        setApiResponse({
+          type: 'error',
+          message: errorFrom(data, 'Failed to resend code.').message,
+        });
       }
     } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });

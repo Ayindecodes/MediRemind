@@ -20,6 +20,7 @@ import {
   Crown,
   Lock,
 } from 'lucide-react';
+import { errorFrom } from '@/lib/apiClient';
 import { useStoredUser } from '@/lib/useLocalStorage';
 
 interface User {
@@ -266,10 +267,11 @@ export default function AddMedicationPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.upgradeRequired) {
+        const error = errorFrom(data, 'Failed to add medication');
+        if (error.code === 'upgrade_required') {
           setShowUpgradeModal(true);
         }
-        throw new Error(data.error || 'Failed to add medication');
+        throw new Error(error.message);
       }
 
       setConfirmationEmailSent(data.emailSent === true);
