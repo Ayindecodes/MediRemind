@@ -72,7 +72,15 @@ describe('POST /api/user/upgrade (Task 6)', () => {
 
     // The handler refuses before looking at the request at all
     const res = await json(await m.upgrade.POST());
-    expect(res.status).toBe(403);
+    expect(res).toEqual({
+      status: 403,
+      body: {
+        error: {
+          code: 'payments_unavailable',
+          message: 'Paid plans are coming soon. Upgrades are not available yet.',
+        },
+      },
+    });
 
     const profile = await json(
       await m.profile.GET(request('/api/user/profile', { method: 'GET', token })),
