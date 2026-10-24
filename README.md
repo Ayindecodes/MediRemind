@@ -17,7 +17,8 @@ Early development. What works today:
 Not built yet:
 
 - **Reminders**: nothing is sent at dose times yet
-- **A database**: data is stored in JSON files, which works locally but can't be saved on Vercel
+- **A database**: data is stored in JSON files, which works locally but can't be saved on Vercel. The move
+  to Supabase (Postgres) has started: the local setup is in `supabase/`
 - Streaks and adherence statistics (always 0), payments, family accounts
 
 Known bug: a dose marked as taken shows as not taken again after reloading the page.
@@ -57,14 +58,15 @@ and lists anything missing or invalid.
 
 ## Scripts
 
-| Command            | What it does                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------- |
-| `npm run dev`      | Development server                                                                        |
-| `npm run build`    | Production build (needs no environment variables)                                         |
-| `npm run lint`     | ESLint                                                                                    |
-| `npm run format`   | Format with Prettier (`format:check` only checks)                                         |
-| `npm test`         | Unit and API tests (Vitest)                                                               |
-| `npm run test:e2e` | Browser tests (Playwright); run `npx playwright install --only-shell chromium` once first |
+| Command            | What it does                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| `npm run dev`      | Development server                                                                          |
+| `npm run build`    | Production build (needs no environment variables)                                           |
+| `npm run lint`     | ESLint                                                                                      |
+| `npm run format`   | Format with Prettier (`format:check` only checks)                                           |
+| `npm test`         | Unit and API tests (Vitest)                                                                 |
+| `npm run test:e2e` | Browser tests (Playwright); run `npx playwright install --only-shell chromium` once first   |
+| `npm run db:start` | Local Supabase database in Docker (also `db:stop`, `db:status`, `db:reset`, `db:migration`) |
 
 ## Project structure
 
@@ -77,6 +79,7 @@ lib/          Storage (userStorage.ts), shared types (types.ts), request validat
 tests/api/    Tests that call the API route handlers
 e2e/          Browser tests and a fake email server for them
 data/         Local JSON data, created on first use (git-ignored: it holds real user data)
+supabase/     Local Supabase config, migrations and seed data
 docs/         Architecture notes
 ```
 

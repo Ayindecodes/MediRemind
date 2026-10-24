@@ -48,6 +48,11 @@ In development, codes are also printed to the server log, so sign-in works witho
 
 ## Data
 
+> **Moving to Supabase (Phase 3).** The local Postgres stack is set up in `supabase/` (see
+> [CONTRIBUTING.md](../CONTRIBUTING.md#local-database)); the schema arrives as migrations in
+> `supabase/migrations/`, and the app switches over once its data layer is in place. Until then the JSON
+> files below are the only storage.
+
 `lib/userStorage.ts` keeps everything in JSON files in `MEDIREMIND_DATA_DIR`, or `./data` by default. Each
 file holds one object, keyed as follows:
 

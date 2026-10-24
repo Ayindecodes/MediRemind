@@ -1,0 +1,3 @@
+-- supabase/seed.sql
+-- Test data for the local database, loaded by `npm run db:reset` after the migrations.
+-- Local only: it never runs against the hosted projects. Empty until the schema exists (Task 34).
