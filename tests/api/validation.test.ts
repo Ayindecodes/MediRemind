@@ -22,6 +22,8 @@ const load = async () => ({
   list: await import('@/app/api/medications/list/route'),
   update: await import('@/app/api/medications/update/route'),
   markTaken: await import('@/app/api/medications/mark-taken/route'),
+  moodLog: await import('@/app/api/mood/log/route'),
+  moodToday: await import('@/app/api/mood/today/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -350,5 +352,26 @@ describe('POST /api/medications/mark-taken', () => {
       status: 400,
       body: { error: 'Missing the dose ID' },
     });
+  });
+});
+
+describe('POST /api/mood/log', () => {
+  it("saves the dashboard's mood and refuses anything else", async () => {
+    const { token } = signedInUser('ada@example.com');
+    const log = (body: unknown) => call(m.moodLog.POST, '/api/mood/log', body, token);
+    const today = async () =>
+      (await call(m.moodToday.GET, '/api/mood/today', undefined, token)).body.mood;
+
+    expect(await log({ mood: 'ecstatic' })).toEqual({
+      status: 400,
+      body: { error: 'Choose how you are feeling' },
+    });
+    expect(await today()).toBeNull();
+
+    // What the dashboard sends
+    const res = await log({ mood: 'neutral', date: new Date().toISOString(), note: '' });
+    expect(res.status).toBe(200);
+    expect(res.body.mood).not.toHaveProperty('note');
+    expect(await today()).toBe('neutral');
   });
 });
