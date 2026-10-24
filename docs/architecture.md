@@ -89,6 +89,18 @@ memory, not in a file.
 | `GET /api/therapy/upcoming-session`         | Token         | Next coaching session (none exist yet)                   |
 | `POST /api/medications/create`              | No            | Unused placeholder: logs the request and returns success |
 
+## Input and shared types
+
+- Every route that reads a body (except the unused `/api/medications/create` placeholder) checks it with `parseJsonBody()` (`lib/validation/request.ts`) and a zod
+  schema from `lib/validation/` (`auth.ts`, `medication.ts`, `mood.ts`). Fields a schema doesn't list are
+  dropped, so a request can't set an owner, ID or status. Invalid input gets a 400 with a readable message
+  in the route's usual error shape (`message` for sign-in routes, `error` for the others).
+- Emails are trimmed and lowercased. Sign-up enforces the form's password rules; login accepts any
+  password so older accounts still work. Medication times must be 24-hour `HH:MM`, dates must be real
+  `YYYY-MM-DD` dates, and an end date can't be before the start date (edits are checked after merging).
+- `lib/types.ts` holds the shapes shared by storage, routes and pages (`Medication`, `TodayDose`,
+  `HistoryEntry`, `Profile`, …). It contains types only, so client components can import it.
+
 ## Configuration and email
 
 - `lib/env.ts` validates every environment variable with zod. `instrumentation.ts` runs the check when a
