@@ -1,6 +1,6 @@
 -- Rules every migration must keep, checked across the whole public schema
 begin;
-select plan(4);
+select plan(5);
 
 select tables_are('public', array[
   'profiles', 'medications', 'dose_logs', 'moods', 'notifications', 'notification_prefs',
@@ -22,6 +22,13 @@ select is_empty(
          where t.tgrelid = format('public.%I', c.table_name)::regclass and t.tgname = 'set_updated_at'
        ) $$,
   'every table with updated_at keeps it current'
+);
+
+-- Anyone with the public key is `anon`; nothing in the schema is for them
+select is_empty(
+  $$ select table_name || ': ' || privilege_type from information_schema.role_table_grants
+     where table_schema = 'public' and grantee = 'anon' $$,
+  'anon (the public key, not signed in) has no access to any table'
 );
 
 -- A function without a fixed search_path can be tricked into using someone else's objects
