@@ -18,6 +18,7 @@ const load = async () => ({
   therapy: await import('@/app/api/therapy/upcoming-session/route'),
   add: await import('@/app/api/medications/add/route'),
   update: await import('@/app/api/medications/update/route'),
+  remove: await import('@/app/api/medications/delete/[id]/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -49,6 +50,11 @@ const routes = (): Route[] => [
   },
   { name: 'POST /api/medications/add', method: 'POST', call: (req) => m.add.POST(req) },
   { name: 'PUT /api/medications/update', method: 'PUT', call: (req) => m.update.PUT(req) },
+  {
+    name: 'DELETE /api/medications/delete/[id]',
+    method: 'DELETE',
+    call: (req) => m.remove.DELETE(req, { params: Promise.resolve({ id: 'med_1' }) }),
+  },
 ];
 
 const send = async (route: Route, token?: string) => {

@@ -137,7 +137,10 @@ describe('DELETE /api/medications/delete/[id] (restored in Task 22)', () => {
     const other = signedInUser('other@example.com');
     const { body } = await json(await addMedication(owner.token));
 
-    expect((await remove(body.medication.id, other.token)).status).toBe(404);
+    expect(await json(await remove(body.medication.id, other.token))).toEqual({
+      status: 404,
+      body: { error: { code: 'not_found', message: 'Medication not found' } },
+    });
     expect(await listNames(owner.token)).toEqual(['Amlodipine']);
   });
 
