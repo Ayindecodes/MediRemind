@@ -89,6 +89,30 @@ the hint `upgrade_required`, the API's error code.
 `isolation.test.sql` checks every table a signed-in person can read and fails if any row of someone else's
 is visible, or if a readable table has no test data to check.
 
+## The data layer
+
+`lib/db/` is how server code uses the database. The routes switch over to it from the JSON files once
+sign-in moves to Supabase (Tasks 37–42).
+
+- **Two clients** (`client.ts`). `dbForUser(accessToken)` acts as the signed-in person, so the rules above
+  decide what each request can do; use it for everything people do themselves. `dbAsServer()` uses the
+  secret key and bypasses the rules; use it only for what people may not do (`notify`,
+  `recordWhatsAppOptIn`, and later payments and reminders).
+- **One module per area**: `profiles`, `medications`, `doses`, `moods`, `notifications`,
+  `reminder-preferences`. Functions take the client first and return rows typed from
+  `database.types.ts`; their input types admit only the columns people may change.
+- **Errors** (`errors.ts`). `unwrap()` returns a query's data or throws a `DbError` carrying an API error
+  code: the free plan's limit is `upgrade_required` with the database's message, the access rules
+  refusing is `not_found` (someone else's row looks like it doesn't exist), and broken table rules are
+  `invalid_request`. Routes can let a `DbError` through: `handleErrors()` answers with its code.
+- **Writing the same thing twice is harmless.** Recording a dose or a day's mood again replaces it;
+  saving reminder settings updates them. These don't use a single upsert, because an upsert rewrites
+  every column it sends, including key columns people may not change, and the database refuses it.
+- **Types**: after changing a migration, run `npm run db:types` and commit `lib/db/database.types.ts`.
+  CI fails if it's out of date.
+- **Tests**: `tests/db/*.test.ts`, run with `npm run test:db` against the local stack (`npm run db:start`).
+  They create real people through Supabase Auth, sign them in, and delete them afterwards.
+
 ## Not in the schema yet
 
 - **Creating a profile when someone signs up:** Task 37, with phone sign-in.

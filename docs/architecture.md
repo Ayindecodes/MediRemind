@@ -48,8 +48,9 @@ In development, codes are also printed to the server log, so sign-in works witho
 
 ## Data
 
-> **Moving to Supabase (Phase 3).** The new schema is in `supabase/migrations/` and described in
-> [database.md](database.md); the local stack is in `supabase/` (see
+> **Moving to Supabase (Phase 3).** The new schema is in `supabase/migrations/`, and the data layer that
+> will replace `lib/userStorage.ts` is in `lib/db/`; both are described in [database.md](database.md). The
+> local stack is in `supabase/` (see
 > [CONTRIBUTING.md](../CONTRIBUTING.md#local-database)). The app switches over once its data layer is in
 > place. Until then the JSON files below are the only storage.
 
