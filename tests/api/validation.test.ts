@@ -221,7 +221,7 @@ describe('POST /api/resend-code', () => {
     const res = await call(m.resendCode.POST, '/api/resend-code', { email: 'ada' });
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Enter a valid email address' },
+      body: { error: { code: 'invalid_request', message: 'Enter a valid email address' } },
     });
   });
 });

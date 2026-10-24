@@ -250,7 +250,10 @@ export default function SignUpPage() {
         });
         setVerificationCode(['', '', '', '', '', '']);
       } else {
-        setApiResponse({ type: 'error', message: data.message || 'Failed to resend code.' });
+        setApiResponse({
+          type: 'error',
+          message: errorFrom(data, 'Failed to resend code.').message,
+        });
       }
     } catch {
       setApiResponse({ type: 'error', message: 'Network error. Please try again.' });

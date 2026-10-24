@@ -136,7 +136,12 @@ describe('POST /api/resend-code (Tasks 1-2)', () => {
       email: 'ada@example.com',
       type: 'signup',
     });
-    expect(resend.status).toBe(400);
+    expect(resend).toEqual({
+      status: 400,
+      body: {
+        error: { code: 'already_verified', message: 'Account already verified. Please log in.' },
+      },
+    });
 
     const login = await call(routes.loginVerify.POST, '/api/login/verify', {
       email: 'ada@example.com',
