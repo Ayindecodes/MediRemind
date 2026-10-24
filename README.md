@@ -80,7 +80,7 @@ tests/api/    Tests that call the API route handlers
 e2e/          Browser tests and a fake email server for them
 data/         Local JSON data, created on first use (git-ignored: it holds real user data)
 supabase/     Local Supabase config, migrations and seed data
-docs/         Architecture notes
+docs/         Architecture and database notes
 ```
 
 See [docs/architecture.md](docs/architecture.md) for how the pieces fit together.
