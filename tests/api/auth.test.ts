@@ -117,6 +117,43 @@ describe('POST /api/login/verify (Task 1: the login bypass)', () => {
   });
 });
 
+describe('POST /api/login: lockout', () => {
+  it('locks the email after 5 wrong passwords, saying how long to wait', async () => {
+    await (await signUp('ada@example.com')).verify();
+    const login = (password: string) =>
+      routes.login.POST(request('/api/login', { body: { email: 'ada@example.com', password } }));
+
+    for (let i = 0; i < 5; i++) {
+      const res = await login('Wrong-passw0rd');
+      expect(await res.json()).toEqual({
+        error: { code: 'invalid_credentials', message: 'Invalid email or password' },
+      });
+    }
+
+    // Even the right password is refused while the lock lasts
+    const locked = await login(PASSWORD);
+    expect(locked.status).toBe(429);
+    expect(locked.headers.get('Retry-After')).toBe('1800');
+    expect(await locked.json()).toEqual({
+      error: {
+        code: 'too_many_attempts',
+        message: 'Too many failed attempts. Please try again in 30 minutes.',
+        details: { retryAfterMinutes: 30 },
+      },
+    });
+  });
+
+  it('warns, rather than fails, when the account is not verified yet', async () => {
+    await signUp('ada@example.com');
+    const res = await call(routes.login.POST, '/api/login', {
+      email: 'ada@example.com',
+      password: PASSWORD,
+    });
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('email_not_verified');
+  });
+});
+
 describe('POST /api/resend-code (Tasks 1-2)', () => {
   it('never issues login codes, which need the password', async () => {
     await (await signUp('ada@example.com')).verify();

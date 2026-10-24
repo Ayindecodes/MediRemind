@@ -187,7 +187,7 @@ describe('POST /api/login and /api/login/verify', () => {
       const res = await call(m.login.POST, '/api/login', { email: 'ada@example.com' });
       expect(res).toEqual({
         status: 400,
-        body: { success: false, message: 'Enter your password' },
+        body: { error: { code: 'invalid_request', message: 'Enter your password' } },
       });
     }
     expect(m.storage.checkRateLimit('ada@example.com')).toEqual({ allowed: true });
