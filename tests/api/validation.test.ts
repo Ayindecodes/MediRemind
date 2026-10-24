@@ -78,7 +78,12 @@ describe('POST /api/signup', () => {
 
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Your password must include an uppercase letter' },
+      body: {
+        error: {
+          code: 'invalid_request',
+          message: 'Your password must include an uppercase letter',
+        },
+      },
     });
     expect(m.storage.getUserByEmail('ada@example.com')).toBeUndefined();
     expect(sendEmail).not.toHaveBeenCalled();
@@ -88,7 +93,20 @@ describe('POST /api/signup', () => {
     const res = await callRaw(m.signup.POST, '/api/signup', 'fullName=Ada');
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'The request body must be valid JSON' },
+      body: { error: { code: 'invalid_request', message: 'The request body must be valid JSON' } },
+    });
+  });
+
+  it('refuses an email that is already registered, in any case', async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+
+    expect(
+      await signup({ fullName: 'Ada Obi', email: 'ADA@example.com', password: PASSWORD }),
+    ).toEqual({
+      status: 409,
+      body: {
+        error: { code: 'email_taken', message: 'Email already registered. Please login instead.' },
+      },
     });
   });
 

@@ -13,6 +13,7 @@ import {
   Loader,
   ShieldCheck,
 } from 'lucide-react';
+import { errorFrom } from '@/lib/apiClient';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -168,7 +169,7 @@ export default function SignUpPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Signup failed. Please try again.',
+          message: errorFrom(data, 'Signup failed. Please try again.').message,
         });
       }
     } catch {
