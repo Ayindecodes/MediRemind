@@ -38,6 +38,29 @@ test('adds a medication from the dashboard and shows it there', async ({ page })
   await expect(page.getByRole('heading', { name: 'Amlodipine' })).toBeVisible();
 });
 
+test('offers an upgrade when the free plan is full', async ({ page }) => {
+  // Fill the free plan's 3 medications through the API, then try a 4th in the form
+  await page.goto('/dashboard');
+  const token = await page.evaluate(() => localStorage.getItem('auth_token'));
+  for (const name of ['Metformin', 'Lisinopril', 'Atorvastatin']) {
+    const res = await page.request.post('/api/medications/add', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { name, dosage: '5mg', frequency: 'daily', times: ['08:00'], startDate: '2026-10-01' },
+    });
+    expect(res.status()).toBe(201);
+  }
+
+  await page.goto('/dashboard/medications/add');
+  await page.getByPlaceholder('e.g., Aspirin, Vitamin D, Lisinopril').fill('Amlodipine');
+  await page.getByPlaceholder('e.g., 500mg, 2 tablets, 5ml').fill('5mg');
+  await page.getByRole('button', { name: 'Save Medication' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Upgrade to Premium' })).toBeVisible();
+  await expect(
+    page.getByText('Free plan is limited to 3 medications. Please upgrade to add more.'),
+  ).toBeVisible();
+});
+
 test('previews a pill photo', async ({ page }) => {
   await page.goto('/dashboard/medications/add');
   await page.locator('input[type=file]').setInputFiles({

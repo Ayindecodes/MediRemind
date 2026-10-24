@@ -256,11 +256,18 @@ describe('POST /api/medications/add', () => {
 
     expect(await add(token, { times: ['8 in the morning'] })).toEqual({
       status: 400,
-      body: { error: 'Reminder times must use the 24-hour HH:MM format' },
+      body: {
+        error: {
+          code: 'invalid_request',
+          message: 'Reminder times must use the 24-hour HH:MM format',
+        },
+      },
     });
     expect(await add(token, { endDate: '2026-09-01' })).toEqual({
       status: 400,
-      body: { error: "The end date can't be before the start date" },
+      body: {
+        error: { code: 'invalid_request', message: "The end date can't be before the start date" },
+      },
     });
     expect(await listed(token)).toEqual([]);
   });

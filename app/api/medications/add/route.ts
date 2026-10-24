@@ -1,68 +1,50 @@
 // app/api/medications/add/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { addMedication, getUserByEmail, getUserMedications } from '@/lib/userStorage';
-import { getAppUrl, getJwtSecret } from '@/lib/env';
+import { NextResponse } from 'next/server';
+import { addMedication, getUserMedications } from '@/lib/userStorage';
+import { getAppUrl } from '@/lib/env';
 import { escapeHtml, sendEmail } from '@/lib/email';
+import { apiError } from '@/lib/api/errors';
+import { withUser } from '@/lib/api/withUser';
 import { newMedicationSchema } from '@/lib/validation/medication';
 import { parseJsonBody } from '@/lib/validation/request';
-import jwt from 'jsonwebtoken';
 
-export async function POST(request: NextRequest) {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+export const POST = withUser(async (request, user) => {
+  // Only the fields in the schema are kept, so the request can't set the owner or ID
+  const input = await parseJsonBody(request, newMedicationSchema);
+  if (!input.ok) {
+    return apiError('invalid_request', input.error);
+  }
+  const medData = input.data;
 
-    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
-    const user = getUserByEmail(decoded.email);
+  // Check plan limits
+  const existingMeds = getUserMedications(user.id);
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+  if (user.plan === 'free' && existingMeds.length >= 3) {
+    return apiError(
+      'upgrade_required',
+      'Free plan is limited to 3 medications. Please upgrade to add more.',
+    );
+  }
 
-    // Only the fields in the schema are kept, so the request can't set the owner or ID
-    const input = await parseJsonBody(request, newMedicationSchema);
-    if (!input.ok) {
-      return NextResponse.json({ error: input.error }, { status: 400 });
-    }
-    const medData = input.data;
+  // Free plan cannot upload photos
+  if (user.plan === 'free' && medData.photoUrl) {
+    return apiError(
+      'upgrade_required',
+      'Photo uploads are only available on Premium and Family plans.',
+    );
+  }
 
-    // Check plan limits
-    const existingMeds = getUserMedications(user.id);
+  // Create medication
+  const medication = addMedication(user.id, { ...medData, reminders: true });
 
-    if (user.plan === 'free' && existingMeds.length >= 3) {
-      return NextResponse.json(
-        {
-          error: 'Free plan is limited to 3 medications. Please upgrade to add more.',
-          upgradeRequired: true,
-        },
-        { status: 403 },
-      );
-    }
-
-    // Free plan cannot upload photos
-    if (user.plan === 'free' && medData.photoUrl) {
-      return NextResponse.json(
-        {
-          error: 'Photo uploads are only available on Premium and Family plans.',
-          upgradeRequired: true,
-        },
-        { status: 403 },
-      );
-    }
-
-    // Create medication
-    const medication = addMedication(user.id, { ...medData, reminders: true });
-
-    // Send confirmation email if enabled
-    let emailSent = false;
-    if (medData.enableEmail) {
-      try {
-        emailSent = await sendEmail({
-          to: user.email,
-          subject: `New Medication Added: ${medData.name}`,
-          html: `
+  // Send confirmation email if enabled
+  let emailSent = false;
+  if (medData.enableEmail) {
+    try {
+      emailSent = await sendEmail({
+        to: user.email,
+        subject: `New Medication Added: ${medData.name}`,
+        html: `
             <!DOCTYPE html>
             <html>
               <head>
@@ -124,36 +106,26 @@ export async function POST(request: NextRequest) {
               </body>
             </html>
           `,
-        });
+      });
 
-        if (emailSent) {
-          console.log(`✅ Medication confirmation email sent to ${user.email}`);
-        }
-      } catch (emailError) {
-        console.error('Building the confirmation email failed:', emailError);
-        // Don't fail the request if email fails
+      if (emailSent) {
+        console.log(`✅ Medication confirmation email sent to ${user.email}`);
       }
+    } catch (emailError) {
+      console.error('Building the confirmation email failed:', emailError);
+      // Don't fail the request if email fails
     }
-
-    console.log(`✅ Medication added: ${medication.name} for user ${user.email}`);
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Medication added successfully!',
-        medication,
-        emailSent,
-      },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error('Add medication error:', error);
-
-    return NextResponse.json(
-      {
-        error: 'Failed to add medication. Please try again.',
-      },
-      { status: 500 },
-    );
   }
-}
+
+  console.log(`✅ Medication added: ${medication.name} for user ${user.email}`);
+
+  return NextResponse.json(
+    {
+      success: true,
+      message: 'Medication added successfully!',
+      medication,
+      emailSent,
+    },
+    { status: 201 },
+  );
+});

@@ -163,7 +163,7 @@ describe('POST /api/medications/add: free plan limits', () => {
 
     const fourth = await json(await addMedication(token, { name: 'D' }));
     expect(fourth.status).toBe(403);
-    expect(fourth.body.upgradeRequired).toBe(true);
+    expect(fourth.body.error.code).toBe('upgrade_required');
   });
 
   it('refuses pill photos', async () => {
@@ -171,6 +171,6 @@ describe('POST /api/medications/add: free plan limits', () => {
 
     const res = await json(await addMedication(token, { photoUrl: 'data:image/png;base64,AAAA' }));
     expect(res.status).toBe(403);
-    expect(res.body.upgradeRequired).toBe(true);
+    expect(res.body.error.code).toBe('upgrade_required');
   });
 });

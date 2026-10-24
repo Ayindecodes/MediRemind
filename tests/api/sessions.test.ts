@@ -16,6 +16,7 @@ const load = async () => ({
   notifications: await import('@/app/api/notifications/route'),
   moodToday: await import('@/app/api/mood/today/route'),
   therapy: await import('@/app/api/therapy/upcoming-session/route'),
+  add: await import('@/app/api/medications/add/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -45,6 +46,7 @@ const routes = (): Route[] => [
     method: 'GET',
     call: (req) => m.therapy.GET(req),
   },
+  { name: 'POST /api/medications/add', method: 'POST', call: (req) => m.add.POST(req) },
 ];
 
 const send = async (route: Route, token?: string) => {
@@ -70,10 +72,11 @@ describe('protected routes', () => {
     }
   });
 
-  it('let a valid token through', async () => {
+  it('let a valid token through to the route', async () => {
     const token = jwt.sign({ email: 'ada@example.com' }, JWT_SECRET);
     for (const route of routes()) {
-      expect((await send(route, token)).status, route.name).toBeLessThan(400);
+      // Routes that need a body answer the empty one with 400, which still means they ran
+      expect((await send(route, token)).status, route.name).not.toBe(401);
     }
   });
 });
