@@ -131,7 +131,8 @@ export type ApiErrorCode =
   | 'email_taken'
   | 'too_many_attempts'
   | 'server_error'
-  | 'email_failed';
+  | 'email_failed'
+  | 'sms_failed';
 
 export interface ApiError {
   code: ApiErrorCode;

@@ -117,7 +117,7 @@ code always has the same status:
 | 409    | `email_taken`                                                        |
 | 429    | `too_many_attempts`                                                  |
 | 500    | `server_error` (unexpected errors; their own message is only logged) |
-| 502    | `email_failed`                                                       |
+| 502    | `email_failed`, `sms_failed`                                         |
 
 Every handler runs inside `handleErrors()` (directly, or through `withUser()`), so nothing reaches the
 browser as an unhandled exception. Pages read errors with `errorFrom()` (`lib/apiClient.ts`).
