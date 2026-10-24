@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, type Medication, MEDICATIONS_FILE } from '@/lib/userStorage';
+import { getUserByEmail, MEDICATIONS_FILE } from '@/lib/userStorage';
+import type { Medication } from '@/lib/types';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';

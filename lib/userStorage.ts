@@ -14,9 +14,6 @@ import type {
   TodayDose,
 } from './types';
 
-// Routes still import these from here; they move to lib/types in the next commit
-export type { Medication, MedicationLog };
-
 /* ===================== PATHS ===================== */
 
 // MEDIREMIND_DATA_DIR moves the JSON store elsewhere (the browser tests use a temporary folder)
