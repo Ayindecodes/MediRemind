@@ -43,7 +43,10 @@ describe('toDbError', () => {
 
 describe('unwrap', () => {
   it('returns the data, or throws the error as a DbError', () => {
-    expect(unwrap({ data: [1, 2], error: null })).toEqual([1, 2]);
-    expect(() => unwrap({ data: null, error: pgError('42501') })).toThrow(DbError);
+    const response = { count: null, status: 200, statusText: 'OK' };
+    expect(unwrap({ ...response, success: true, data: [1, 2], error: null })).toEqual([1, 2]);
+    expect(() =>
+      unwrap({ ...response, success: false, data: null, error: pgError('42501') }),
+    ).toThrow(DbError);
   });
 });

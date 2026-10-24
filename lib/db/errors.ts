@@ -1,6 +1,6 @@
 // lib/db/errors.ts
 // Turns database errors into the API's error codes, so a route can answer with apiError().
-import type { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { ApiException, isApiErrorCode } from '@/lib/api/errors';
 
 // A database error, already translated: routes can let it through to handleErrors()
@@ -39,7 +39,7 @@ export function toDbError(error: PostgrestError): DbError {
 }
 
 // The data from a Supabase query, or its error thrown as a DbError
-export function unwrap<T>({ data, error }: { data: T; error: PostgrestError | null }): T {
-  if (error) throw toDbError(error);
-  return data;
+export function unwrap<T>(result: PostgrestSingleResponse<T>): T {
+  if (result.error) throw toDbError(result.error);
+  return result.data;
 }
