@@ -150,7 +150,7 @@ export default function LoginPage() {
       } else {
         setApiResponse({
           type: 'error',
-          message: data.message || 'Invalid code. Please try again.',
+          message: errorFrom(data, 'Invalid code. Please try again.').message,
         });
       }
     } catch {

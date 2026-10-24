@@ -212,8 +212,9 @@ describe('guessing codes (Task 2)', () => {
     const guess = (c: string) =>
       call(routes.loginVerify.POST, '/api/login/verify', { email: 'ada@example.com', code: c });
 
-    for (let i = 0; i < 4; i++) expect((await guess('000000')).body.message).toBe('Invalid code');
-    expect((await guess('000000')).body.message).toBe(
+    for (let i = 0; i < 4; i++)
+      expect((await guess('000000')).body.error.message).toBe('Invalid code');
+    expect((await guess('000000')).body.error.message).toBe(
       'Too many incorrect attempts. Please request a new code.',
     );
     expect((await guess(code!)).status).toBe(400);
@@ -240,7 +241,15 @@ describe('tokens (Task 3)', () => {
     const body = { email: 'ada@example.com', code };
 
     vi.stubEnv('JWT_SECRET', undefined);
-    expect((await call(routes.loginVerify.POST, '/api/login/verify', body)).status).toBe(500);
+    expect(await call(routes.loginVerify.POST, '/api/login/verify', body)).toEqual({
+      status: 500,
+      body: {
+        error: {
+          code: 'server_error',
+          message: 'Something went wrong on our side. Please try again.',
+        },
+      },
+    });
 
     vi.stubEnv('JWT_SECRET', JWT_SECRET);
     expect((await call(routes.loginVerify.POST, '/api/login/verify', body)).status).toBe(200);

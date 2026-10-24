@@ -200,7 +200,7 @@ describe('POST /api/login and /api/login/verify', () => {
     });
     expect(res).toEqual({
       status: 400,
-      body: { success: false, message: 'Enter the 6-digit code' },
+      body: { error: { code: 'invalid_request', message: 'Enter the 6-digit code' } },
     });
   });
 });
