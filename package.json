@@ -17,6 +17,7 @@
     "db:status": "supabase status -o env",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "db:types": "supabase gen types typescript --local --schema public > lib/db/database.types.ts && prettier --write lib/db/database.types.ts",
     "db:migration": "supabase migration new"
   },
   "dependencies": {
