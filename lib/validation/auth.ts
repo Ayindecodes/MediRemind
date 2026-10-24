@@ -51,3 +51,28 @@ export const resendCodeSchema = z.object({
   email: emailAddress,
   type: z.literal('signup', { error: 'Invalid code type' }).optional(),
 });
+
+// A phone number in E.164 form, as Supabase Auth needs it. Task 39 will also accept local forms (0803…).
+export const phoneNumber = z
+  .string({ error: 'Enter your phone number' })
+  .trim()
+  .regex(/^\+[1-9]\d{7,14}$/, 'Enter the number with its country code, e.g. +2348031234567');
+
+const fullName = z
+  .string({ error: 'Enter your full name' })
+  .trim()
+  .min(2, 'Your name must be at least 2 characters')
+  .max(100, 'Your name must be 100 characters or fewer');
+
+/** POST /api/auth/phone/start: sign up with a name, or log in, by phone */
+export const phoneStartSchema = z.discriminatedUnion(
+  'mode',
+  [
+    z.object({ mode: z.literal('sign_up'), phone: phoneNumber, fullName }),
+    z.object({ mode: z.literal('log_in'), phone: phoneNumber }),
+  ],
+  { error: 'Say whether this is a sign-up or a log-in' },
+);
+
+/** POST /api/auth/phone/verify */
+export const phoneVerifySchema = z.object({ phone: phoneNumber, code });
