@@ -16,17 +16,39 @@ and the server checks them when it starts (`lib/env.ts`).
 
 ## Scripts
 
-| Command            | What it does                                                    |
-| ------------------ | --------------------------------------------------------------- |
-| `npm run dev`      | Development server on http://localhost:3000                     |
-| `npm run build`    | Production build (needs no environment variables)               |
-| `npm run lint`     | ESLint (must report 0 problems)                                 |
-| `npm run format`   | Format everything with Prettier (`format:check` only checks)    |
-| `npm test`         | Unit and API tests with Vitest (`test:watch` re-runs on change) |
-| `npm run test:e2e` | Browser tests: builds the app and runs Playwright against it    |
+| Command                          | What it does                                                    |
+| -------------------------------- | --------------------------------------------------------------- |
+| `npm run dev`                    | Development server on http://localhost:3000                     |
+| `npm run build`                  | Production build (needs no environment variables)               |
+| `npm run lint`                   | ESLint (must report 0 problems)                                 |
+| `npm run format`                 | Format everything with Prettier (`format:check` only checks)    |
+| `npm test`                       | Unit and API tests with Vitest (`test:watch` re-runs on change) |
+| `npm run test:e2e`               | Browser tests: builds the app and runs Playwright against it    |
+| `npm run db:start`               | Start the local Supabase stack in Docker (`db:stop` stops it)   |
+| `npm run db:reset`               | Rebuild the local database from the migrations and `seed.sql`   |
+| `npm run db:status`              | Print the local URLs and keys                                   |
+| `npm run db:migration -- <name>` | Create a new migration in `supabase/migrations/`                |
 
 CI (`.github/workflows/ci.yml`) runs lint, formatting, types, unit tests, the build, a security audit and the
 browser tests on every pull request.
+
+## Local database
+
+The app is moving from JSON files to Supabase (Postgres) in Phase 3. The local stack runs in Docker, so
+install Docker first; the app itself doesn't use the database yet.
+
+```bash
+npm run db:start    # first run downloads the images (a few minutes); later starts take about 30 seconds
+npm run db:status   # the URLs and keys; Studio, the database UI, is at http://127.0.0.1:54323
+npm run db:stop     # keeps the data; db:reset wipes it and re-applies the migrations
+```
+
+- Change the schema only through migrations (`npm run db:migration -- <name>`), never by editing the
+  database in Studio, so every environment ends up the same.
+- The keys `db:status` prints are the same on every machine and only work locally, but don't paste its
+  whole output into `.env.local`: its `JWT_SECRET` is Supabase's, not the app's.
+- The local stack uses ports 54321–54324. `supabase/config.toml` turns off the services not used yet
+  (realtime, storage, Edge Functions, analytics).
 
 ## Branches and pull requests
 
