@@ -13,6 +13,9 @@ const load = async () => ({
   history: await import('@/app/api/medications/history/route'),
   profile: await import('@/app/api/user/profile/route'),
   streak: await import('@/app/api/user/streak/route'),
+  notifications: await import('@/app/api/notifications/route'),
+  moodToday: await import('@/app/api/mood/today/route'),
+  therapy: await import('@/app/api/therapy/upcoming-session/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -35,6 +38,13 @@ const routes = (): Route[] => [
   { name: 'GET /api/medications/history', method: 'GET', call: (req) => m.history.GET(req) },
   { name: 'GET /api/user/profile', method: 'GET', call: (req) => m.profile.GET(req) },
   { name: 'GET /api/user/streak', method: 'GET', call: (req) => m.streak.GET(req) },
+  { name: 'GET /api/notifications', method: 'GET', call: (req) => m.notifications.GET(req) },
+  { name: 'GET /api/mood/today', method: 'GET', call: (req) => m.moodToday.GET(req) },
+  {
+    name: 'GET /api/therapy/upcoming-session',
+    method: 'GET',
+    call: (req) => m.therapy.GET(req),
+  },
 ];
 
 const send = async (route: Route, token?: string) => {
