@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Medication } from './types';
 
 type Storage = typeof import('./userStorage');
 
@@ -210,7 +211,7 @@ describe('login rate limit', () => {
 });
 
 describe('medications', () => {
-  const medication = (name: string) => ({
+  const medication = (name: string): Omit<Medication, 'id' | 'userId'> => ({
     name,
     dosage: '5mg',
     frequency: 'twice_daily',
