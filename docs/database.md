@@ -113,9 +113,43 @@ sign-in moves to Supabase (Tasks 37–42).
 - **Tests**: `tests/db/*.test.ts`, run with `npm run test:db` against the local stack (`npm run db:start`).
   They create real people through Supabase Auth, sign them in, and delete them afterwards.
 
+## Phone sign-in
+
+Supabase Auth signs people in by phone with a one-time code. The app's routes are ready for the new
+sign-in screens (Task 40); until those arrive, the current pages keep the old email sign-in.
+
+1. `POST /api/auth/phone/start` with `{ mode: 'sign_up', phone, fullName }` or `{ mode: 'log_in', phone }`.
+   Supabase makes a code and calls the **SMS hook**, `POST /api/auth/sms-hook`, which checks the call's
+   Standard Webhooks signature (`lib/webhooks.ts`) and sends the code through Termii (`lib/sms.ts`).
+   Signing up passes the name; logging in never creates an account. One code a minute per number.
+2. `POST /api/auth/phone/verify` with `{ phone, code }` starts the session and returns the profile. The
+   session lives in **httpOnly cookies** (`lib/auth/session.ts`): Secure in production, SameSite=Lax, out
+   of reach of the page's JavaScript.
+3. When someone signs up, the database creates their profile (`create_profile_for_new_user`), adding the
+   `+` Auth leaves off phone numbers. A sign-up with no name is refused.
+4. Routes that need a signed-in person use `withSession()`, which asks Auth about the session on each
+   request, so a signed-out session stops working at once. `POST /api/auth/sign-out` ends this device's
+   session; `GET /api/auth/me` returns the profile.
+
+The code SMS reads "Your MediRemind code is 123456. Don't share it with anyone." and, on a real domain,
+ends with the line Android uses to fill the code in (`@domain #123456`).
+
+**Locally**, `supabase/config.toml` sends codes for real numbers to the dev server on port 3000, which
+prints them in its log when `TERMII_API_KEY` isn't set. The test numbers `+2348000000001` to `…004` always
+take the code `123456` and send nothing; `npm run test:db` signs in with them.
+
+**For the hosted project**, before phone sign-in goes live:
+
+- Supabase dashboard → Authentication → Sign In / Providers → Phone: enable it, with "Confirm phone".
+- Authentication → Hooks → Send SMS hook: HTTPS, `https://<the app's domain>/api/auth/sms-hook`. Generate
+  its secret and set it as `SMS_HOOK_SECRET` in Vercel.
+- Authentication → rate limits and SMS settings: one code a minute, and a code lifetime long enough for
+  slow SMS delivery (10 minutes).
+- Vercel: `TERMII_API_KEY`, `TERMII_BASE_URL`, `TERMII_SENDER_ID` (the sender ID Termii approved) and
+  `TERMII_CHANNEL=dnd`, plus the three Supabase settings.
+
 ## Not in the schema yet
 
-- **Creating a profile when someone signs up:** Task 37, with phone sign-in.
 - **Family and caregivers** (people managed by someone else, caregiver links and permissions): Phase 7.
   Medicines will gain an optional link to the person they're for; today every medicine is its owner's.
 - **Consent records and the audit log:** Phase 8.
