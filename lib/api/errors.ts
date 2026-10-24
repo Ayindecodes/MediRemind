@@ -20,6 +20,27 @@ const STATUS: Record<ApiErrorCode, number> = {
   email_failed: 502,
 };
 
+// Whether a value is one of the codes above, e.g. a hint raised by a database rule
+export function isApiErrorCode(value: unknown): value is ApiErrorCode {
+  return typeof value === 'string' && Object.hasOwn(STATUS, value);
+}
+
+/**
+ * An error a route can throw (or let through) to answer with a specific code, e.g. a database rule's
+ * upgrade_required. handleErrors() turns it into apiError(code, message). Anything else thrown is
+ * treated as unexpected.
+ */
+export class ApiException extends Error {
+  constructor(
+    readonly code: ApiErrorCode,
+    message: string,
+    options?: { cause?: unknown },
+  ) {
+    super(message, options);
+    this.name = 'ApiException';
+  }
+}
+
 export function apiError(
   code: ApiErrorCode,
   message: string,
@@ -40,6 +61,10 @@ export function handleErrors<Args extends [Request, ...unknown[]]>(
     try {
       return await handler(...args);
     } catch (error) {
+      // An expected failure, such as a plan limit: answer with its code and message
+      if (error instanceof ApiException && error.code !== 'server_error') {
+        return apiError(error.code, error.message);
+      }
       const [request] = args;
       console.error(`${request.method} ${new URL(request.url).pathname} failed:`, error);
       return apiError('server_error', 'Something went wrong on our side. Please try again.');

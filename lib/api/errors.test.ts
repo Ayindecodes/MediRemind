@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiError, handleErrors } from './errors';
+import { ApiException, apiError, handleErrors } from './errors';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -52,5 +52,31 @@ describe('handleErrors', () => {
     });
     expect(JSON.stringify(res.body)).not.toContain('ENOENT');
     expect(log).toHaveBeenCalledWith('POST /api/example failed:', expect.any(Error));
+  });
+
+  it('answers an ApiException with its own code and message, without logging it', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const handler = handleErrors(async (_request: Request) => {
+      throw new ApiException('upgrade_required', 'The free plan allows 3 active medicines.');
+    });
+
+    expect(await body(await handler(request))).toEqual({
+      status: 403,
+      body: {
+        error: { code: 'upgrade_required', message: 'The free plan allows 3 active medicines.' },
+      },
+    });
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it('still treats an ApiException for a server error as unexpected', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const handler = handleErrors(async (_request: Request) => {
+      throw new ApiException('server_error', 'connection to 10.0.0.5 refused');
+    });
+
+    const res = await body(await handler(request));
+    expect(res.status).toBe(500);
+    expect(JSON.stringify(res.body)).not.toContain('10.0.0.5');
   });
 });
