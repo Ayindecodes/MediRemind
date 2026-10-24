@@ -359,11 +359,12 @@ describe('POST /api/medications/mark-taken', () => {
     const markTaken = (body: unknown) =>
       call(m.markTaken.POST, '/api/medications/mark-taken', body, token);
 
-    expect(await markTaken({})).toEqual({ status: 400, body: { error: 'Missing the dose ID' } });
-    expect(await markTaken({ medicationId: 42 })).toEqual({
+    const missing = {
       status: 400,
-      body: { error: 'Missing the dose ID' },
-    });
+      body: { error: { code: 'invalid_request', message: 'Missing the dose ID' } },
+    };
+    expect(await markTaken({})).toEqual(missing);
+    expect(await markTaken({ medicationId: 42 })).toEqual(missing);
   });
 });
 
@@ -376,7 +377,7 @@ describe('POST /api/mood/log', () => {
 
     expect(await log({ mood: 'ecstatic' })).toEqual({
       status: 400,
-      body: { error: 'Choose how you are feeling' },
+      body: { error: { code: 'invalid_request', message: 'Choose how you are feeling' } },
     });
     expect(await today()).toBeNull();
 
