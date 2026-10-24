@@ -262,18 +262,24 @@ otp_expiry = 3600
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = false
+enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
-enable_confirmations = false
+enable_confirmations = true
 # Template for sending OTP to users
 template = "Your code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
-max_frequency = "5s"
+# Every SMS costs money, so one code a minute per number.
+max_frequency = "60s"
 
 # Use pre-defined map of phone number to OTP for testing.
 # Keys are the phone number with country code and without the + prefix.
-# [auth.sms.test_otp]
-# 14152127777 = "123456"
+[auth.sms.test_otp]
+# Test numbers: these codes always work and no SMS is sent (the hook isn't called). The data-layer
+# tests sign in with them.
+2348000000001 = "123456"
+2348000000002 = "123456"
+2348000000003 = "123456"
+2348000000004 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
@@ -281,6 +287,15 @@ max_frequency = "5s"
 # timebox = "24h"
 # Force log out if the user has been inactive longer than the specified duration.
 # inactivity_timeout = "8h"
+
+# Supabase generates each sign-in code and calls the app to deliver it; the app sends it by SMS
+# through Termii (app/api/auth/sms-hook). Locally that's the dev server on port 3000, which prints the
+# code when TERMII_API_KEY isn't set. The secret is for local development only and is public: set
+# SMS_HOOK_SECRET in .env.local to the same value. The hosted project gets its own in the dashboard.
+[auth.hook.send_sms]
+enabled = true
+uri = "http://host.docker.internal:3000/api/auth/sms-hook"
+secrets = "v1,whsec_bWVkaXJlbWluZC1sb2NhbC1kZXZlbG9wbWVudC1vbmx5LXNtcy1ob29rLXNlY3JldA=="
 
 # This hook runs before a new user is created and allows developers to reject the request based on the incoming user object.
 # [auth.hook.before_user_created]
@@ -293,10 +308,12 @@ max_frequency = "5s"
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# Placeholder only: the CLI turns phone sign-in on only when a built-in provider is enabled. Every
+# SMS actually goes through the send_sms hook above (to Termii), and Twilio is never contacted.
 [auth.sms.twilio]
-enabled = false
-account_sid = ""
-message_service_sid = ""
+enabled = true
+account_sid = "placeholder"
+message_service_sid = "placeholder"
 # DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
 auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 
