@@ -75,6 +75,10 @@ Common scopes: `api`, `auth`, `storage`, `env`, `email`, `dashboard`, `medicatio
   `setState` in an effect; define data loaders inside the effect that uses them; derive values with `useMemo`.
 - **Navigation:** use `useRouter()` from `next/navigation`, not `window.location.href`.
 - **Configuration:** read environment variables through `lib/env.ts`, never with a fallback secret.
+- **Route handlers:** wrap protected handlers in `withUser()` and the others in `handleErrors()`
+  (`lib/api/`), instead of writing token checks or try/catch blocks in each route.
+- **Errors:** answer with `apiError(code, message)` so every error has the same shape; add a code to
+  `ApiErrorCode` (`lib/types.ts`) only when no existing one fits. Pages read errors with `errorFrom()`.
 - **Request bodies:** read them with `parseJsonBody()` and a schema in `lib/validation/`, never with
   `request.json()` directly. Add a schema test next to it.
 - **Types:** shapes used by more than one file live in `lib/types.ts`; don't redefine them in a page.
