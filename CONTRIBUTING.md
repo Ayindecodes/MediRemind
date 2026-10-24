@@ -27,6 +27,7 @@ and the server checks them when it starts (`lib/env.ts`).
 | `npm run db:start`               | Start the local Supabase stack in Docker (`db:stop` stops it)   |
 | `npm run db:reset`               | Rebuild the local database from the migrations and `seed.sql`   |
 | `npm run db:status`              | Print the local URLs and keys                                   |
+| `npm run db:test`                | Database tests (pgTAP) against the local database               |
 | `npm run db:migration -- <name>` | Create a new migration in `supabase/migrations/`                |
 
 CI (`.github/workflows/ci.yml`) runs lint, formatting, types, unit tests, the build, a security audit and the
@@ -44,7 +45,11 @@ npm run db:stop     # keeps the data; db:reset wipes it and re-applies the migra
 ```
 
 - Change the schema only through migrations (`npm run db:migration -- <name>`), never by editing the
-  database in Studio, so every environment ends up the same.
+  database in Studio, so every environment ends up the same. One table or change per migration, with a
+  pgTAP test file next to the others in `supabase/tests/database/`; `npm run db:test` runs them and CI runs
+  them on every pull request. The conventions are in [docs/database.md](docs/database.md).
+- From a script or another non-interactive shell, add `</dev/null` to `db:migration`: without a terminal
+  the CLI waits to read the migration's SQL from standard input.
 - The keys `db:status` prints are the same on every machine and only work locally, but don't paste its
   whole output into `.env.local`: its `JWT_SECRET` is Supabase's, not the app's.
 - The local stack uses ports 54321–54324. `supabase/config.toml` turns off the services not used yet
