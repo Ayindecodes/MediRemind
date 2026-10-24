@@ -13,6 +13,7 @@ vi.mock('@/lib/email', async (importOriginal) => ({
 const load = async () => ({
   storage: await import('@/lib/userStorage'),
   signup: await import('@/app/api/signup/route'),
+  verify: await import('@/app/api/verify/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -87,5 +88,24 @@ describe('POST /api/signup', () => {
       email: 'ada@example.com',
     });
     expect(sendEmail.mock.calls[0][0].to).toBe('ada@example.com');
+  });
+});
+
+describe('POST /api/verify', () => {
+  it("doesn't count a malformed code as a wrong guess", async () => {
+    m.storage.createUser('Ada Obi', 'ada@example.com', PASSWORD);
+    const code = m.storage.createVerificationSession('ada@example.com', 'signup');
+
+    for (let i = 0; i < 5; i++) {
+      const res = await call(m.verify.POST, '/api/verify', {
+        email: 'ada@example.com',
+        code: 'abc',
+      });
+      expect(res.body.message).toBe('Enter the 6-digit code');
+    }
+
+    // Five wrong guesses would have deleted the code; malformed ones never reached it
+    const res = await call(m.verify.POST, '/api/verify', { email: 'Ada@Example.com', code });
+    expect(res).toMatchObject({ status: 200, body: { success: true } });
   });
 });
