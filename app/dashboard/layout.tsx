@@ -19,21 +19,13 @@ import {
   Crown,
 } from 'lucide-react';
 import { useStoredUser } from '@/lib/useLocalStorage';
+import type { Notification } from '@/lib/types';
 
 interface User {
   id: string;
   fullName: string;
   email: string;
   plan: 'free' | 'individual' | 'family';
-}
-
-interface Notification {
-  id: string;
-  type: string;
-  message: string;
-  timestamp: number;
-  read: boolean;
-  actionUrl?: string;
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

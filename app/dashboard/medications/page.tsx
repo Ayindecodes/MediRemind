@@ -20,61 +20,16 @@ import {
   Circle,
   CheckCircle2,
 } from 'lucide-react';
-
-interface Medication {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  times: string[];
-  color: string;
-  icon: string;
-  startDate: string;
-  endDate?: string;
-  form?: string;
-  notes?: string;
-  photoUrl?: string;
-  enableSound?: boolean;
-  enableEmail?: boolean;
-  active?: boolean;
-}
-
-interface TodayDose {
-  id: string;
-  medicationId: string;
-  time: string;
-  status: 'taken' | 'missed' | 'upcoming';
-  takenAt?: string;
-}
-
-// One entry from GET /api/medications/today
-interface TodayDoseResponse {
-  id: string;
-  medicationId: string;
-  name: string;
-  time: string;
-  status: TodayDose['status'];
-  takenAt: string | null;
-}
+import type { HistoryEntry, Medication, TodayDose } from '@/lib/types';
 
 interface MedicationWithDoses extends Medication {
   todayDoses?: TodayDose[];
 }
 
-interface MedicationLog {
-  id: string;
-  medicationId: string;
-  medicationName: string;
-  takenAt: string;
-  scheduledTime: string;
-  status: 'taken' | 'missed';
-  date: string;
-}
-
 export default function MedicationsPage() {
   const router = useRouter();
   const [medications, setMedications] = useState<MedicationWithDoses[]>([]);
-  const [medicationHistory, setMedicationHistory] = useState<MedicationLog[]>([]);
+  const [medicationHistory, setMedicationHistory] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingDose, setIsUpdatingDose] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,16 +61,8 @@ export default function MedicationsPage() {
           // Merge today's doses with medications
           const medsWithDoses = (medsData.medications || []).map((med: Medication) => {
             const todayDoses = (todayData.medications || [])
-              .filter(
-                (dose: TodayDoseResponse) => dose.medicationId === med.id || dose.name === med.name,
-              )
-              .map((dose: TodayDoseResponse): TodayDose => ({
-                id: dose.id,
-                medicationId: med.id,
-                time: dose.time,
-                status: dose.status,
-                takenAt: dose.takenAt ?? undefined,
-              }));
+              .filter((dose: TodayDose) => dose.medicationId === med.id || dose.name === med.name)
+              .map((dose: TodayDose): TodayDose => ({ ...dose, medicationId: med.id }));
 
             return { ...med, todayDoses };
           });

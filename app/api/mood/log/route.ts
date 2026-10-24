@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logMood, getUserByEmail } from '@/lib/userStorage';
 import { getJwtSecret } from '@/lib/env';
+import { moodSchema } from '@/lib/validation/mood';
+import { parseJsonBody } from '@/lib/validation/request';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
@@ -17,7 +19,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const { mood, note } = await request.json();
+    const input = await parseJsonBody(request, moodSchema);
+    if (!input.ok) {
+      return NextResponse.json({ error: input.error }, { status: 400 });
+    }
+    const { mood, note } = input.data;
     const moodEntry = logMood(user.id, mood, note);
 
     return NextResponse.json({ success: true, mood: moodEntry });

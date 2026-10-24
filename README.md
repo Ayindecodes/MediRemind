@@ -71,8 +71,8 @@ and lists anything missing or invalid.
 ```
 app/          Pages (landing, login, signup, dashboard) and API routes (app/api)
 components/   Landing page sections
-lib/          Storage (userStorage.ts), configuration (env.ts), email (email.ts),
-              browser storage hooks (useLocalStorage.ts)
+lib/          Storage (userStorage.ts), shared types (types.ts), request validation (validation/),
+              configuration (env.ts), email (email.ts), browser storage hooks (useLocalStorage.ts)
 tests/api/    Tests that call the API route handlers
 e2e/          Browser tests and a fake email server for them
 data/         Local JSON data, created on first use (git-ignored: it holds real user data)

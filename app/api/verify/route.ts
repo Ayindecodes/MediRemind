@@ -1,17 +1,16 @@
 // app/api/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCode, verifyUser } from '@/lib/userStorage';
+import { codeSchema } from '@/lib/validation/auth';
+import { parseJsonBody } from '@/lib/validation/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, code } = await request.json();
-
-    if (!email || !code) {
-      return NextResponse.json(
-        { success: false, message: 'Email and code are required' },
-        { status: 400 },
-      );
+    const input = await parseJsonBody(request, codeSchema);
+    if (!input.ok) {
+      return NextResponse.json({ success: false, message: input.error }, { status: 400 });
     }
+    const { email, code } = input.data;
 
     const result = verifyCode(email, code, 'signup');
 

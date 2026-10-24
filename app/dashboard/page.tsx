@@ -22,37 +22,7 @@ import {
   Pill,
   type LucideIcon,
 } from 'lucide-react';
-
-type User = {
-  fullName?: string;
-  email?: string;
-};
-
-type Medication = {
-  id: string;
-  name: string;
-  dosage?: string;
-  time?: string;
-  status?: 'taken' | 'upcoming' | 'missed' | string;
-  color?: string; // tailwind color classes or gradient token
-  icon?: React.ReactNode | React.ComponentType;
-  takenAt?: string;
-};
-
-type StreakData = {
-  currentStreak?: number;
-  weeklyAdherence?: number;
-  totalMedsTaken?: number;
-  longestStreak?: number;
-};
-
-type TherapySession = {
-  therapist: string;
-  date: string;
-  time: string;
-  type: string;
-  unreadMessages?: number;
-};
+import type { Profile, StreakSummary, TherapySession, TodayDose } from '@/lib/types';
 
 export default function DashboardHome(): React.ReactElement {
   const router = useRouter();
@@ -65,9 +35,9 @@ export default function DashboardHome(): React.ReactElement {
   const [moodMessage, setMoodMessage] = useState<string>('');
 
   // Data states
-  const [userData, setUserData] = useState<User | null>(null);
-  const [todaysMeds, setTodaysMeds] = useState<Medication[]>([]);
-  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [userData, setUserData] = useState<Profile | null>(null);
+  const [todaysMeds, setTodaysMeds] = useState<TodayDose[]>([]);
+  const [streakData, setStreakData] = useState<StreakSummary | null>(null);
   const [therapySession, setTherapySession] = useState<TherapySession | null>(null);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -190,7 +160,9 @@ export default function DashboardHome(): React.ReactElement {
       // Optimistic update
       setTodaysMeds((prev) =>
         prev.map((med) =>
-          med.id === medId ? { ...med, status: 'taken', takenAt: new Date().toISOString() } : med,
+          med.id === medId
+            ? { ...med, status: 'taken' as const, takenAt: new Date().toISOString() }
+            : med,
         ),
       );
 
@@ -490,28 +462,6 @@ export default function DashboardHome(): React.ReactElement {
               <>
                 <div className="space-y-4">
                   {todaysMeds.map((med) => {
-                    // compute a safe ReactNode for the icon (handles component types, elements, primitives)
-                    const renderIcon: React.ReactNode = (() => {
-                      // if icon is a component (function/class), render it
-                      if (med.icon && typeof med.icon === 'function') {
-                        const C = med.icon as React.ComponentType;
-                        return <C />;
-                      }
-
-                      // if it's already a React element/node, use it
-                      if (React.isValidElement(med.icon)) {
-                        return med.icon as React.ReactNode;
-                      }
-
-                      // if it's a primitive like string/number, wrap in span
-                      if (typeof med.icon === 'string' || typeof med.icon === 'number') {
-                        return <span>{med.icon}</span>;
-                      }
-
-                      // otherwise nothing
-                      return null;
-                    })();
-
                     return (
                       <div
                         key={med.id}
@@ -522,7 +472,7 @@ export default function DashboardHome(): React.ReactElement {
                             <div
                               className={`w-12 h-12 rounded-xl bg-gradient-to-br ${med.color ?? 'from-indigo-100 to-indigo-200'} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}
                             >
-                              {renderIcon}
+                              <span>{med.icon}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">

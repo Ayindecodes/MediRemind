@@ -2,17 +2,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createUser, createVerificationSession, getUserByEmail } from '@/lib/userStorage';
 import { escapeHtml, sendEmail } from '@/lib/email';
+import { signupSchema } from '@/lib/validation/auth';
+import { parseJsonBody } from '@/lib/validation/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const { fullName, email, password } = await request.json();
-
-    if (!fullName || !email || !password) {
-      return NextResponse.json(
-        { success: false, message: 'All fields are required' },
-        { status: 400 },
-      );
+    const input = await parseJsonBody(request, signupSchema);
+    if (!input.ok) {
+      return NextResponse.json({ success: false, message: input.error }, { status: 400 });
     }
+    const { fullName, email, password } = input.data;
 
     // Check if user already exists
     const existingUser = getUserByEmail(email);

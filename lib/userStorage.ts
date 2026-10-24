@@ -3,6 +3,16 @@ import fs from 'fs';
 import path from 'path';
 import { randomInt } from 'crypto';
 import bcrypt from 'bcryptjs';
+import type {
+  Medication,
+  MedicationLog,
+  Mood,
+  MoodValue,
+  Notification,
+  Plan,
+  TherapySession,
+  TodayDose,
+} from './types';
 
 /* ===================== PATHS ===================== */
 
@@ -27,7 +37,7 @@ export interface User {
   password: string;
   verified: boolean;
   createdAt: number;
-  plan: 'free' | 'individual' | 'family';
+  plan: Plan;
   planExpiry?: number;
   streak: {
     current: number;
@@ -46,73 +56,6 @@ interface Session {
   expiresAt: number;
   attempts: number;
   type: 'signup' | 'login';
-}
-
-export interface Medication {
-  id: string;
-  userId: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  times: string[];
-  color: string;
-  icon: string;
-  startDate: string;
-  endDate?: string;
-  reminders: boolean;
-  photoUrl?: string;
-  form?: string;
-  notes?: string;
-  enableSound?: boolean;
-  enableEmail?: boolean;
-  soundType?: string;
-  refillReminder?: {
-    enabled: boolean;
-    daysLeft: number;
-  };
-  // Set by the check-completions job once the end date has passed
-  completed?: boolean;
-  completedAt?: string;
-}
-
-export interface MedicationLog {
-  id: string;
-  userId: string;
-  medicationId: string;
-  scheduledTime: string;
-  takenAt?: string;
-  status: 'taken' | 'missed' | 'upcoming';
-  date: string;
-}
-
-interface Mood {
-  id: string;
-  userId: string;
-  mood: 'happy' | 'neutral' | 'sad';
-  note?: string;
-  date: string;
-  timestamp: number;
-}
-
-interface Notification {
-  id: string;
-  userId: string;
-  type: 'reminder' | 'streak' | 'session' | 'refill' | 'missed';
-  message: string;
-  timestamp: number;
-  read: boolean;
-  actionUrl?: string;
-}
-
-interface TherapySession {
-  id: string;
-  userId: string;
-  therapist: string;
-  date: string;
-  time: string;
-  type: 'video' | 'chat' | 'phone';
-  status: 'upcoming' | 'completed' | 'cancelled';
-  unreadMessages: number;
 }
 
 type LoginAttempt = {
@@ -321,7 +264,7 @@ export function deleteMedication(userId: string, medicationId: string) {
 
 // ===================== TODAY'S MEDICATIONS =====================
 
-export function getTodaysMedications(userId: string) {
+export function getTodaysMedications(userId: string): TodayDose[] {
   const meds = getUserMedications(userId);
   const logs = loadMap<MedicationLog>(MED_LOGS_FILE);
   const today = new Date().toISOString().split('T')[0];
@@ -373,7 +316,7 @@ export function getUserStreak(_userId: string) {
 
 /* ===================== MOODS ===================== */
 
-export function logMood(userId: string, mood: 'happy' | 'neutral' | 'sad', note?: string) {
+export function logMood(userId: string, mood: MoodValue, note?: string) {
   const moods = loadMap<Mood>(MOODS_FILE);
   const today = new Date().toISOString().split('T')[0];
   const entry = {
@@ -421,11 +364,7 @@ export function getUpcomingSession(userId: string) {
   return [...sessions.values()].find((s) => s.userId === userId && s.status === 'upcoming') || null;
 }
 
-export function updateUserPlan(
-  userId: string,
-  plan: 'free' | 'individual' | 'family',
-  expiryDays?: number,
-) {
+export function updateUserPlan(userId: string, plan: Plan, expiryDays?: number) {
   const users = loadMap<User>(USERS_FILE);
   const user = [...users.values()].find((u) => u.id === userId);
   if (!user) throw new Error('User not found');

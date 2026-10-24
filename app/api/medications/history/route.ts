@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getUserByEmail,
-  type Medication,
-  type MedicationLog,
-  MEDICATIONS_FILE,
-  MED_LOGS_FILE,
-} from '@/lib/userStorage';
+import { getUserByEmail, MEDICATIONS_FILE, MED_LOGS_FILE } from '@/lib/userStorage';
+import type { HistoryEntry, Medication, MedicationLog } from '@/lib/types';
 import { getJwtSecret } from '@/lib/env';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -41,7 +36,7 @@ export async function GET(request: NextRequest) {
     // Filter user's logs and enrich with medication names
     const userLogs = Array.from(logs.values())
       .filter((log) => log.userId === user.id)
-      .map((log) => {
+      .map((log): HistoryEntry => {
         const med = medications.get(log.medicationId);
         return {
           ...log,

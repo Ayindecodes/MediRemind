@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addMedication, getUserByEmail, getUserMedications } from '@/lib/userStorage';
 import { getAppUrl, getJwtSecret } from '@/lib/env';
 import { escapeHtml, sendEmail } from '@/lib/email';
+import { newMedicationSchema } from '@/lib/validation/medication';
+import { parseJsonBody } from '@/lib/validation/request';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
@@ -19,7 +21,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const medData = await request.json();
+    // Only the fields in the schema are kept, so the request can't set the owner or ID
+    const input = await parseJsonBody(request, newMedicationSchema);
+    if (!input.ok) {
+      return NextResponse.json({ error: input.error }, { status: 400 });
+    }
+    const medData = input.data;
 
     // Check plan limits
     const existingMeds = getUserMedications(user.id);
@@ -46,29 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create medication
-    const medication = addMedication(user.id, {
-      name: medData.name,
-      dosage: medData.dosage,
-      frequency: medData.frequency,
-      times: medData.times || [],
-      startDate: medData.startDate,
-      endDate: medData.endDate,
-      color: medData.color || 'from-blue-500 to-cyan-500',
-      icon: medData.icon || '💊',
-      reminders: true,
-      photoUrl: medData.photoUrl,
-      form: medData.form,
-      notes: medData.notes,
-      enableSound: medData.enableSound,
-      enableEmail: medData.enableEmail,
-      soundType: medData.soundType,
-      refillReminder: medData.refillReminder
-        ? {
-            enabled: true,
-            daysLeft: parseInt(medData.refillReminder),
-          }
-        : undefined,
-    });
+    const medication = addMedication(user.id, { ...medData, reminders: true });
 
     // Send confirmation email if enabled
     let emailSent = false;
