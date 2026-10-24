@@ -1,5 +1,6 @@
 // Input validation (Task 29): routes check request bodies with the schemas in lib/validation.
 import fs from 'node:fs';
+import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JWT_SECRET, PASSWORD, loadWithTempData, request } from '../helpers';
@@ -17,6 +18,8 @@ const load = async () => ({
   login: await import('@/app/api/login/route'),
   loginVerify: await import('@/app/api/login/verify/route'),
   resendCode: await import('@/app/api/resend-code/route'),
+  add: await import('@/app/api/medications/add/route'),
+  list: await import('@/app/api/medications/list/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -34,6 +37,13 @@ beforeEach(async () => {
 afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
 type Handler = (req: NextRequest) => Promise<Response>;
+
+// A verified user and a login token, as if they had signed in
+function signedInUser(email: string) {
+  const user = m.storage.createUser('Test User', email, PASSWORD);
+  m.storage.verifyUser(email);
+  return { user, token: jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET) };
+}
 
 const call = async (handler: Handler, url: string, body?: unknown, token?: string) => {
   const res = await handler(request(url, { body, token }));
@@ -175,5 +185,79 @@ describe('POST /api/resend-code', () => {
       status: 400,
       body: { success: false, message: 'Enter a valid email address' },
     });
+  });
+});
+
+describe('POST /api/medications/add', () => {
+  // Exactly what the add form sends when the optional fields are left empty
+  const fromAddForm = {
+    name: 'Amlodipine',
+    dosage: '5mg',
+    form: 'tablet',
+    frequency: 'daily',
+    times: ['08:00'],
+    startDate: '2026-10-01',
+    endDate: '',
+    color: 'from-blue-500 to-cyan-500',
+    icon: '💊',
+    notes: '',
+    refillReminder: '',
+    enableSound: true,
+    enableEmail: false,
+    soundType: 'default',
+    photoUrl: null,
+  };
+
+  const add = (token: string, fields: Record<string, unknown> = {}) =>
+    call(m.add.POST, '/api/medications/add', { ...fromAddForm, ...fields }, token);
+
+  const listed = async (token: string) =>
+    (await call(m.list.GET, '/api/medications/list', undefined, token)).body.medications;
+
+  it("saves the add form's request, leaving empty fields out", async () => {
+    const { user, token } = signedInUser('ada@example.com');
+
+    const res = await add(token);
+    expect(res.status).toBe(201);
+
+    const [saved] = await listed(token);
+    expect(saved).toMatchObject({ userId: user.id, name: 'Amlodipine', reminders: true });
+    expect(saved).not.toHaveProperty('endDate');
+    expect(saved).not.toHaveProperty('notes');
+    expect(saved).not.toHaveProperty('photoUrl');
+  });
+
+  it("can't set the owner, ID or completion of a new medication", async () => {
+    const ada = signedInUser('ada@example.com');
+    const bola = signedInUser('bola@example.com');
+
+    const res = await add(ada.token, {
+      id: 'med_chosen',
+      userId: bola.user.id,
+      completed: true,
+      completedAt: '2026-01-01T00:00:00.000Z',
+    });
+    expect(res.status).toBe(201);
+
+    const [saved] = await listed(ada.token);
+    expect(saved.userId).toBe(ada.user.id);
+    expect(saved.id).not.toBe('med_chosen');
+    expect(saved).not.toHaveProperty('completed');
+    expect(saved).not.toHaveProperty('completedAt');
+    expect(await listed(bola.token)).toEqual([]);
+  });
+
+  it('refuses an invalid medication without saving it', async () => {
+    const { token } = signedInUser('ada@example.com');
+
+    expect(await add(token, { times: ['8 in the morning'] })).toEqual({
+      status: 400,
+      body: { error: 'Reminder times must use the 24-hour HH:MM format' },
+    });
+    expect(await add(token, { endDate: '2026-09-01' })).toEqual({
+      status: 400,
+      body: { error: "The end date can't be before the start date" },
+    });
+    expect(await listed(token)).toEqual([]);
   });
 });

@@ -103,7 +103,11 @@ describe('GET /api/medications/check-completions (Task 7)', () => {
 
   it('completes ended courses when called with CRON_SECRET', async () => {
     const { token } = signedInUser('ada@example.com');
-    await addMedication(token, { name: 'Amoxicillin', endDate: '2026-01-15' });
+    await addMedication(token, {
+      name: 'Amoxicillin',
+      startDate: '2026-01-08',
+      endDate: '2026-01-15',
+    });
 
     const res = await json(await cron(CRON_SECRET));
     expect(res).toMatchObject({ status: 200, body: { completedCount: 1 } });
