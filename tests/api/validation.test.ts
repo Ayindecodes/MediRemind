@@ -329,11 +329,13 @@ describe('PUT /api/medications/update', () => {
 
     expect(await update(token, { id: med.id, startDate: '2026-11-15' })).toEqual({
       status: 400,
-      body: { error: "The end date can't be before the start date" },
+      body: {
+        error: { code: 'invalid_request', message: "The end date can't be before the start date" },
+      },
     });
     expect(await update(token, { id: med.id, times: [] })).toEqual({
       status: 400,
-      body: { error: 'Add at least one reminder time' },
+      body: { error: { code: 'invalid_request', message: 'Add at least one reminder time' } },
     });
     expect(await saved(token)).toEqual(med);
   });
@@ -343,7 +345,10 @@ describe('PUT /api/medications/update', () => {
     const bola = signedInUser('bola@example.com');
     const med = await addMedication(ada.token);
 
-    expect((await update(bola.token, { id: med.id, name: 'Changed' })).status).toBe(404);
+    expect(await update(bola.token, { id: med.id, name: 'Changed' })).toEqual({
+      status: 404,
+      body: { error: { code: 'not_found', message: 'Medication not found' } },
+    });
     expect((await saved(ada.token)).name).toBe('Amlodipine');
   });
 });

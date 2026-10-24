@@ -17,6 +17,7 @@ const load = async () => ({
   moodToday: await import('@/app/api/mood/today/route'),
   therapy: await import('@/app/api/therapy/upcoming-session/route'),
   add: await import('@/app/api/medications/add/route'),
+  update: await import('@/app/api/medications/update/route'),
 });
 
 let m: Awaited<ReturnType<typeof load>>;
@@ -47,6 +48,7 @@ const routes = (): Route[] => [
     call: (req) => m.therapy.GET(req),
   },
   { name: 'POST /api/medications/add', method: 'POST', call: (req) => m.add.POST(req) },
+  { name: 'PUT /api/medications/update', method: 'PUT', call: (req) => m.update.PUT(req) },
 ];
 
 const send = async (route: Route, token?: string) => {
