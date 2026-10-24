@@ -45,6 +45,56 @@ export function getAppUrl(): string {
   return read(appUrl, process.env.NEXT_PUBLIC_APP_URL) ?? 'http://localhost:3000';
 }
 
+// Supabase: the project's address and its publishable key are safe in the browser; the secret key is
+// server-only, because it has full access and bypasses the access rules
+const supabaseUrl = z.preprocess(
+  emptyAsUnset,
+  z
+    .url({
+      error: 'NEXT_PUBLIC_SUPABASE_URL is not set. Locally, copy API_URL from `npm run db:status`',
+    })
+    .transform((url) => url.replace(/\/+$/, '')),
+);
+
+const supabasePublishableKey = z.preprocess(
+  emptyAsUnset,
+  z
+    .string({
+      error:
+        'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is not set. Locally, copy PUBLISHABLE_KEY from `npm run db:status`',
+    })
+    .refine(
+      (key) => !key.startsWith('sb_secret_'),
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY holds the secret key, which must never reach the browser. Use the publishable key',
+    )
+    .refine(
+      (key) => key.startsWith('sb_publishable_'),
+      'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY must be a publishable key (sb_publishable_...)',
+    ),
+);
+
+const supabaseSecretKey = z.preprocess(
+  emptyAsUnset,
+  z
+    .string({
+      error: 'SUPABASE_SECRET_KEY is not set. Locally, copy SECRET_KEY from `npm run db:status`',
+    })
+    .startsWith('sb_secret_', 'SUPABASE_SECRET_KEY must be a secret key (sb_secret_...)'),
+);
+
+// Where the database is, and the key that browsers and signed-in requests use
+export function getSupabaseConfig(): { url: string; publishableKey: string } {
+  return {
+    url: read(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_URL),
+    publishableKey: read(supabasePublishableKey, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
+  };
+}
+
+// Full access for server code (lib/db/client.ts); never send it to the browser
+export function getSupabaseSecretKey(): string {
+  return read(supabaseSecretKey, process.env.SUPABASE_SECRET_KEY);
+}
+
 // Everything the server reads. NEXT_PUBLIC_ variables are also visible to browser code; the rest are server-only.
 const serverEnv = z.object({
   JWT_SECRET: requiredSecret('JWT_SECRET'),
@@ -52,6 +102,10 @@ const serverEnv = z.object({
   CRON_SECRET: z.preprocess(emptyAsUnset, secretString('CRON_SECRET').optional()),
   RESEND_API_KEY: z.preprocess(emptyAsUnset, z.string().optional()),
   NEXT_PUBLIC_APP_URL: appUrl,
+  // The app doesn't use the database yet (Phase 3), so these are optional, but checked if set
+  NEXT_PUBLIC_SUPABASE_URL: supabaseUrl.optional(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey.optional(),
+  SUPABASE_SECRET_KEY: supabaseSecretKey.optional(),
 });
 
 /**

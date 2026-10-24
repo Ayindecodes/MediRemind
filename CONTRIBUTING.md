@@ -28,6 +28,8 @@ and the server checks them when it starts (`lib/env.ts`).
 | `npm run db:reset`               | Rebuild the local database from the migrations and `seed.sql`   |
 | `npm run db:status`              | Print the local URLs and keys                                   |
 | `npm run db:test`                | Database tests (pgTAP) against the local database               |
+| `npm run db:types`               | Regenerate `lib/db/database.types.ts` after a migration         |
+| `npm run test:db`                | Data-layer tests (`tests/db`) against the local Supabase stack  |
 | `npm run db:migration -- <name>` | Create a new migration in `supabase/migrations/`                |
 
 CI (`.github/workflows/ci.yml`) runs lint, formatting, types, unit tests, the build, a security audit and the
@@ -48,6 +50,9 @@ npm run db:stop     # keeps the data; db:reset wipes it and re-applies the migra
   database in Studio, so every environment ends up the same. One table or change per migration, with a
   pgTAP test file next to the others in `supabase/tests/database/`; `npm run db:test` runs them and CI runs
   them on every pull request. The conventions are in [docs/database.md](docs/database.md).
+- After a migration, run `npm run db:types` and commit the regenerated types. Server code reaches the
+  database through `lib/db/` (see [docs/database.md](docs/database.md#the-data-layer)), tested with
+  `npm run test:db`.
 - From a script or another non-interactive shell, add `</dev/null` to `db:migration`: without a terminal
   the CLI waits to read the migration's SQL from standard input.
 - The keys `db:status` prints are the same on every machine and only work locally, but don't paste its
@@ -116,6 +121,9 @@ Common scopes: `api`, `auth`, `storage`, `env`, `email`, `dashboard`, `medicatio
 
 - `lib/*.test.ts`: unit tests next to the code.
 - `tests/api/*.test.ts`: call the real route handlers, using the helpers in `tests/helpers.ts`.
+- `tests/db/*.test.ts`: the data layer against the local Supabase stack, as real signed-in people
+  (`npm run test:db`).
+- `supabase/tests/database/*.test.sql`: the schema and its access rules, in pgTAP (`npm run db:test`).
 - `e2e/*.spec.ts`: browser tests against the production build.
 - Tests must never touch the real `data/` folder; the helpers point storage at a temporary folder.
 - A known bug can be recorded with `test.fail(...)` and a note pointing at the task that will fix it.

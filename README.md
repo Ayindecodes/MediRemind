@@ -58,25 +58,27 @@ and lists anything missing or invalid.
 
 ## Scripts
 
-| Command            | What it does                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| `npm run dev`      | Development server                                                                          |
-| `npm run build`    | Production build (needs no environment variables)                                           |
-| `npm run lint`     | ESLint                                                                                      |
-| `npm run format`   | Format with Prettier (`format:check` only checks)                                           |
-| `npm test`         | Unit and API tests (Vitest)                                                                 |
-| `npm run test:e2e` | Browser tests (Playwright); run `npx playwright install --only-shell chromium` once first   |
-| `npm run db:start` | Local Supabase database in Docker (also `db:stop`, `db:status`, `db:reset`, `db:migration`) |
+| Command            | What it does                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `npm run dev`      | Development server                                                                             |
+| `npm run build`    | Production build (needs no environment variables)                                              |
+| `npm run lint`     | ESLint                                                                                         |
+| `npm run format`   | Format with Prettier (`format:check` only checks)                                              |
+| `npm test`         | Unit and API tests (Vitest)                                                                    |
+| `npm run test:e2e` | Browser tests (Playwright); run `npx playwright install --only-shell chromium` once first      |
+| `npm run db:start` | Local Supabase in Docker (also `db:stop`, `db:status`, `db:reset`, `db:migration`, `db:types`) |
+| `npm run test:db`  | Data-layer tests against the local Supabase (`db:test` runs the pgTAP database tests)          |
 
 ## Project structure
 
 ```
 app/          Pages (landing, login, signup, dashboard) and API routes (app/api)
 components/   Landing page sections
-lib/          Storage (userStorage.ts), shared types (types.ts), request validation (validation/),
+lib/          Storage (userStorage.ts, moving to db/), shared types (types.ts), request validation (validation/),
               route helpers (api/), configuration (env.ts), email (email.ts),
               browser helpers (apiClient.ts, useLocalStorage.ts)
 tests/api/    Tests that call the API route handlers
+tests/db/     Data-layer tests against the local Supabase stack
 e2e/          Browser tests and a fake email server for them
 data/         Local JSON data, created on first use (git-ignored: it holds real user data)
 supabase/     Local Supabase config, migrations and seed data

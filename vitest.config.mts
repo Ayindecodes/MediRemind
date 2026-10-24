@@ -9,7 +9,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['**/*.test.ts'],
-    exclude: ['node_modules/**', '.next/**'],
+    // tests/db needs the local Supabase stack: `npm run test:db` (vitest.db.config.mts)
+    exclude: ['node_modules/**', '.next/**', 'tests/db/**'],
     // Every test starts with fresh mocks and environment variables
     restoreMocks: true,
     unstubEnvs: true,
