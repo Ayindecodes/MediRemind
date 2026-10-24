@@ -16,6 +16,7 @@
     "db:stop": "supabase stop",
     "db:status": "supabase status -o env",
     "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
     "db:migration": "supabase migration new"
   },
   "dependencies": {
