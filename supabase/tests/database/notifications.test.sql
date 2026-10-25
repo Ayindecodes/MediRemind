@@ -11,7 +11,9 @@ select ok((select relrowsecurity from pg_class where oid = 'public.notifications
 select has_index('public', 'notifications', 'notifications_user_id_created_at_idx',
   'notifications are indexed for the newest-first list');
 
-insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com');
+insert into auth.users (id, email, raw_user_meta_data) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com', '{"full_name": "Test"}');
+-- Signing up creates a profile; these tests set up their own
+delete from public.profiles;
 insert into public.profiles (id, full_name, email)
   values ('11111111-1111-1111-1111-111111111111', 'Ada Obi', 'ada@example.com');
 

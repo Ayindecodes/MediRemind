@@ -4,6 +4,7 @@ import {
   getAppUrl,
   getCronSecret,
   getJwtSecret,
+  getSmsHookSecret,
   getSupabaseConfig,
   getSupabaseSecretKey,
 } from './env';
@@ -62,6 +63,7 @@ describe('checkServerEnv', () => {
       'NEXT_PUBLIC_SUPABASE_URL',
       'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
       'SUPABASE_SECRET_KEY',
+      'SMS_HOOK_SECRET',
     ]) {
       vi.stubEnv(name, env[name]);
     }
@@ -153,5 +155,16 @@ describe('getSupabaseSecretKey', () => {
     expect(getSupabaseSecretKey).toThrow('must be a secret key (sb_secret_...)');
     vi.stubEnv('SUPABASE_SECRET_KEY', 'sb_secret_abc');
     expect(getSupabaseSecretKey()).toBe('sb_secret_abc');
+  });
+});
+
+describe('getSmsHookSecret', () => {
+  it('needs a Standard Webhooks secret', () => {
+    vi.stubEnv('SMS_HOOK_SECRET', undefined);
+    expect(getSmsHookSecret).toThrow('SMS_HOOK_SECRET is not set');
+    vi.stubEnv('SMS_HOOK_SECRET', 'whsec_abc');
+    expect(getSmsHookSecret).toThrow('must look like v1,whsec_<base64>');
+    vi.stubEnv('SMS_HOOK_SECRET', 'v1,whsec_c2VjcmV0');
+    expect(getSmsHookSecret()).toBe('v1,whsec_c2VjcmV0');
   });
 });

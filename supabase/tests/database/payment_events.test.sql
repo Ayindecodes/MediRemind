@@ -12,7 +12,9 @@ select ok((select relrowsecurity from pg_class where oid = 'public.payment_event
 select has_index('public', 'payment_events', 'payment_events_unprocessed_idx',
   'unhandled events can be found quickly');
 
-insert into auth.users (id, email) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com');
+insert into auth.users (id, email, raw_user_meta_data) values ('11111111-1111-1111-1111-111111111111', 'ada@example.com', '{"full_name": "Test"}');
+-- Signing up creates a profile; these tests set up their own
+delete from public.profiles;
 insert into public.profiles (id, full_name, email)
   values ('11111111-1111-1111-1111-111111111111', 'Ada Obi', 'ada@example.com');
 insert into public.payment_events (dedupe_key, event_type, user_id, reference, amount_kobo, payload)

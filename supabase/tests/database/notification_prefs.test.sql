@@ -10,9 +10,11 @@ select columns_are('public', 'notification_prefs', array[
 select ok((select relrowsecurity from pg_class where oid = 'public.notification_prefs'::regclass),
   'row level security is on');
 
-insert into auth.users (id, email) values
-  ('11111111-1111-1111-1111-111111111111', 'ada@example.com'),
-  ('22222222-2222-2222-2222-222222222222', 'bola@example.com');
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('11111111-1111-1111-1111-111111111111', 'ada@example.com', '{"full_name": "Test"}'),
+  ('22222222-2222-2222-2222-222222222222', 'bola@example.com', '{"full_name": "Test"}');
+-- Signing up creates a profile; these tests set up their own
+delete from public.profiles;
 insert into public.profiles (id, full_name, email) values
   ('11111111-1111-1111-1111-111111111111', 'Ada Obi', 'ada@example.com'),
   ('22222222-2222-2222-2222-222222222222', 'Bola Ade', 'bola@example.com');

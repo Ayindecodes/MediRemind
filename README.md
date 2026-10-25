@@ -46,13 +46,17 @@ Open http://localhost:3000. Without `RESEND_API_KEY`, sign-in codes are printed 
 Set these in `.env.local` locally, or in the Vercel project settings. The server checks them when it starts
 and lists anything missing or invalid.
 
-| Variable              | Required             | Purpose                                                       |
-| --------------------- | -------------------- | ------------------------------------------------------------- |
-| `JWT_SECRET`          | Always               | Signs login tokens. At least 32 characters                    |
-| `RESEND_API_KEY`      | In production        | Sends sign-in codes and other emails through Resend           |
-| `NEXT_PUBLIC_APP_URL` | In production        | The app's public address, used for links in emails            |
-| `CRON_SECRET`         | When a cron job runs | Lets a scheduler call the cron routes. At least 32 characters |
-| `MEDIREMIND_DATA_DIR` | No                   | Stores the JSON data somewhere other than `./data`            |
+| Variable                                                                  | Required             | Purpose                                                       |
+| ------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- |
+| `JWT_SECRET`                                                              | Always               | Signs login tokens. At least 32 characters                    |
+| `RESEND_API_KEY`                                                          | In production        | Sends sign-in codes and other emails through Resend           |
+| `NEXT_PUBLIC_APP_URL`                                                     | In production        | The app's public address, used for links in emails            |
+| `CRON_SECRET`                                                             | When a cron job runs | Lets a scheduler call the cron routes. At least 32 characters |
+| `MEDIREMIND_DATA_DIR`                                                     | No                   | Stores the JSON data somewhere other than `./data`            |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`        | For the database     | Where the Supabase project is, and its public key             |
+| `SUPABASE_SECRET_KEY`                                                     | For the database     | Full database access for server code. Never `NEXT_PUBLIC_`    |
+| `TERMII_API_KEY`, `TERMII_BASE_URL`, `TERMII_SENDER_ID`, `TERMII_CHANNEL` | For phone sign-in    | Sends sign-in codes by SMS through Termii                     |
+| `SMS_HOOK_SECRET`                                                         | For phone sign-in    | Proves calls to the SMS hook come from Supabase               |
 
 `.env.example` has the same list with more detail.
 

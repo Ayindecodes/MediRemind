@@ -95,6 +95,53 @@ export function getSupabaseSecretKey(): string {
   return read(supabaseSecretKey, process.env.SUPABASE_SECRET_KEY);
 }
 
+// Termii, which sends SMS (lib/sms.ts). Without an API key, development prints messages instead.
+const termii = z.object({
+  apiKey: z.string(),
+  baseUrl: z
+    .url({
+      error:
+        'TERMII_BASE_URL must be the base URL from your Termii dashboard, e.g. https://v3.api.termii.com',
+    })
+    .transform((url) => url.replace(/\/+$/, '')),
+  senderId: z
+    .string({
+      error: 'TERMII_SENDER_ID is not set. Use the sender ID Termii approved, e.g. MediRemind',
+    })
+    .regex(/^[A-Za-z0-9 ]{3,11}$/, 'TERMII_SENDER_ID must be 3 to 11 letters or digits'),
+  // 'dnd' reaches numbers on Do-Not-Disturb, which sign-in codes must
+  channel: z
+    .enum(['dnd', 'generic'], { error: 'TERMII_CHANNEL must be dnd or generic' })
+    .default('dnd'),
+});
+
+// Termii's settings, or null when TERMII_API_KEY isn't set
+export function getTermiiConfig(): z.output<typeof termii> | null {
+  const apiKey = emptyAsUnset(process.env.TERMII_API_KEY);
+  if (apiKey === undefined) return null;
+  return read(termii, {
+    apiKey,
+    baseUrl: emptyAsUnset(process.env.TERMII_BASE_URL),
+    senderId: emptyAsUnset(process.env.TERMII_SENDER_ID),
+    channel: emptyAsUnset(process.env.TERMII_CHANNEL),
+  });
+}
+
+// Signs the calls Supabase Auth makes to the SMS hook (Standard Webhooks: 'v1,whsec_<base64>')
+const smsHookSecret = z.preprocess(
+  emptyAsUnset,
+  z
+    .string({
+      error:
+        'SMS_HOOK_SECRET is not set. Locally, use the secret in supabase/config.toml ([auth.hook.send_sms])',
+    })
+    .regex(/^v1,whsec_[A-Za-z0-9+/]+=*$/, 'SMS_HOOK_SECRET must look like v1,whsec_<base64>'),
+);
+
+export function getSmsHookSecret(): string {
+  return read(smsHookSecret, process.env.SMS_HOOK_SECRET);
+}
+
 // Everything the server reads. NEXT_PUBLIC_ variables are also visible to browser code; the rest are server-only.
 const serverEnv = z.object({
   JWT_SECRET: requiredSecret('JWT_SECRET'),
@@ -106,6 +153,7 @@ const serverEnv = z.object({
   NEXT_PUBLIC_SUPABASE_URL: supabaseUrl.optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey.optional(),
   SUPABASE_SECRET_KEY: supabaseSecretKey.optional(),
+  SMS_HOOK_SECRET: smsHookSecret.optional(),
 });
 
 /**

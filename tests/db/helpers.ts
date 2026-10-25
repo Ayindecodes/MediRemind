@@ -22,24 +22,24 @@ export async function createTestUser(
   const email = `${name.toLowerCase().replace(/[^a-z]+/g, '.')}.${randomUUID().slice(0, 8)}@example.com`;
   const password = randomUUID();
 
+  // Signing up creates the profile, from the name in the user metadata
   const { data, error } = await server.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
+    user_metadata: { full_name: name },
   });
   if (error) throw error;
   const id = data.user.id;
   created.push(id);
 
-  // The profile, as sign-up will create it (Task 37)
-  const { error: profileError } = await server.from('profiles').insert({
-    id,
-    full_name: name,
-    email,
-    plan,
-    plan_expires_at: plan === 'free' ? null : new Date(Date.now() + 30 * 86_400_000).toISOString(),
-  });
-  if (profileError) throw profileError;
+  if (plan !== 'free') {
+    const { error: planError } = await server
+      .from('profiles')
+      .update({ plan, plan_expires_at: new Date(Date.now() + 30 * 86_400_000).toISOString() })
+      .eq('id', id);
+    if (planError) throw planError;
+  }
 
   const { url, publishableKey } = getSupabaseConfig();
   const auth = createClient(url, publishableKey, { auth: { persistSession: false } });

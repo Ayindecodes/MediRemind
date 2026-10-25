@@ -18,6 +18,7 @@ const STATUS: Record<ApiErrorCode, number> = {
   too_many_attempts: 429,
   server_error: 500,
   email_failed: 502,
+  sms_failed: 502,
 };
 
 // Whether a value is one of the codes above, e.g. a hint raised by a database rule

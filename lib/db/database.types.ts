@@ -519,6 +519,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      e164_phone: { Args: { auth_phone: string }; Returns: string };
       is_valid_timezone: { Args: { name: string }; Returns: boolean };
     };
     Enums: {

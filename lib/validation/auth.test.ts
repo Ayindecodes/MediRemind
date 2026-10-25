@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
-import { codeSchema, loginSchema, resendCodeSchema, signupSchema } from './auth';
+import {
+  codeSchema,
+  loginSchema,
+  phoneStartSchema,
+  phoneVerifySchema,
+  resendCodeSchema,
+  signupSchema,
+} from './auth';
 
 // The first problem's message, or 'ok'
 const check = (schema: z.ZodType, input: unknown) => {
@@ -64,6 +71,47 @@ describe('resendCodeSchema', () => {
     expect(check(resendCodeSchema, { email: 'ada@example.com', type: 'signup' })).toBe('ok');
     expect(check(resendCodeSchema, { email: 'ada@example.com', type: 'login' })).toBe(
       'Invalid code type',
+    );
+  });
+});
+
+describe('phoneStartSchema', () => {
+  it('needs a name to sign up, but not to log in', () => {
+    expect(
+      phoneStartSchema.parse({ mode: 'sign_up', phone: ' +2348031234567 ', fullName: ' Ada Obi ' }),
+    ).toEqual({ mode: 'sign_up', phone: '+2348031234567', fullName: 'Ada Obi' });
+    expect(check(phoneStartSchema, { mode: 'sign_up', phone: '+2348031234567' })).toBe(
+      'Enter your full name',
+    );
+    expect(
+      phoneStartSchema.parse({ mode: 'log_in', phone: '+2348031234567', fullName: 'x' }),
+    ).toEqual({ mode: 'log_in', phone: '+2348031234567' });
+  });
+
+  it('needs the number in international form for now', () => {
+    expect(check(phoneStartSchema, { mode: 'log_in', phone: '08031234567' })).toBe(
+      'Enter the number with its country code, e.g. +2348031234567',
+    );
+    expect(check(phoneStartSchema, { mode: 'log_in', phone: '+12' })).toBe(
+      'Enter the number with its country code, e.g. +2348031234567',
+    );
+  });
+
+  it('needs to know which it is', () => {
+    expect(check(phoneStartSchema, { phone: '+2348031234567' })).toBe(
+      'Say whether this is a sign-up or a log-in',
+    );
+  });
+});
+
+describe('phoneVerifySchema', () => {
+  it('needs the number and the 6-digit code', () => {
+    expect(phoneVerifySchema.parse({ phone: '+2348031234567', code: '123456' })).toEqual({
+      phone: '+2348031234567',
+      code: '123456',
+    });
+    expect(check(phoneVerifySchema, { phone: '+2348031234567', code: '12345' })).toBe(
+      'Enter the 6-digit code',
     );
   });
 });
