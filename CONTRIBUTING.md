@@ -57,7 +57,7 @@ npm run db:stop     # keeps the data; db:reset wipes it and re-applies the migra
   the CLI waits to read the migration's SQL from standard input.
 - The keys `db:status` prints are the same on every machine and only work locally, but don't paste its
   whole output into `.env.local`: its `JWT_SECRET` is Supabase's, not the app's.
-- Phone sign-in works locally: the test numbers `+2348000000001` to `…004` always take the code `123456`.
+- Phone sign-in works locally: the test numbers `+2348140000001` to `…004` always take the code `123456`.
   Codes for other numbers go to the dev server on port 3000 and are printed in its log
   ([docs/database.md](docs/database.md#phone-sign-in)).
 - The local stack uses ports 54321–54324. `supabase/config.toml` turns off the services not used yet

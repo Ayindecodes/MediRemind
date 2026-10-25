@@ -275,11 +275,12 @@ max_frequency = "60s"
 # Keys are the phone number with country code and without the + prefix.
 [auth.sms.test_otp]
 # Test numbers: these codes always work and no SMS is sent (the hook isn't called). The data-layer
-# tests sign in with them.
-2348000000001 = "123456"
-2348000000002 = "123456"
-2348000000003 = "123456"
-2348000000004 = "123456"
+# tests sign in with them. They're in a mobile range (0814…), since the app only accepts numbers that
+# can receive SMS; this file is local only.
+2348140000001 = "123456"
+2348140000002 = "123456"
+2348140000003 = "123456"
+2348140000004 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]

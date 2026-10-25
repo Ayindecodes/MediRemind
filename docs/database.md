@@ -122,6 +122,10 @@ sign-in screens (Task 40); until those arrive, the current pages keep the old em
    Supabase makes a code and calls the **SMS hook**, `POST /api/auth/sms-hook`, which checks the call's
    Standard Webhooks signature (`lib/webhooks.ts`) and sends the code through Termii (`lib/sms.ts`).
    Signing up passes the name; logging in never creates an account. One code a minute per number.
+   The number can be typed the way people write it (`lib/phone.ts`): `0803 123 4567`, `0803-123-4567`,
+   `234803…` and `+234 (0) 803…` are all `+2348031234567`, so they're one account. A mobile from another
+   country works with its code, for family abroad. Numbers that can't receive SMS (landlines, toll-free)
+   are refused before Supabase is called.
 2. `POST /api/auth/phone/verify` with `{ phone, code }` starts the session and returns the profile. The
    session lives in **httpOnly cookies** (`lib/auth/session.ts`): Secure in production, SameSite=Lax, out
    of reach of the page's JavaScript.
@@ -135,7 +139,7 @@ The code SMS reads "Your MediRemind code is 123456. Don't share it with anyone."
 ends with the line Android uses to fill the code in (`@domain #123456`).
 
 **Locally**, `supabase/config.toml` sends codes for real numbers to the dev server on port 3000, which
-prints them in its log when `TERMII_API_KEY` isn't set. The test numbers `+2348000000001` to `…004` always
+prints them in its log when `TERMII_API_KEY` isn't set. The test numbers `+2348140000001` to `…004` always
 take the code `123456` and send nothing; `npm run test:db` signs in with them.
 
 **For the hosted project**, before phone sign-in goes live:

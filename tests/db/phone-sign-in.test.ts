@@ -8,9 +8,9 @@ import { POST as verify } from '@/app/api/auth/phone/verify/route';
 import { POST as signOut } from '@/app/api/auth/sign-out/route';
 import { dbAsServer } from '@/lib/db/client';
 
-const ADA = '+2348000000001';
-const BOLA = '+2348000000002';
-const NOBODY = '+2348000000003';
+const ADA = '+2348140000001';
+const BOLA = '+2348140000002';
+const NOBODY = '+2348140000003';
 const CODE = '123456';
 
 // Deletes any account on a test number, including ones left by an earlier run
@@ -18,7 +18,7 @@ async function removeTestAccounts() {
   const server = dbAsServer();
   const { data } = await server.auth.admin.listUsers();
   for (const user of data.users) {
-    if (user.phone?.startsWith('23480000000')) await server.auth.admin.deleteUser(user.id);
+    if (user.phone?.startsWith('23481400000')) await server.auth.admin.deleteUser(user.id);
   }
 }
 
@@ -114,21 +114,29 @@ describe('signing up by phone', () => {
     expect((await send(me, undefined, session)).status).toBe(401);
   });
 
-  it('needs a name and an international number', async () => {
-    expect(await json(await send(start, { mode: 'sign_up', phone: '+2348000000004' }))).toEqual({
+  it('needs a name and a mobile number', async () => {
+    expect(await json(await send(start, { mode: 'sign_up', phone: '+2348140000004' }))).toEqual({
       status: 400,
       body: { error: { code: 'invalid_request', message: 'Enter your full name' } },
     });
-    const local = await json(await send(start, { mode: 'log_in', phone: '08031234567' }));
-    expect(local.body.error.code).toBe('invalid_request');
+    expect(await json(await send(start, { mode: 'log_in', phone: '0800 000 0001' }))).toEqual({
+      status: 400,
+      body: {
+        error: {
+          code: 'invalid_request',
+          message: 'Enter a valid Nigerian mobile number, e.g. 0803 123 4567',
+        },
+      },
+    });
   });
 });
 
 describe('logging in by phone', () => {
-  it('refuses a wrong code, then accepts the right one', async () => {
-    expect((await send(start, { mode: 'log_in', phone: BOLA })).status).toBe(200);
+  it('refuses a wrong code, then accepts the right one, with the number typed the local way', async () => {
+    // Bola types her number as she would say it; it's the same account as +2348140000002
+    expect((await send(start, { mode: 'log_in', phone: '0814 000 0002' })).status).toBe(200);
 
-    expect(await json(await send(verify, { phone: BOLA, code: '000000' }))).toEqual({
+    expect(await json(await send(verify, { phone: '0814-000-0002', code: '000000' }))).toEqual({
       status: 400,
       body: {
         error: {
