@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PRESETS, scheduleSchema } from './schema';
 
@@ -85,5 +87,24 @@ describe('scheduleSchema', () => {
   it('refuses anything else', () => {
     expect(problem({ type: 'monthly' })).toBe('Choose how often it is taken');
     expect(problem(['08:00'])).toBe('Choose how often it is taken');
+  });
+});
+
+describe('the database', () => {
+  it('accepts exactly the kinds of schedule defined here', () => {
+    // The latest migration that sets the medications_schedule_type rule
+    const folder = path.join(process.cwd(), 'supabase/migrations');
+    const migration = fs
+      .readdirSync(folder)
+      .sort()
+      .map((file) => fs.readFileSync(path.join(folder, file), 'utf8'))
+      .filter((sql) => sql.includes('medications_schedule_type'))
+      .at(-1)!;
+    // The quoted names inside `in (...)`
+    const list = migration.match(/in \(([^)]*)\)/)![1];
+    const inDatabase = [...list.matchAll(/'([a-z_]+)'/g)].map((match) => match[1]);
+
+    const inSchema = scheduleSchema.options.map((option) => option.shape.type.value);
+    expect(inDatabase.toSorted()).toEqual(inSchema.toSorted());
   });
 });
