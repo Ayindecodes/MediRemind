@@ -1,6 +1,7 @@
 // lib/validation/auth.ts
 // What the sign-up and login routes accept. The password rules match the sign-up form.
 import { z } from 'zod';
+import { readMobileNumber } from '@/lib/phone';
 
 // Trimmed and lowercased, since accounts are stored by lowercase email
 export const emailAddress = z
@@ -52,11 +53,16 @@ export const resendCodeSchema = z.object({
   type: z.literal('signup', { error: 'Invalid code type' }).optional(),
 });
 
-// A phone number in E.164 form, as Supabase Auth needs it. Task 39 will also accept local forms (0803…).
+// A mobile number typed in any common form (0803 123 4567, +234 803…, or another country's with its
+// code), turned into the E.164 form Supabase Auth needs
 export const phoneNumber = z
   .string({ error: 'Enter your phone number' })
-  .trim()
-  .regex(/^\+[1-9]\d{7,14}$/, 'Enter the number with its country code, e.g. +2348031234567');
+  .transform((typed, ctx) => {
+    const result = readMobileNumber(typed);
+    if (result.ok) return result.phone;
+    ctx.addIssue({ code: 'custom', message: result.error });
+    return z.NEVER;
+  });
 
 const fullName = z
   .string({ error: 'Enter your full name' })

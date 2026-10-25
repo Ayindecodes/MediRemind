@@ -88,13 +88,18 @@ describe('phoneStartSchema', () => {
     ).toEqual({ mode: 'log_in', phone: '+2348031234567' });
   });
 
-  it('needs the number in international form for now', () => {
-    expect(check(phoneStartSchema, { mode: 'log_in', phone: '08031234567' })).toBe(
-      'Enter the number with its country code, e.g. +2348031234567',
+  it('reads the number however it is typed, and stores it in E.164', () => {
+    expect(phoneStartSchema.parse({ mode: 'log_in', phone: '0803 123 4567' })).toEqual({
+      mode: 'log_in',
+      phone: '+2348031234567',
+    });
+  });
+
+  it('refuses numbers that cannot receive SMS', () => {
+    expect(check(phoneStartSchema, { mode: 'log_in', phone: '0800 000 0001' })).toBe(
+      'Enter a valid Nigerian mobile number, e.g. 0803 123 4567',
     );
-    expect(check(phoneStartSchema, { mode: 'log_in', phone: '+12' })).toBe(
-      'Enter the number with its country code, e.g. +2348031234567',
-    );
+    expect(check(phoneStartSchema, { mode: 'log_in', phone: 42 })).toBe('Enter your phone number');
   });
 
   it('needs to know which it is', () => {
