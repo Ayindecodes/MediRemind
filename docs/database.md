@@ -135,7 +135,7 @@ The code SMS reads "Your MediRemind code is 123456. Don't share it with anyone."
 ends with the line Android uses to fill the code in (`@domain #123456`).
 
 **Locally**, `supabase/config.toml` sends codes for real numbers to the dev server on port 3000, which
-prints them in its log when `TERMII_API_KEY` isn't set. The test numbers `+2348000000001` to `…004` always
+prints them in its log when `TERMII_API_KEY` isn't set. The test numbers `+2348140000001` to `…004` always
 take the code `123456` and send nothing; `npm run test:db` signs in with them.
 
 **For the hosted project**, before phone sign-in goes live:
