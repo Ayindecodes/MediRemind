@@ -103,8 +103,6 @@ test('marks a dose as taken and opens the history', async ({ page }) => {
 });
 
 test('keeps a dose marked as taken after reloading', async ({ page }) => {
-  test.fail(true, 'Known bug: the dose ID is parsed incorrectly when saving (Task 45)');
-
   await addMedication(page, 'Amlodipine');
   await page.goto('/dashboard/medications');
   await page.getByRole('button', { name: 'Mark as Taken' }).first().click();
