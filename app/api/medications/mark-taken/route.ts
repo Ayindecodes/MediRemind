@@ -13,10 +13,15 @@ export const POST = withUser(async (request, user) => {
   }
   const { medicationId } = input.data;
 
-  // Extract scheduled time from medicationId
-  const parts = medicationId.split('_');
-  const scheduledTime = parts[parts.length - 1];
-  const actualMedId = parts.slice(2, -2).join('_');
+  // A dose ID is `<userId>_<medicationId>_<YYYY-MM-DD>_<HH:MM>`, and both IDs contain underscores
+  // themselves, so take the person's ID off the front and the date and time off the end
+  const dose = medicationId.startsWith(`${user.id}_`)
+    ? medicationId.slice(user.id.length + 1).match(/^(.+)_\d{4}-\d{2}-\d{2}_(\d{2}:\d{2})$/)
+    : null;
+  if (!dose) {
+    return apiError('invalid_request', "That isn't one of your doses.");
+  }
+  const [, actualMedId, scheduledTime] = dose;
 
   markMedicationAsTaken(user.id, actualMedId, scheduledTime);
 
