@@ -180,6 +180,33 @@ take the code `123456` and send nothing; `npm run test:db` signs in with them.
 - Vercel: `TERMII_API_KEY`, `TERMII_BASE_URL`, `TERMII_SENDER_ID` (the sender ID Termii approved) and
   `TERMII_CHANNEL=dnd`, plus the three Supabase settings.
 
+## Doses
+
+The dose routes for the new screens, for people signed in with Supabase (`withSession()`). They answer
+with doses in the `Dose` shape (`lib/types.ts`): the medicine, `scheduledFor` (when the dose was due, in
+UTC), the person's own `date` and `time` for it, its `state`, `takenAt`, `skipReason`, and `scheduled`
+(false for a recorded dose the schedule doesn't have).
+
+| Route                            | Sends                                      | Does                                                                                                        |
+| -------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `GET /api/doses?date=YYYY-MM-DD` | The date, or nothing for today             | The day's doses, midnight to midnight in the person's time zone, in time order: `{ date, timeZone, doses }` |
+| `POST /api/doses/take`           | `{ medicationId, scheduledFor, takenAt? }` | Records the dose as taken, at `takenAt` or now: `{ dose }`                                                  |
+| `POST /api/doses/skip`           | `{ medicationId, scheduledFor, reason? }`  | Records it as skipped, with an optional reason of up to 200 characters: `{ dose }`                          |
+| `POST /api/doses/undo`           | `{ medicationId, scheduledFor }`           | Removes what was recorded: `{ undone, dose }`                                                               |
+
+- Times need a time zone (`Z` or `+01:00`) and are compared as instants, so the client can send back the
+  `scheduledFor` it was given.
+- **Safe to repeat.** Taking a dose again keeps the time it was first taken, unless a new `takenAt` is sent.
+  Skipping replaces whatever was recorded. Undoing twice is harmless: `undone` is false the second time.
+- **Refused** with a 400: a time that isn't one of the medicine's doses (a different time, before its start
+  or after its end, after it was paused), a dose due more than a day from now, a `takenAt` in the future (5
+  minutes are allowed for a phone clock that runs fast), and doses of archived medicines. Someone else's
+  medicine is a 404.
+- **As-needed medicines** have no due times. Taking one without `scheduledFor` records it at the time it was
+  taken, and it's listed with `scheduled: false`. They can't be skipped.
+- The list leaves archived medicines out and shows no doses after a pause. It reads the person's grace
+  period without saving any settings.
+
 ## Not in the schema yet
 
 - **Family and caregivers** (people managed by someone else, caregiver links and permissions): Phase 7.
