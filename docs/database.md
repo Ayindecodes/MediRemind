@@ -77,6 +77,12 @@ only which kind it is), and `lib/schedule/doses.ts` turns it into dose times.
   hours keeps real hours. A time the clocks skip moves on by the change; a time that happens twice is the
   first.
 - **`nextDose()`** gives the next dose due, and **`lastDoseDate()`** when a course or dated medicine ends.
+- **Dose states** (`lib/schedule/status.ts`): `doseState()` says whether a dose is `upcoming`, `due` (from
+  its time until the grace period ends: `notification_prefs.grace_minutes`, 60 by default), `missed`,
+  `taken`, `taken_late` (taken after it was missed, which is allowed) or `skipped`. Only what people did,
+  or a missed dose, is stored; upcoming and due are worked out. `withStates()` matches each scheduled dose
+  to its `dose_logs` record by the moment it was due, and keeps recorded doses the schedule doesn't have,
+  such as as-needed ones.
 
 ## Who can do what
 
