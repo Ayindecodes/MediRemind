@@ -1,7 +1,8 @@
 // Real people for the data layer's tests: each is created through Supabase Auth, signed in with a
-// password, and deleted (with everything they own) by deleteTestUsers().
+// password, and deleted (with everything they own) by deleteTestUsers(). The routes' tests use their
+// session cookies.
 import { randomUUID } from 'node:crypto';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { dbAsServer, dbForUser, type Db } from '@/lib/db/client';
 import { getSupabaseConfig } from '@/lib/env';
 
@@ -10,6 +11,8 @@ export interface TestUser {
   email: string;
   // The database as this person, with the access rules applied
   db: Db;
+  // Their session as a browser sends it, for the Cookie header
+  cookies: string;
 }
 
 const created: string[] = [];
@@ -41,15 +44,32 @@ export async function createTestUser(
     if (planError) throw planError;
   }
 
+  // Signing in as the app does, so the session lands in cookies
   const { url, publishableKey } = getSupabaseConfig();
-  const auth = createClient(url, publishableKey, { auth: { persistSession: false } });
+  const jar = new Map<string, string>();
+  const auth = createServerClient(url, publishableKey, {
+    cookies: {
+      getAll: () => [...jar].map(([name, value]) => ({ name, value })),
+      setAll: (cookies) => {
+        for (const cookie of cookies) {
+          if (cookie.value) jar.set(cookie.name, cookie.value);
+          else jar.delete(cookie.name);
+        }
+      },
+    },
+  });
   const { data: signedIn, error: signInError } = await auth.auth.signInWithPassword({
     email,
     password,
   });
   if (signInError) throw signInError;
 
-  return { id, email, db: dbForUser(signedIn.session.access_token) };
+  return {
+    id,
+    email,
+    db: dbForUser(signedIn.session.access_token),
+    cookies: [...jar].map(([name, value]) => `${name}=${value}`).join('; '),
+  };
 }
 
 // Deletes every test user created so far; their data goes with them
