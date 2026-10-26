@@ -1,6 +1,6 @@
 -- public.medications
 begin;
-select plan(16);
+select plan(17);
 
 select has_table('public', 'medications', 'medications exists');
 select columns_are('public', 'medications', array[
@@ -58,6 +58,11 @@ select throws_ok(
   $$ insert into public.medications (user_id, name, schedule, start_date)
      values ('11111111-1111-1111-1111-111111111111', 'Test', '{"times": ["08:00"]}', '2026-10-01') $$,
   '23514', null, 'the schedule must say what type it is'
+);
+select throws_ok(
+  $$ insert into public.medications (user_id, name, schedule, start_date)
+     values ('11111111-1111-1111-1111-111111111111', 'Test', '{"type": "monthly"}', '2026-10-01') $$,
+  '23514', null, 'only the kinds of schedule the app understands'
 );
 
 delete from auth.users where id = '11111111-1111-1111-1111-111111111111';

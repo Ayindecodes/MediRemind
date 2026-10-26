@@ -44,7 +44,7 @@ erDiagram
 | Table                 | One row per                   | Key rules                                                                                                                       |
 | --------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `profiles`            | Account                       | Phone in E.164 (`+234…`), or email, or both; real time zone; language `en`/`pcm`/`yo`/`ha`/`ig`; plan `free`/`premium`/`family` |
-| `medications`         | Medicine someone takes        | Dose as amount + unit; `schedule` JSON with a `type` (shape set by the schedule engine, Task 43); archived rather than deleted  |
+| `medications`         | Medicine someone takes        | Dose as amount + unit; `schedule` JSON, one of six kinds (below); archived rather than deleted                                  |
 | `dose_logs`           | Dose taken, skipped or missed | One per medicine and due time; `taken_at` exactly when taken; where it was recorded (`app`, `whatsapp`, `caregiver`, …)         |
 | `moods`               | Day's check-in                | One per person per local day: `happy`, `neutral` or `sad`                                                                       |
 | `notifications`       | In-app notification           | Links only to pages inside the app                                                                                              |
@@ -55,6 +55,28 @@ erDiagram
 | `payment_events`      | Paystack webhook event        | Stored once per event; kept when the account is deleted                                                                         |
 
 The comments in each migration explain every column.
+
+## Schedules
+
+`medications.schedule` says when doses are due. `lib/schedule/schema.ts` defines it (the database checks
+only which kind it is), and `lib/schedule/doses.ts` turns it into dose times.
+
+| Kind            | Example                                                                              | Doses                                                               |
+| --------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `daily`         | `{ "type": "daily", "times": ["08:00", "20:00"], "preset": "bd" }`                   | Those times every day (presets: od, bd, tds, qds, nocte)            |
+| `every_n_hours` | `{ "type": "every_n_hours", "everyHours": 8, "firstDose": "06:00" }`                 | Every 8 real hours from the first dose                              |
+| `every_n_days`  | `{ "type": "every_n_days", "everyDays": 2, "times": ["08:00"] }`                     | Every other day from the start date                                 |
+| `weekdays`      | `{ "type": "weekdays", "days": [1, 3, 5], "times": ["09:00"] }`                      | Monday, Wednesday and Friday (1 = Monday … 7 = Sunday)              |
+| `course`        | `{ "type": "course", "firstDose": "08:00", "offsetsHours": [0, 8, 24, 36, 48, 60] }` | At those hours after the first dose (here, artemether-lumefantrine) |
+| `as_needed`     | `{ "type": "as_needed" }`                                                            | None, so no reminders                                               |
+
+- **Time zones:** dates and times are the person's own, in `profiles.timezone` (default `Africa/Lagos`).
+  `dosesBetween()` returns each dose's instant (what `dose_logs.scheduled_for` stores) with its local date
+  and time. Doses never fall before `start_date` or after `end_date`.
+- **Clock changes**, for family in zones that have them: a daily time stays on the clock, while every N
+  hours keeps real hours. A time the clocks skip moves on by the change; a time that happens twice is the
+  first.
+- **`nextDose()`** gives the next dose due, and **`lastDoseDate()`** when a course or dated medicine ends.
 
 ## Who can do what
 
