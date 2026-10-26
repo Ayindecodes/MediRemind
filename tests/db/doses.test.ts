@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { listDoses, recordDose, undoDose } from '@/lib/db/doses';
+import { getDose, listDoses, recordDose, undoDose } from '@/lib/db/doses';
 import { addMedication } from '@/lib/db/medications';
 import { createTestUser, deleteTestUsers, type TestUser } from './helpers';
 
@@ -88,6 +88,31 @@ describe('listDoses', () => {
     });
     expect(doses.map((d) => d.medication_id)).toEqual([adaMedicine]);
     expect(await listDoses(ada.db, bola.id, { from: '2026-10-01', to: '2026-11-01' })).toEqual([]);
+  });
+});
+
+describe('getDose', () => {
+  it('finds the record for a dose, however the time is written', async () => {
+    await recordDose(ada.db, ada.id, {
+      medicationId: adaMedicine,
+      scheduledFor: EIGHT_AM,
+      status: 'taken',
+    });
+    expect(
+      await getDose(ada.db, {
+        medicationId: adaMedicine,
+        scheduledFor: '2026-10-24T08:00:00+01:00',
+      }),
+    ).toMatchObject({ medication_id: adaMedicine, status: 'taken' });
+  });
+
+  it("finds nothing for a dose with no record, or someone else's", async () => {
+    expect(
+      await getDose(ada.db, { medicationId: adaMedicine, scheduledFor: '2026-10-25T07:00:00Z' }),
+    ).toBeNull();
+    expect(
+      await getDose(ada.db, { medicationId: bolaMedicine, scheduledFor: EIGHT_AM }),
+    ).toBeNull();
   });
 });
 

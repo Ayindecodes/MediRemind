@@ -36,6 +36,21 @@ export async function listDoses(
   );
 }
 
+// What was recorded for one dose, or null if nothing was
+export async function getDose(
+  db: Db,
+  { medicationId, scheduledFor }: Pick<DoseRecord, 'medicationId' | 'scheduledFor'>,
+): Promise<DoseLogRow | null> {
+  return unwrap(
+    await db
+      .from('dose_logs')
+      .select('*')
+      .eq('medication_id', medicationId)
+      .eq('scheduled_for', scheduledFor)
+      .maybeSingle(),
+  );
+}
+
 /**
  * Records what happened to a dose. Recording the same dose again (same medicine, same due time)
  * replaces the earlier record, so a double tap or a retried request counts once.
