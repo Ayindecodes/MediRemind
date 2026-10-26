@@ -1,6 +1,7 @@
 // lib/db/reminder-preferences.ts
 import type { Db } from './client';
 import type { Tables, TablesUpdate } from './database.types';
+import { DEFAULT_GRACE_MINUTES } from '@/lib/schedule/status';
 import { unwrap } from './errors';
 
 export type ReminderPreferencesRow = Tables<'notification_prefs'>;
@@ -37,6 +38,17 @@ export async function getReminderPreferences(
     return unwrap(await db.from('notification_prefs').select('*').eq('user_id', userId).single());
   }
   return unwrap(created);
+}
+
+/**
+ * How long after its time someone's dose counts as missed. Unlike getReminderPreferences() this only
+ * reads, so listing doses saves nothing; without saved settings it's the table's default.
+ */
+export async function getGraceMinutes(db: Db, userId: string): Promise<number> {
+  const saved = unwrap(
+    await db.from('notification_prefs').select('grace_minutes').eq('user_id', userId).maybeSingle(),
+  );
+  return saved?.grace_minutes ?? DEFAULT_GRACE_MINUTES;
 }
 
 /**
