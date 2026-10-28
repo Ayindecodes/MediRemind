@@ -176,6 +176,7 @@ export const medicineChangesSchema = z
 
 export type NewMedicine = z.output<typeof newMedicineSchema>;
 export type MedicineChanges = z.output<typeof medicineChangesSchema>;
+export type Appearance = NonNullable<NewMedicine['appearance']>;
 
 /** GET /api/medications?archived=true lists archived medicines instead of current ones */
 export const medicineListQuerySchema = z.object({
