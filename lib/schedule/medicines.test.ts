@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { isDoseOf, medicineDoses, timetableOf, type StoredMedicine } from './medicines';
+import {
+  endDateToStore,
+  isDoseOf,
+  medicineDoses,
+  medicineStatus,
+  timetableOf,
+  type StoredMedicine,
+} from './medicines';
+import { scheduleSchema } from './schema';
 
 const LAGOS = 'Africa/Lagos';
 
@@ -9,6 +17,7 @@ const medicine = (changes: Partial<StoredMedicine> = {}): StoredMedicine => ({
   start_date: '2026-10-01',
   end_date: null,
   paused_at: null,
+  archived_at: null,
   ...changes,
 });
 
@@ -75,5 +84,63 @@ describe('isDoseOf', () => {
     expect(
       isDoseOf(medicine({ schedule: { type: 'as_needed' } }), '2026-10-20T07:00:00Z', LAGOS),
     ).toBe(false);
+  });
+});
+
+describe('medicineStatus', () => {
+  // Noon in Lagos on 20 October
+  const now = new Date('2026-10-20T12:00:00+01:00');
+  const status = (changes: Partial<StoredMedicine>) =>
+    medicineStatus(medicine(changes), LAGOS, now);
+  const course = { type: 'course', firstDose: '08:00', offsetsHours: [0, 8, 24, 36, 48, 60] };
+
+  it('is active from its start date until its last dose day is over', () => {
+    expect(status({})).toBe('active');
+    expect(status({ start_date: '2026-10-20' })).toBe('active');
+    expect(status({ end_date: '2026-10-20' })).toBe('active');
+    expect(status({ end_date: '2026-10-19' })).toBe('finished');
+    expect(status({ start_date: '2026-10-21' })).toBe('not_started');
+  });
+
+  it('ends a course with its last dose, even without an end date', () => {
+    // From 08:00 on the 17th, the last dose is at 20:00 on the 19th
+    expect(status({ schedule: course, start_date: '2026-10-17' })).toBe('finished');
+    expect(status({ schedule: course, start_date: '2026-10-18' })).toBe('active');
+  });
+
+  it('puts archived before paused, and both before the dates', () => {
+    const over = { end_date: '2026-10-01', start_date: '2026-09-01' };
+    expect(status({ ...over, paused_at: '2026-10-05T00:00:00Z' })).toBe('paused');
+    expect(
+      status({ ...over, paused_at: '2026-10-05T00:00:00Z', archived_at: '2026-10-06T00:00:00Z' }),
+    ).toBe('archived');
+  });
+
+  it("uses the person's own date", () => {
+    // 23:30 on the 19th in Lagos is already the 20th in Nairobi
+    const lateEvening = new Date('2026-10-19T23:30:00+01:00');
+    const ending = medicine({ end_date: '2026-10-19' });
+    expect(medicineStatus(ending, LAGOS, lateEvening)).toBe('active');
+    expect(medicineStatus(ending, 'Africa/Nairobi', lateEvening)).toBe('finished');
+  });
+});
+
+describe('endDateToStore', () => {
+  const daily = scheduleSchema.parse({ type: 'daily', times: ['08:00'] });
+  const course = scheduleSchema.parse({
+    type: 'course',
+    firstDose: '08:00',
+    offsetsHours: [0, 8, 24, 36, 48, 60],
+  });
+
+  it('keeps the end date given, or none', () => {
+    expect(endDateToStore(daily, '2026-10-01', '2026-10-31', LAGOS)).toBe('2026-10-31');
+    expect(endDateToStore(daily, '2026-10-01', undefined, LAGOS)).toBeNull();
+  });
+
+  it("ends a course on its last dose's date, or earlier if asked", () => {
+    expect(endDateToStore(course, '2026-10-20', undefined, LAGOS)).toBe('2026-10-22');
+    expect(endDateToStore(course, '2026-10-20', '2026-12-31', LAGOS)).toBe('2026-10-22');
+    expect(endDateToStore(course, '2026-10-20', '2026-10-21', LAGOS)).toBe('2026-10-21');
   });
 });

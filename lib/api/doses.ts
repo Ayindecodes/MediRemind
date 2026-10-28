@@ -1,15 +1,15 @@
 // lib/api/doses.ts
-// What the dose routes share: the person's time zone and grace period, finding the medicine, and
+// What the dose routes share: the person's time zone and grace period, the checks on a dose, and
 // the shape doses are returned in.
 import type { Db } from '@/lib/db/client';
 import type { DoseLogRow } from '@/lib/db/doses';
-import { getMedication, type MedicationRow } from '@/lib/db/medications';
-import { getProfile } from '@/lib/db/profiles';
+import type { MedicationRow } from '@/lib/db/medications';
 import { getGraceMinutes } from '@/lib/db/reminder-preferences';
 import { isDoseOf, medicineDoses, timetableOf } from '@/lib/schedule/medicines';
 import { withStates, type DoseRecord, type DoseWithState } from '@/lib/schedule/status';
 import type { Dose } from '@/lib/types';
 import { ApiException } from './errors';
+import { timeZoneOf } from './medicines';
 
 export interface DoseSettings {
   timeZone: string;
@@ -17,19 +17,11 @@ export interface DoseSettings {
 }
 
 export async function doseSettings(db: Db, userId: string): Promise<DoseSettings> {
-  const [profile, graceMinutes] = await Promise.all([
-    getProfile(db, userId),
+  const [timeZone, graceMinutes] = await Promise.all([
+    timeZoneOf(db, userId),
     getGraceMinutes(db, userId),
   ]);
-  if (!profile) throw new ApiException('not_found', 'Your profile could not be found.');
-  return { timeZone: profile.timezone, graceMinutes };
-}
-
-// The person's medicine, or a 404 (someone else's medicine looks like it doesn't exist)
-export async function findMedicine(db: Db, id: string): Promise<MedicationRow> {
-  const medicine = await getMedication(db, id);
-  if (!medicine) throw new ApiException('not_found', 'That medicine could not be found.');
-  return medicine;
+  return { timeZone, graceMinutes };
 }
 
 const DAY = 86_400_000;
