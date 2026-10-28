@@ -7,10 +7,10 @@ import {
   checkScheduledDose,
   doseAt,
   doseSettings,
-  findMedicine,
   isAsNeeded,
 } from '@/lib/api/doses';
 import { apiError } from '@/lib/api/errors';
+import { findMedicine } from '@/lib/api/medicines';
 import { withSession } from '@/lib/api/withSession';
 import { recordDose } from '@/lib/db/doses';
 import { parseJsonBody } from '@/lib/validation/request';
