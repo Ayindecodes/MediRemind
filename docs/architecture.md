@@ -86,7 +86,7 @@ memory, not in a file.
 | `POST /api/medications/add`                 | Token         | Add a medication; free plan: 3 medications, no photos |
 | `GET /api/medications/list`                 | Token         | The user's medications                                |
 | `GET /api/medications/today`                | Token         | One entry per scheduled time today, with its status   |
-| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken (see known limits)             |
+| `POST /api/medications/mark-taken`          | Token         | Record a dose as taken                                |
 | `PUT /api/medications/update`               | Token         | Edit one of the user's medications                    |
 | `DELETE /api/medications/delete/[id]`       | Token         | Delete one of the user's medications                  |
 | `GET /api/medications/history`              | Token         | Doses taken, newest first                             |
@@ -150,12 +150,11 @@ browser as an unhandled exception. Pages read errors with `errorFrom()` (`lib/ap
 
 ## Known limits
 
-| Limit                                                             | Effect                                                                    |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| JSON files instead of a database                                  | Can't save on Vercel; unsafe with simultaneous writes; slow as data grows |
-| Token kept in `localStorage`                                      | Any script running on the page could read it                              |
-| Failed-login counts kept in memory                                | Reset on restart and not shared between server instances                  |
-| Dates use UTC                                                     | In Nigeria (UTC+1), "today" is still yesterday until 1 a.m.               |
-| Today's doses ignore start and end dates and the frequency        | Finished or weekly medications still appear every day                     |
-| `mark-taken` reads the medication ID from the dose ID incorrectly | A dose marked as taken shows as not taken after reloading                 |
-| No reminders are sent                                             | The core reminder feature doesn't exist yet                               |
+| Limit                                                      | Effect                                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| JSON files instead of a database                           | Can't save on Vercel; unsafe with simultaneous writes; slow as data grows |
+| Token kept in `localStorage`                               | Any script running on the page could read it                              |
+| Failed-login counts kept in memory                         | Reset on restart and not shared between server instances                  |
+| Dates use UTC                                              | In Nigeria (UTC+1), "today" is still yesterday until 1 a.m.               |
+| Today's doses ignore start and end dates and the frequency | Finished or weekly medications still appear every day                     |
+| No reminders are sent                                      | The core reminder feature doesn't exist yet                               |

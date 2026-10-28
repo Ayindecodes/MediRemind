@@ -1,10 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { dbAsServer } from '@/lib/db/client';
 import {
+  getGraceMinutes,
   getReminderPreferences,
   recordWhatsAppOptIn,
   saveReminderPreferences,
 } from '@/lib/db/reminder-preferences';
+import { DEFAULT_GRACE_MINUTES } from '@/lib/schedule/status';
 import { createTestUser, deleteTestUsers, type TestUser } from './helpers';
 
 let ada: TestUser;
@@ -70,5 +72,21 @@ describe('reminder preferences', () => {
       saveReminderPreferences(ada.db, bola.id, { discreet: false }),
     ).rejects.toMatchObject({ code: 'not_found' });
     expect((await getReminderPreferences(bola.db, bola.id)).discreet).toBe(true);
+  });
+});
+
+describe('getGraceMinutes', () => {
+  it("is the table's default until something is saved, and saves nothing itself", async () => {
+    const chidi = await createTestUser('Chidi Eze');
+    expect(await getGraceMinutes(chidi.db, chidi.id)).toBe(DEFAULT_GRACE_MINUTES);
+    const { data } = await chidi.db.from('notification_prefs').select('user_id');
+    expect(data).toEqual([]);
+
+    // The code's default is the table's
+    expect((await getReminderPreferences(chidi.db, chidi.id)).grace_minutes).toBe(
+      DEFAULT_GRACE_MINUTES,
+    );
+    await saveReminderPreferences(chidi.db, chidi.id, { grace_minutes: 30 });
+    expect(await getGraceMinutes(chidi.db, chidi.id)).toBe(30);
   });
 });

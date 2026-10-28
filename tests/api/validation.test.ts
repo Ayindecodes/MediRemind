@@ -22,6 +22,7 @@ const load = async () => ({
   list: await import('@/app/api/medications/list/route'),
   update: await import('@/app/api/medications/update/route'),
   markTaken: await import('@/app/api/medications/mark-taken/route'),
+  today: await import('@/app/api/medications/today/route'),
   moodLog: await import('@/app/api/mood/log/route'),
   moodToday: await import('@/app/api/mood/today/route'),
 });
@@ -399,6 +400,51 @@ describe('POST /api/medications/mark-taken', () => {
     };
     expect(await markTaken({})).toEqual(missing);
     expect(await markTaken({ medicationId: 42 })).toEqual(missing);
+  });
+});
+
+describe('POST /api/medications/mark-taken: saving the dose', () => {
+  it('keeps a dose taken, whatever the IDs look like', async () => {
+    const { token } = signedInUser('ada@example.com');
+    await call(
+      m.add.POST,
+      '/api/medications/add',
+      {
+        name: 'Amlodipine',
+        dosage: '5mg',
+        frequency: 'daily',
+        times: ['08:00'],
+        startDate: '2026-10-01',
+        enableEmail: false,
+      },
+      token,
+    );
+    const today = async () =>
+      (await call(m.today.GET, '/api/medications/today', undefined, token)).body.medications;
+
+    const [dose] = await today();
+    const res = await call(
+      m.markTaken.POST,
+      '/api/medications/mark-taken',
+      { medicationId: dose.id },
+      token,
+    );
+    expect(res.status).toBe(200);
+    expect((await today())[0].status).toBe('taken');
+  });
+
+  it("refuses a dose ID that isn't the person's own", async () => {
+    const ada = signedInUser('ada@example.com');
+    const res = await call(
+      m.markTaken.POST,
+      '/api/medications/mark-taken',
+      { medicationId: 'user_1_x_med_2_y_2026-10-26_08:00' },
+      ada.token,
+    );
+    expect(res).toEqual({
+      status: 400,
+      body: { error: { code: 'invalid_request', message: "That isn't one of your doses." } },
+    });
   });
 });
 

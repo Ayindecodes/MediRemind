@@ -1,10 +1,11 @@
 // lib/types.ts
 // Shapes shared by the storage layer, the API routes and the pages. Only types live here, so
 // client components can import them without bundling any server code.
+import type { DoseState } from './schedule/status';
 import type { Frequency, MedicationForm, SoundType } from './validation/medication';
 import type { MoodValue } from './validation/mood';
 
-export type { Frequency, MedicationForm, MoodValue, SoundType };
+export type { DoseState, Frequency, MedicationForm, MoodValue, SoundType };
 
 export type Plan = 'free' | 'individual' | 'family';
 
@@ -64,6 +65,33 @@ export interface TodayDose {
 
 /** A dose in GET /api/medications/history, newest first */
 export type HistoryEntry = MedicationLog & { medicationName: string };
+
+/**
+ * A dose as the new dose routes return it (GET /api/doses and POST /api/doses/take, skip and undo),
+ * for people signed in with Supabase.
+ */
+export interface Dose {
+  medication: {
+    id: string;
+    name: string;
+    strength: string | null;
+    form: string;
+    doseAmount: number;
+    doseUnit: string;
+    instructions: string | null;
+  };
+  // When it was due (for an as-needed dose, when it was taken). Send it back to take, skip or undo
+  // the dose.
+  scheduledFor: string;
+  // The person's own date and clock time for it
+  date: string;
+  time: string;
+  state: DoseState;
+  takenAt: string | null;
+  skipReason: string | null;
+  // False for a recorded dose the schedule doesn't have, such as an as-needed one
+  scheduled: boolean;
+}
 
 export interface Mood {
   id: string;
