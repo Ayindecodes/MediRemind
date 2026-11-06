@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
-import { medicineChangesSchema, medicineListQuerySchema, newMedicineSchema } from './medicines';
+import {
+  medicineChangesSchema,
+  medicineListQuerySchema,
+  newMedicineSchema,
+  suggestionQuerySchema,
+} from './medicines';
 
 // The first problem's message, or 'ok'
 const check = (schema: z.ZodType, input: unknown) => {
@@ -154,5 +159,25 @@ describe('medicineListQuerySchema', () => {
     expect(check(medicineListQuerySchema, { archived: 'yes' })).toBe(
       'Send archived as true or false',
     );
+  });
+});
+
+describe('suggestionQuerySchema', () => {
+  it('takes what was typed, tidied, and how many to give', () => {
+    expect(suggestionQuerySchema.parse({ q: ' amlo ', limit: '5' })).toEqual({
+      q: 'amlo',
+      limit: 5,
+    });
+    expect(suggestionQuerySchema.parse({})).toEqual({ q: '', limit: 8 });
+    expect(suggestionQuerySchema.parse({ limit: '' })).toEqual({ q: '', limit: 8 });
+  });
+
+  it('keeps the typing and the count within bounds', () => {
+    expect(check(suggestionQuerySchema, { q: 'x'.repeat(101) })).toBe(
+      'Type at most 100 characters',
+    );
+    for (const limit of ['0', '21', '2.5', 'many']) {
+      expect(check(suggestionQuerySchema, { limit })).toBe('Ask for between 1 and 20 suggestions');
+    }
   });
 });

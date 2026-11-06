@@ -185,3 +185,21 @@ export const medicineListQuerySchema = z.object({
     .optional()
     .transform((archived) => archived === 'true'),
 });
+
+/** GET /api/medications/suggestions?q=&limit=: what was typed, and how many to give (8, up to 20) */
+export const suggestionQuerySchema = z.object({
+  q: z
+    .string({ error: 'Send what was typed as q' })
+    .trim()
+    .max(100, 'Type at most 100 characters')
+    .default(''),
+  limit: z.preprocess(
+    blankToUndefined,
+    z.coerce
+      .number({ error: 'Ask for between 1 and 20 suggestions' })
+      .int('Ask for between 1 and 20 suggestions')
+      .min(1, 'Ask for between 1 and 20 suggestions')
+      .max(20, 'Ask for between 1 and 20 suggestions')
+      .default(8),
+  ),
+});
