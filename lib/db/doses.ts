@@ -19,21 +19,33 @@ export interface DoseRecord {
   source?: 'app' | 'push';
 }
 
-// Someone's dose records due from `from` up to (not including) `to`, in time order
+// The most rows one query returns (max_rows in supabase/config.toml); past that, rows are silently
+// left out, so long ranges are read a page at a time
+const PAGE = 1000;
+
+// Someone's dose records due from `from` up to (not including) `to`, in time order, however many
 export async function listDoses(
   db: Db,
   userId: string,
   { from, to }: { from: string; to: string },
 ): Promise<DoseLogRow[]> {
-  return unwrap(
-    await db
-      .from('dose_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('scheduled_for', from)
-      .lt('scheduled_for', to)
-      .order('scheduled_for'),
-  );
+  const rows: DoseLogRow[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const page = unwrap(
+      await db
+        .from('dose_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('scheduled_for', from)
+        .lt('scheduled_for', to)
+        // The ID keeps the order stable between pages when two doses share a time
+        .order('scheduled_for')
+        .order('id')
+        .range(offset, offset + PAGE - 1),
+    );
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+  }
 }
 
 // What was recorded for one dose, or null if nothing was
