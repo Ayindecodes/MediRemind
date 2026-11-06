@@ -4,6 +4,9 @@
 import type { DoseWithState } from './schedule/status';
 import type { LocalDate } from './schedule/time-zone';
 
+// All that matters about a dose here, so a route's Dose fits as well as a DoseWithState
+export type DoseOutcome = Pick<DoseWithState, 'date' | 'state' | 'scheduled'>;
+
 export interface AdherenceCounts {
   // Doses that were due in the period, pending ones included
   scheduled: number;
@@ -22,7 +25,7 @@ export interface AdherenceCounts {
  * How the scheduled doses went. Recorded doses the schedule doesn't have (as-needed ones) aren't
  * counted: there was nothing to adhere to.
  */
-export function adherenceOf(doses: DoseWithState[]): AdherenceCounts {
+export function adherenceOf(doses: DoseOutcome[]): AdherenceCounts {
   const counts = { scheduled: 0, taken: 0, takenLate: 0, skipped: 0, missed: 0, pending: 0 };
   for (const dose of doses) {
     if (!dose.scheduled) continue;
@@ -60,7 +63,7 @@ export interface Streaks {
 // How a day went: every settled dose taken, one missed or skipped, or nothing settled yet
 type Day = 'perfect' | 'broken' | 'open';
 
-function dayOutcomes(doses: DoseWithState[], today: LocalDate): Day[] {
+function dayOutcomes(doses: DoseOutcome[], today: LocalDate): Day[] {
   const days = new Map<LocalDate, Day>();
   for (const dose of doses) {
     if (!dose.scheduled || dose.date > today) continue;
@@ -78,7 +81,7 @@ function dayOutcomes(doses: DoseWithState[], today: LocalDate): Day[] {
  * passed over: it neither adds to a streak nor ends one. A missed or skipped dose ends it. Today
  * counts once a dose has been taken and none missed; until then the current streak is yesterday's.
  */
-export function streaksOf(doses: DoseWithState[], today: LocalDate): Streaks {
+export function streaksOf(doses: DoseOutcome[], today: LocalDate): Streaks {
   const days = dayOutcomes(doses, today);
 
   let longest = 0;
