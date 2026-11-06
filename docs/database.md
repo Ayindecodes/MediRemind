@@ -214,6 +214,26 @@ Today's pages still use the old JSON-file routes (`/api/medications/add`, `list`
 `delete/[id]`, `today`, `history`, `mark-taken` and `check-completions`). They go in Task 42, when the
 pages move to Supabase sign-in.
 
+## Medicine suggestions
+
+`GET /api/medications/suggestions?q=amlo&limit=8` (up to 20) answers with medicines from the starter
+catalogue (`lib/medicines/catalogue.ts`) matching what was typed, best first: a name that starts with
+it, then a brand, then a word inside either, then what it's for. Each suggestion carries the medicine's
+own name, its brands sold in Nigeria, usual forms, example strengths, what it's for, its group, and
+`match` (what the typing hit, so a form can show "Lonart (artemether and lumefantrine)"). The 3-day
+malaria treatments also carry their fixed `course`, which a form can offer as the schedule.
+
+- **It only suggests.** `POST /api/medications` takes any name, so a medicine that isn't listed is typed
+  as usual. The strengths are examples; people confirm theirs from the pack. It isn't medical advice.
+- **It's public and cached.** The list is the same for everyone and has nothing personal in it, so the
+  route needs no sign-in and sets `Cache-Control` for a day. The list changes only with a deploy.
+- **Where the list comes from.** It's written from general knowledge, not copied from a registry.
+  NAFDAC's Greenbook (greenbook.nafdac.gov.ng) is "© NAFDAC, all rights reserved", publishes no terms of
+  use and has no official API or download, so nothing is taken from it. It remains the place for people
+  to check that their own pack is registered; a form can link to it next to the NAFDAC number field.
+- **Adding to it:** append to `CATALOGUE`. Its tests refuse a medicine or brand listed twice, a brand
+  used as a medicine name, an unknown form, or a course the schedule engine doesn't accept.
+
 ## Doses
 
 The dose routes for the new screens, for people signed in with Supabase (`withSession()`). They answer
