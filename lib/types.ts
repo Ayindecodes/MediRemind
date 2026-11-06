@@ -1,11 +1,26 @@
 // lib/types.ts
 // Shapes shared by the storage layer, the API routes and the pages. Only types live here, so
 // client components can import them without bundling any server code.
+import type { MedicineStatus } from './schedule/medicines';
+import type { Schedule } from './schedule/schema';
 import type { DoseState } from './schedule/status';
 import type { Frequency, MedicationForm, SoundType } from './validation/medication';
+import type { Appearance, DoseUnit, MedicineForm, ReminderChannel } from './validation/medicines';
 import type { MoodValue } from './validation/mood';
 
-export type { DoseState, Frequency, MedicationForm, MoodValue, SoundType };
+export type {
+  Appearance,
+  DoseState,
+  DoseUnit,
+  Frequency,
+  MedicationForm,
+  MedicineForm,
+  MedicineStatus,
+  MoodValue,
+  ReminderChannel,
+  Schedule,
+  SoundType,
+};
 
 export type Plan = 'free' | 'individual' | 'family';
 
@@ -65,6 +80,38 @@ export interface TodayDose {
 
 /** A dose in GET /api/medications/history, newest first */
 export type HistoryEntry = MedicationLog & { medicationName: string };
+
+/**
+ * A medicine as the new medicines routes return it (/api/medications), for people signed in with
+ * Supabase. It replaces Medication when the JSON-file routes go (Task 42).
+ */
+export interface Medicine {
+  id: string;
+  name: string;
+  strength: string | null;
+  form: MedicineForm;
+  doseAmount: number;
+  doseUnit: DoseUnit;
+  schedule: Schedule;
+  startDate: string;
+  // A course's is the date of its last dose
+  endDate: string | null;
+  instructions: string | null;
+  notes: string | null;
+  appearance: Appearance | null;
+  nafdacNumber: string | null;
+  quantityRemaining: number | null;
+  refillAlertDays: number | null;
+  // null: the person's reminder settings decide
+  reminderChannels: ReminderChannel[] | null;
+  status: MedicineStatus;
+  // The next dose due, or null for an as-needed, finished, paused or archived medicine
+  nextDose: { scheduledFor: string; date: string; time: string } | null;
+  pausedAt: string | null;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 /**
  * A dose as the new dose routes return it (GET /api/doses and POST /api/doses/take, skip and undo),

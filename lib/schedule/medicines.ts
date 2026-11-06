@@ -1,13 +1,17 @@
 // lib/schedule/medicines.ts
 // The doses of a medicine as the medications table stores it: its schedule, dates and pause.
 import type { Tables } from '@/lib/db/database.types';
-import { dosesBetween, type ScheduledDose, type Timetable } from './doses';
-import { scheduleSchema } from './schema';
+import { dosesBetween, lastDoseDate, type ScheduledDose, type Timetable } from './doses';
+import { scheduleSchema, type Schedule } from './schema';
+import { localDate, type LocalDate } from './time-zone';
 
 export type StoredMedicine = Pick<
   Tables<'medications'>,
-  'id' | 'schedule' | 'start_date' | 'end_date' | 'paused_at'
+  'id' | 'schedule' | 'start_date' | 'end_date' | 'paused_at' | 'archived_at'
 >;
+
+// Archived: deleted, can be restored. Paused: by the server when a plan ends (Task 71).
+export type MedicineStatus = 'active' | 'not_started' | 'finished' | 'paused' | 'archived';
 
 // The medicine's schedule and dates, or null if the stored schedule isn't one this code knows
 export function timetableOf(medicine: StoredMedicine): Timetable | null {
@@ -40,4 +44,37 @@ export function medicineDoses(
 export function isDoseOf(medicine: StoredMedicine, at: string, timeZone: string): boolean {
   const instant = Date.parse(at);
   return medicineDoses(medicine, timeZone, new Date(instant), new Date(instant + 1)).length > 0;
+}
+
+/**
+ * Where a medicine stands today in the person's time zone. Finished means its last dose was on an
+ * earlier day, which is also when the free plan stops counting it.
+ */
+export function medicineStatus(
+  medicine: StoredMedicine,
+  timeZone: string,
+  now: Date,
+): MedicineStatus {
+  if (medicine.archived_at) return 'archived';
+  if (medicine.paused_at) return 'paused';
+  const today = localDate(now.getTime(), timeZone);
+  if (medicine.start_date > today) return 'not_started';
+  const timetable = timetableOf(medicine);
+  const last = timetable ? lastDoseDate(timetable, timeZone) : medicine.end_date;
+  return last && last < today ? 'finished' : 'active';
+}
+
+/**
+ * The end date to store. A course ends with its last dose, so its end date is that dose's date
+ * (or an earlier one, to stop it early). That lets the free plan's limit, which only reads end
+ * dates, see when a course is over.
+ */
+export function endDateToStore(
+  schedule: Schedule,
+  startDate: LocalDate,
+  endDate: LocalDate | null | undefined,
+  timeZone: string,
+): LocalDate | null {
+  if (schedule.type !== 'course') return endDate ?? null;
+  return lastDoseDate({ schedule, startDate, endDate }, timeZone);
 }

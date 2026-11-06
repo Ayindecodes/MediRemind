@@ -3,8 +3,9 @@
 // harmless: `undone` says whether there was anything to remove. `dose` is null when the dose was
 // only there because it was recorded, such as an as-needed one.
 import { NextResponse } from 'next/server';
-import { doseAt, doseSettings, findMedicine } from '@/lib/api/doses';
+import { doseAt, doseSettings } from '@/lib/api/doses';
 import { apiError } from '@/lib/api/errors';
+import { findMedicine } from '@/lib/api/medicines';
 import { withSession } from '@/lib/api/withSession';
 import { undoDose } from '@/lib/db/doses';
 import { parseJsonBody } from '@/lib/validation/request';

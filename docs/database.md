@@ -180,6 +180,40 @@ take the code `123456` and send nothing; `npm run test:db` signs in with them.
 - Vercel: `TERMII_API_KEY`, `TERMII_BASE_URL`, `TERMII_SENDER_ID` (the sender ID Termii approved) and
   `TERMII_CHANNEL=dnd`, plus the three Supabase settings.
 
+## Medicines
+
+The medicines routes for the new screens, for people signed in with Supabase (`withSession()`). They
+answer with medicines in the `Medicine` shape (`lib/types.ts`): every field people can set, in camelCase,
+plus its `status` (`active`, `not_started`, `finished`, `paused` or `archived`) and `nextDose`.
+
+| Route                                | Sends                       | Does                                                                      |
+| ------------------------------------ | --------------------------- | ------------------------------------------------------------------------- |
+| `GET /api/medications`               | `?archived=true` (optional) | Current medicines, finished ones included, oldest first; or archived ones |
+| `POST /api/medications`              | `{ name, schedule, … }`     | Adds one: `201 { medication }`                                            |
+| `GET /api/medications/[id]`          |                             | The medicine: `{ medication }`                                            |
+| `PATCH /api/medications/[id]`        | Any fields, at least one    | Changes only those; `null` clears an optional one: `{ medication }`       |
+| `DELETE /api/medications/[id]`       |                             | Archives it, keeping its dose history: `{ medication }`                   |
+| `POST /api/medications/[id]/restore` |                             | Undoes the delete: `{ medication }`                                       |
+
+- **Adding needs only a name and a schedule** (see Schedules). It starts today on the person's calendar
+  unless `startDate` is sent; the form defaults to tablet and the dose unit to the form's usual one (ml
+  for a liquid, puff for an inhaler). The rules are in `lib/validation/medicines.ts`, matching the
+  table's.
+- **Dates are checked as they'll be saved**: an end date before the start is refused. A course's end date
+  is its last dose's date, so a finished course stops counting towards the free plan. If it stops being a
+  course, it no longer keeps that end date.
+- **The free plan's limit** answers `403 upgrade_required` when adding a fourth active medicine, or
+  restoring one while 3 are active.
+- **Deleting archives**: the medicine disappears from the list and its reminders stop, but its doses stay
+  and it can be restored. Deleting or restoring twice changes nothing. An archived medicine must be
+  restored before it can be changed or have doses recorded.
+- Someone else's medicine, or anything that isn't an ID, gets a 404.
+- The photo (Task 49) and pausing (Task 71) aren't set here.
+
+Today's pages still use the old JSON-file routes (`/api/medications/add`, `list`, `update`,
+`delete/[id]`, `today`, `history`, `mark-taken` and `check-completions`). They go in Task 42, when the
+pages move to Supabase sign-in.
+
 ## Doses
 
 The dose routes for the new screens, for people signed in with Supabase (`withSession()`). They answer
