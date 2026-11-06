@@ -49,9 +49,18 @@ describe('medicineDoses', () => {
     expect(onThe20th(medicine())).toEqual(['08:00', '20:00']);
   });
 
-  it('gives none from the moment the medicine was paused', () => {
+  it('gives none from the moment the medicine was paused or archived', () => {
     expect(onThe20th(medicine({ paused_at: '2026-10-20T12:00:00+01:00' }))).toEqual(['08:00']);
     expect(onThe20th(medicine({ paused_at: '2026-10-19T12:00:00+01:00' }))).toEqual([]);
+    expect(onThe20th(medicine({ archived_at: '2026-10-20T12:00:00+01:00' }))).toEqual(['08:00']);
+    expect(
+      onThe20th(
+        medicine({
+          paused_at: '2026-10-20T21:00:00+01:00',
+          archived_at: '2026-10-20T12:00:00+01:00',
+        }),
+      ),
+    ).toEqual(['08:00']);
   });
 
   it("gives none for a schedule that can't be read, and logs it", () => {

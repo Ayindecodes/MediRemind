@@ -22,8 +22,8 @@ export function timetableOf(medicine: StoredMedicine): Timetable | null {
 
 /**
  * The medicine's doses due from `from` up to (not including) `to`. None from the moment it was
- * paused. A stored schedule that can't be read gives none and is logged, so that one bad row can't
- * stop someone's other medicines from showing.
+ * paused or archived, so its history up to then still counts. A stored schedule that can't be read
+ * gives none and is logged, so that one bad row can't stop someone's other medicines from showing.
  */
 export function medicineDoses(
   medicine: StoredMedicine,
@@ -36,8 +36,11 @@ export function medicineDoses(
     console.error(`Medicine ${medicine.id} has a schedule that can't be read:`, medicine.schedule);
     return [];
   }
-  const until = medicine.paused_at ? Math.min(to.getTime(), Date.parse(medicine.paused_at)) : to;
-  return dosesBetween(timetable, timeZone, from, new Date(until));
+  const stops = [medicine.paused_at, medicine.archived_at]
+    .filter((at): at is string => at !== null)
+    .map((at) => Date.parse(at));
+  const until = new Date(Math.min(to.getTime(), ...stops));
+  return dosesBetween(timetable, timeZone, from, until);
 }
 
 // Whether one of the medicine's doses is due at exactly this moment
