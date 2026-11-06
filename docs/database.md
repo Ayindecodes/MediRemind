@@ -241,6 +241,28 @@ UTC), the person's own `date` and `time` for it, its `state`, `takenAt`, `skipRe
 - The list leaves archived medicines out and shows no doses after a pause. It reads the person's grace
   period without saving any settings.
 
+## Streaks and adherence
+
+`GET /api/adherence?days=7` (1 to 365) answers with an `AdherenceSummary` (`lib/types.ts`), worked out
+by `lib/adherence.ts` from the dose states. Nothing is stored, so correcting a dose record corrects them.
+
+- **`streak`**: the current and longest run of days on which every settled dose was taken, on time or
+  late, over everything the person has ever been due to take. A day with nothing due is passed over (a
+  weekly medicine can build a streak); a missed or skipped dose ends the run. Today counts once a dose has
+  been taken and none missed; until then the current streak is yesterday's.
+- **`overall`** and **`byMedication`**: the period's scheduled doses counted by state (`taken`,
+  `takenLate`, `skipped`, `missed`, `pending`) and `rate`, the whole percentage of settled doses taken,
+  or null until one settles. The period is the last `days` days on the person's own calendar, today
+  included (`period.from` to `period.to`). As-needed doses aren't counted: there was nothing to adhere to.
+- **`totalDosesTaken`**: every dose ever taken, as-needed ones included.
+- **Deleted medicines count up to the moment they were deleted**, and paused ones up to the pause, so
+  deleting a medicine doesn't rewrite history. This is why `listMedications()` can list `'all'` and
+  `medicineDoses()` stops at `archived_at`.
+- **Long histories**: the API answers at most 1000 rows a query (`max_rows`), so `listDoses()` reads a page
+  at a time. Someone on four doses a day passes 1000 records in about eight months.
+
+The old `GET /api/user/streak` still returns zeros; it goes with the JSON-file system in Task 42.
+
 ## Not in the schema yet
 
 - **Family and caregivers** (people managed by someone else, caregiver links and permissions): Phase 7.

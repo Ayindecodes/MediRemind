@@ -30,16 +30,19 @@ export type NewMedication = Pick<
 export type MedicationChanges = Pick<TablesUpdate<'medications'>, keyof NewMedication>;
 
 /**
- * Someone's medicines, oldest first. Archived ones are left out unless asked for. Finished courses
- * are included: whether a medicine is current depends on today's date in the person's time zone.
+ * Someone's medicines, oldest first. Archived ones are left out unless asked for (`archived: true`
+ * for only those, `'all'` for both, as adherence history needs). Finished courses are included:
+ * whether a medicine is current depends on today's date in the person's time zone.
  */
 export async function listMedications(
   db: Db,
   userId: string,
-  { archived = false }: { archived?: boolean } = {},
+  { archived = false }: { archived?: boolean | 'all' } = {},
 ): Promise<MedicationRow[]> {
   let query = db.from('medications').select('*').eq('user_id', userId);
-  query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
+  if (archived !== 'all') {
+    query = archived ? query.not('archived_at', 'is', null) : query.is('archived_at', null);
+  }
   return unwrap(await query.order('created_at'));
 }
 

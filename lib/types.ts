@@ -1,6 +1,7 @@
 // lib/types.ts
 // Shapes shared by the storage layer, the API routes and the pages. Only types live here, so
 // client components can import them without bundling any server code.
+import type { AdherenceCounts, Streaks } from './adherence';
 import type { MedicineStatus } from './schedule/medicines';
 import type { Schedule } from './schedule/schema';
 import type { DoseState } from './schedule/status';
@@ -9,6 +10,7 @@ import type { Appearance, DoseUnit, MedicineForm, ReminderChannel } from './vali
 import type { MoodValue } from './validation/mood';
 
 export type {
+  AdherenceCounts,
   Appearance,
   DoseState,
   DoseUnit,
@@ -20,6 +22,7 @@ export type {
   ReminderChannel,
   Schedule,
   SoundType,
+  Streaks,
 };
 
 export type Plan = 'free' | 'individual' | 'family';
@@ -190,6 +193,18 @@ export interface StreakSummary {
   longestStreak: number;
   totalMedsTaken: number;
   weeklyAdherence: number;
+}
+
+/** GET /api/adherence: streaks over the whole history, and how a period's doses went */
+export interface AdherenceSummary {
+  streak: Streaks;
+  // The period the counts cover, in the person's own dates: the last `days` days, today included
+  period: { from: string; to: string; days: number };
+  overall: AdherenceCounts;
+  // Each medicine with a dose due in the period, archived ones included, oldest first
+  byMedication: ({ medication: Dose['medication'] } & AdherenceCounts)[];
+  // Every dose ever taken, as-needed ones included
+  totalDosesTaken: number;
 }
 
 /** What went wrong, in every error response the API sends: `{ "error": ApiError }` */

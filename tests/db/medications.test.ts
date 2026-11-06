@@ -82,6 +82,10 @@ describe('medications', () => {
     expect((await listMedications(ada.db, ada.id, { archived: true })).map((m) => m.name)).toEqual([
       'Atorvastatin',
     ]);
+    expect((await listMedications(ada.db, ada.id, { archived: 'all' })).length).toBe(
+      (await listMedications(ada.db, ada.id)).length +
+        (await listMedications(ada.db, ada.id, { archived: true })).length,
+    );
 
     await addMedication(ada.db, ada.id, medicine('Lisinopril'));
     await expect(restoreMedication(ada.db, atorvastatin.id)).rejects.toMatchObject({

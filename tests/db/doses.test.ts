@@ -91,6 +91,34 @@ describe('listDoses', () => {
   });
 });
 
+describe('listDoses with a long history', () => {
+  it('returns every record, not just the first 1000', async () => {
+    const chidi = await createTestUser('Chidi Eze');
+    const medicine = await addMedication(chidi.db, chidi.id, {
+      name: 'Metformin',
+      schedule: { type: 'every_n_hours', everyHours: 1, firstDose: '00:00' },
+      start_date: '2020-01-01',
+    });
+    // 1001 hourly doses, all taken
+    const first = Date.parse('2020-01-01T00:00:00Z');
+    const records = Array.from({ length: 1001 }, (_, i) => ({
+      user_id: chidi.id,
+      medication_id: medicine.id,
+      scheduled_for: new Date(first + i * 3_600_000).toISOString(),
+      status: 'taken',
+      taken_at: new Date(first + i * 3_600_000).toISOString(),
+    }));
+    const { error } = await chidi.db.from('dose_logs').insert(records);
+    expect(error).toBeNull();
+
+    const doses = await listDoses(chidi.db, chidi.id, { from: '2020-01-01', to: '2020-03-01' });
+    expect(doses).toHaveLength(1001);
+    expect(Date.parse(doses.at(-1)!.scheduled_for)).toBe(first + 1000 * 3_600_000);
+    // Pages join up without a gap or a repeat
+    expect(new Set(doses.map((dose) => dose.id)).size).toBe(1001);
+  });
+});
+
 describe('getDose', () => {
   it('finds the record for a dose, however the time is written', async () => {
     await recordDose(ada.db, ada.id, {
